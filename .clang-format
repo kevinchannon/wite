@@ -1,0 +1,24 @@
+﻿---
+BasedOnStyle: Chromium
+AlignConsecutiveMacros: 'true'
+AlignConsecutiveAssignments: 'true'
+AlignConsecutiveDeclarations: 'false'
+AlignEscapedNewlines: Left
+AlignOperands: 'true'
+AlignTrailingComments: 'true'
+AllowAllArgumentsOnNextLine: 'true'
+AlwaysBreakTemplateDeclarations: 'Yes'
+BinPackArguments: 'false'
+BinPackParameters: 'false'
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
+FixNamespaceComments: 'true'
+NamespaceIndentation: Inner
+SpaceBeforeParens: ControlStatements
+SpacesInAngles: 'false'
+SpacesInContainerLiterals: 'true'
+Standard: Cpp11
+UseTab: Never
+ColumnLimit: 130
+
+...
