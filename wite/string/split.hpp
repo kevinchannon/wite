@@ -12,7 +12,11 @@ namespace wite::string {
 
 std::tuple<std::string_view, std::string_view, bool> first_token(std::string_view str, char delimiter) {
   const auto pos = std::find(str.begin(), str.end(), delimiter);
-  return {{str.begin(), pos}, {pos == str.end() ? pos : std::next(pos), str.end()}, pos != str.end()};
+  return {
+    {str.begin(), pos},
+    {pos == str.end() ? pos : std::next(pos), str.end()},
+    pos != str.end()
+  };
 }
 
 ///////////////////////////////////////////////////////////////////////////////

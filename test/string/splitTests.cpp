@@ -9,9 +9,19 @@
 using namespace std::string_literals;
 using namespace wite;
 
-TEST_CASE("Split string on space", "[string]") {
-  const auto words = string::split("One small step for man...");
-  const auto expected = std::vector<std::string_view>{"One", "small", "step", "for", "man..."};
+TEST_CASE("Split string tests", "[string]") {
+  struct TestParams {
+    std::string name;
+    std::string toSplit;
+    char delimiter;
+    std::vector<std::string_view> expected;
+  };
+
+  const auto testParams = GENERATE(
+    TestParams{"Split string on space", "One small step for man...", ' ', {"One", "small", "step", "for", "man..."}},
+    TestParams{"Split string on non-space", ""1,2,3,4,5"", ',', {"1", "2", "3", "4", "5"}},
+    TestParams{"Split string on non-space", ""1,2,3,4,5"", ',', {"1", "2", "3", "4", "5"}}
+  );
 
   REQUIRE(expected.size() == words.size());
   REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
@@ -55,5 +65,9 @@ TEST_CASE("Split string ending with a delimiter works", "[string]") {
 
   REQUIRE(expected.size() == words.size());
   REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+}
+
+TEST_CASE("Split string and drop empty elements", "[string]") {
+  
 }
 
