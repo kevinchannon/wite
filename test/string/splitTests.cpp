@@ -33,3 +33,27 @@ TEST_CASE("Split string without any delimiters in it", "[string]") {
   REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
 }
 
+TEST_CASE("Split string containing only delimiters works", "[string]") {
+  const auto words = string::split("  ");
+  const auto expected = std::vector<std::string_view>{"", "", ""};
+
+  REQUIRE(expected.size() == words.size());
+  REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+}
+
+TEST_CASE("Split string starting with a delimiter works", "[string]") {
+  const auto words = string::split(" 1");
+  const auto expected = std::vector<std::string_view>{"", "1"};
+
+  REQUIRE(expected.size() == words.size());
+  REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+}
+
+TEST_CASE("Split string ending with a delimiter works", "[string]") {
+  const auto words = string::split("1 ");
+  const auto expected = std::vector<std::string_view>{"1", ""};
+
+  REQUIRE(expected.size() == words.size());
+  REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+}
+
