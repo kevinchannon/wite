@@ -25,3 +25,11 @@ TEST_CASE("Split string on non-space", "[string]") {
   REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
 }
 
+TEST_CASE("Split string without any delimiters in it", "[string]") {
+  const auto words = string::split("1 2 3 4 5", ',');
+  const auto expected = std::vector<std::string_view>{"1 2 3 4 5"};
+
+  REQUIRE(expected.size() == words.size());
+  REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+}
+
