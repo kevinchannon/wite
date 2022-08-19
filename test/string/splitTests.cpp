@@ -10,9 +10,18 @@ using namespace std::string_literals;
 using namespace wite;
 
 TEST_CASE("Split string on space", "[string]") {
-  const auto words = string::split("One small step for man...", ' ');
+  const auto words = string::split("One small step for man...");
   const auto expected = std::vector<std::string_view>{"One", "small", "step", "for", "man..."};
 
   REQUIRE(expected.size() == words.size());
   REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
 }
+
+TEST_CASE("Split string on non-space", "[string]") {
+  const auto words = string::split("1,2,3,4,5", ',');
+  const auto expected = std::vector<std::string_view>{"1", "2", "3", "4", "5"};
+
+  REQUIRE(expected.size() == words.size());
+  REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+}
+

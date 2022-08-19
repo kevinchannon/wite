@@ -17,7 +17,7 @@ std::pair<std::string_view, std::string_view> first_token(std::string_view str, 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::vector<std::string_view> split(std::string_view str, char delimiter) {
+std::vector<std::string_view> split(std::string_view str, char delimiter = ' ') {
   auto result = std::vector<std::string_view>{};
 
   while (true) {
