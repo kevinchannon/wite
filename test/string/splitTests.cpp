@@ -33,7 +33,7 @@ TEST_CASE("Split string tests", "[string]") {
     TestParams{"Split string on non-space",
         "1,2,3,4,5", ',', string::split_behaviour::drop_empty, {"1", "2", "3", "4", "5"}},
     TestParams{"Split string on space, keeping empty items",
-        "1,2,,3,4,5", ',', string::split_behaviour::keep_empty, {"1", "2", "3", "4", "5"}},,
+        "1,2,,3,4,5", ',', string::split_behaviour::keep_empty, {"1", "2", "", "3", "4", "5"}},
     TestParams{"Split string on space, dropping empty items",
         "1,2,,3,4,5", ',', string::split_behaviour::drop_empty, {"1", "2", "3", "4", "5"}},
     TestParams{"Split string without any delimiters in it",
@@ -52,9 +52,9 @@ TEST_CASE("Split string tests", "[string]") {
         " 1", ' ', string::split_behaviour::drop_empty, {"1"}}
   );
 
-  const auto words = string::split(testParams.toSplit, testParams.delimiter);
-
   SECTION(testParams.name){
+    const auto words = string::split(testParams.toSplit, testParams.delimiter, testParams.behaviour);
+
     REQUIRE(testParams.expected.size() == words.size());
     REQUIRE(std::equal(testParams.expected.begin(), testParams.expected.end(), words.begin()));
   }
