@@ -41,7 +41,7 @@ TEST_CASE("Split string tests", "[string]") {
     TestParams{"Split string containing only delimiters works, keeping empty items",
         "  ", ' ', string::split_behaviour::keep_empty, {"", "", ""}},
     TestParams{"Split string containing only delimiters works, dropping empty items",
-        "  ", ' ', string::split_behaviour::drop_empty, {}},
+        "       ", ' ', string::split_behaviour::drop_empty, {}},
     TestParams{"Split string starting with a delimiter works, keeping empty items",
         " 1", ' ', string::split_behaviour::keep_empty, {"", "1"}},
     TestParams{"Split string starting with a delimiter works, dropping empty items",
