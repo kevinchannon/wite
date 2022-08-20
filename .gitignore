@@ -6,6 +6,16 @@
 # CTest outputs
 Testing/
 
+# Codelite files
+.codelite/
+.ctagsd/
+*.project
+*.workspace
+compile_flags.txt
+
+# CMake outputs
+cmake-*/
+
 # User-specific files
 *.rsuser
 *.suo
