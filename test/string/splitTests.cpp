@@ -10,6 +10,16 @@
 using namespace std::string_literals;
 using namespace wite;
 
+
+template<typename Result_T>
+struct TestParams {
+  std::string name;
+  std::string toSplit;
+  char delimiter;
+  string::split_behaviour behaviour;
+  std::vector<Result_T> expected;
+};
+
 TEST_CASE("Split string tests", "[string]") {
   SECTION("Defaults to using space as a delimiter", "[string]") {
     const auto words = string::split("one two three");
@@ -19,36 +29,28 @@ TEST_CASE("Split string tests", "[string]") {
     REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
   }
 
-  struct TestParams {
-    std::string name;
-    std::string toSplit;
-    char delimiter;
-    string::split_behaviour behaviour;
-    std::vector<std::string_view> expected;
-  };
-
   const auto testParams = GENERATE(
-    TestParams{"Split string on space",
+    TestParams<std::string_view>{"Split string on space",
         "One small step for man...",' ', string::split_behaviour::drop_empty, {"One", "small", "step", "for", "man..."}},
-    TestParams{"Split string on non-space",
+    TestParams<std::string_view>{"Split string on non-space",
         "1,2,3,4,5", ',', string::split_behaviour::drop_empty, {"1", "2", "3", "4", "5"}},
-    TestParams{"Split string on space, keeping empty items",
+    TestParams<std::string_view>{"Split string on space, keeping empty items",
         "1,2,,3,4,5", ',', string::split_behaviour::keep_empty, {"1", "2", "", "3", "4", "5"}},
-    TestParams{"Split string on space, dropping empty items",
+    TestParams<std::string_view>{"Split string on space, dropping empty items",
         "1,2,,3,4,5", ',', string::split_behaviour::drop_empty, {"1", "2", "3", "4", "5"}},
-    TestParams{"Split string without any delimiters in it",
+    TestParams<std::string_view>{"Split string without any delimiters in it",
         "1 2 3 4 5", ',', string::split_behaviour::drop_empty, {"1 2 3 4 5"}},
-    TestParams{"Split string containing only delimiters works, keeping empty items",
+    TestParams<std::string_view>{"Split string containing only delimiters works, keeping empty items",
         "  ", ' ', string::split_behaviour::keep_empty, {"", "", ""}},
-    TestParams{"Split string containing only delimiters works, dropping empty items",
+    TestParams<std::string_view>{"Split string containing only delimiters works, dropping empty items",
         "       ", ' ', string::split_behaviour::drop_empty, {}},
-    TestParams{"Split string starting with a delimiter works, keeping empty items",
+    TestParams<std::string_view>{"Split string starting with a delimiter works, keeping empty items",
         " 1", ' ', string::split_behaviour::keep_empty, {"", "1"}},
-    TestParams{"Split string starting with a delimiter works, dropping empty items",
+    TestParams<std::string_view>{"Split string starting with a delimiter works, dropping empty items",
         " 1", ' ', string::split_behaviour::drop_empty, {"1"}},
-    TestParams{"Split string ending with a delimiter works, keeping empty items",
+    TestParams<std::string_view>{"Split string ending with a delimiter works, keeping empty items",
         "1 ", ' ', string::split_behaviour::keep_empty, {"1", ""}},
-    TestParams{"Split string starting with a delimiter works, dropping empty items",
+    TestParams<std::string_view>{"Split string starting with a delimiter works, dropping empty items",
         " 1", ' ', string::split_behaviour::drop_empty, {"1"}}
   );
 

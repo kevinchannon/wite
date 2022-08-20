@@ -19,12 +19,9 @@ enum class split_behaviour : uint8_t{
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace detail {
-  
-inline std::string_view::const_iterator advance_past_delimiter(
-  std::string_view::const_iterator begin,
-  const std::string_view::const_iterator end,
-  char delimiter,
-  split_behaviour behaviour)
+
+template<typename Iter_T>  
+Iter_T advance_past_delimiter(Iter_T begin, const Iter_T end, char delimiter, split_behaviour behaviour)
 {
   auto out = (begin == end ? begin : std::next(begin));
   if (behaviour == split_behaviour::drop_empty) {
@@ -34,7 +31,8 @@ inline std::string_view::const_iterator advance_past_delimiter(
   return out;
 }
   
-inline std::tuple<std::string_view, std::string_view, bool> first_token(
+template<typename Result_T>
+std::tuple<Result_T, std::string_view, bool> first_token(
   std::string_view str,
   char delimiter,
   split_behaviour behaviour)
@@ -53,14 +51,19 @@ inline std::tuple<std::string_view, std::string_view, bool> first_token(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline std::vector<std::string_view> split(std::string_view str, char delimiter = ' ', split_behaviour behaviour=split_behaviour::drop_empty) {
-  auto result = std::vector<std::string_view>{};
+template<typename Result_T>
+std::vector<Result_T> split_to(
+  std::string_view str,
+  char delimiter=' ',
+  split_behaviour behaviour=split_behaviour::drop_empty)
+{
+  auto out = std::vector<Result_T>{};
 
   while (true) {
-    auto [token, remainder, performed_a_split] = detail::first_token(str, delimiter, behaviour);
+    auto [token, remainder, performed_a_split] = detail::first_token<Result_T>(str, delimiter, behaviour);
     
     if (split_behaviour::keep_empty == behaviour or (split_behaviour::drop_empty == behaviour and (not token.empty()))) {
-      result.push_back(std::move(token));
+      out.push_back(std::move(token));
     }
 
     if (not performed_a_split) {
@@ -70,7 +73,13 @@ inline std::vector<std::string_view> split(std::string_view str, char delimiter 
     str = std::move(remainder);
   }
 
-  return result;
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+inline std::vector<std::string_view> split(std::string_view str, char delimiter = ' ', split_behaviour behaviour=split_behaviour::drop_empty) {
+  return split_to<std::string_view>(str, delimiter, behaviour);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
