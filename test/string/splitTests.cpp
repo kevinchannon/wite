@@ -10,6 +10,14 @@
 using namespace std::string_literals;
 using namespace wite;
 
+TEST_CASE("Split string defaults to using space as a delimiter", "[string]") {
+  const auto words = string::split("one two three");
+  const auto expected = std::vector<std::string_view>{"one", "two", "three"};
+  
+  REQUIRE(expected.size() == words.size());
+  REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+}
+
 TEST_CASE("Split string tests", "[string]") {
   struct TestParams {
     std::string name;
@@ -24,6 +32,7 @@ TEST_CASE("Split string tests", "[string]") {
     TestParams{"Split string without any delimiters in it", "1 2 3 4 5", ',', {"1 2 3 4 5"}},
     TestParams{"Split string containing only delimiters works", "  ", ' ', {"", "", ""}},
     TestParams{"Split string starting with a delimiter works", " 1", ' ', {"", "1"}},
+    TestParams{"Split string ending with a delimiter works", "1 ", ' ', {"1", ""}},
     TestParams{"Split string ending with a delimiter works", "1 ", ' ', {"1", ""}}
   );
 
