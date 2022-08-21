@@ -20,8 +20,8 @@ struct TestParams {
 };
 
 TEST_CASE("Split string tests", "[string]") {
-  SECTION("Defaults to using space as a delimiter", "[string]") {
-    const auto words = string::split("one two three");
+  SECTION("Defaults to using space as a delimiter and drops empty items", "[string]") {
+    const auto words = string::split("one two   three");
     const auto expected = std::vector<std::string>{"one", "two", "three"};
 
     REQUIRE(expected.size() == words.size());
