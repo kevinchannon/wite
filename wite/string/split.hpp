@@ -53,7 +53,7 @@ std::tuple<Result_T, std::string_view, bool> first_token(
 
 template<typename Result_T>
 Result_T split_to(
-  std::string_view str,
+  std::basic_string_view<typename Result_T::value_type::value_type> str,
   char delimiter=' ',
   split_behaviour behaviour=split_behaviour::drop_empty)
 {
