@@ -9,7 +9,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(wite_test
-	"string/splitTests.cpp")
+	"string/splitTests.cpp"
+	"string/joinTests.cpp"
+  )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET wite_test PROPERTY CXX_STANDARD 20)

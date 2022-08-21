@@ -56,14 +56,14 @@ TEST_CASE("Split string tests", "[string]") {
   SECTION(testParams.name){
     
     SECTION("To strings") {
-      const auto words = string::split_to<std::string>(testParams.toSplit, testParams.delimiter, testParams.behaviour);
+      const auto words = string::split_to<std::vector<std::string>>(testParams.toSplit, testParams.delimiter, testParams.behaviour);
 
       REQUIRE(testParams.expected.size() == words.size());
       REQUIRE(std::equal(testParams.expected.begin(), testParams.expected.end(), words.begin()));
     }
     
     SECTION("To string_views") {
-      const auto words = string::split_to<std::string_view>(testParams.toSplit, testParams.delimiter, testParams.behaviour);
+      const auto words = string::split_to<std::vector<std::string_view>>(testParams.toSplit, testParams.delimiter, testParams.behaviour);
 
       REQUIRE(testParams.expected.size() == words.size());
       REQUIRE(std::equal(testParams.expected.begin(), testParams.expected.end(), words.begin()));

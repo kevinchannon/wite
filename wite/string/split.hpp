@@ -52,15 +52,15 @@ std::tuple<Result_T, std::string_view, bool> first_token(
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Result_T>
-std::vector<Result_T> split_to(
+Result_T split_to(
   std::string_view str,
   char delimiter=' ',
   split_behaviour behaviour=split_behaviour::drop_empty)
 {
-  auto out = std::vector<Result_T>{};
+  auto out = Result_T{};
 
   while (true) {
-    auto [token, remainder, performed_a_split] = detail::first_token<Result_T>(str, delimiter, behaviour);
+    auto [token, remainder, performed_a_split] = detail::first_token<typename Result_T::value_type>(str, delimiter, behaviour);
     
     if (split_behaviour::keep_empty == behaviour or (split_behaviour::drop_empty == behaviour and (not token.empty()))) {
       out.push_back(std::move(token));
@@ -79,7 +79,7 @@ std::vector<Result_T> split_to(
 ///////////////////////////////////////////////////////////////////////////////
 
 inline std::vector<std::string> split(std::string_view str, char delimiter = ' ', split_behaviour behaviour=split_behaviour::drop_empty) {
-  return split_to<std::string>(str, delimiter, behaviour);
+  return split_to<std::vector<std::string>>(str, delimiter, behaviour);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
