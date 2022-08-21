@@ -10,14 +10,13 @@
 using namespace std::string_literals;
 using namespace wite;
 
-
-template<typename Result_T>
 struct TestParams {
+  
   std::string name;
   std::string toSplit;
   char delimiter;
   string::split_behaviour behaviour;
-  std::vector<Result_T> expected;
+  std::vector<const char*> expected;
 };
 
 TEST_CASE("Split string tests", "[string]") {
@@ -30,34 +29,44 @@ TEST_CASE("Split string tests", "[string]") {
   }
 
   const auto testParams = GENERATE(
-    TestParams<std::string_view>{"Split string on space",
+    TestParams{"Split to string view on space",
         "One small step for man...",' ', string::split_behaviour::drop_empty, {"One", "small", "step", "for", "man..."}},
-    TestParams<std::string_view>{"Split string on non-space",
+    TestParams{"Split string on non-space",
         "1,2,3,4,5", ',', string::split_behaviour::drop_empty, {"1", "2", "3", "4", "5"}},
-    TestParams<std::string_view>{"Split string on space, keeping empty items",
+    TestParams{"Split string on space, keeping empty items",
         "1,2,,3,4,5", ',', string::split_behaviour::keep_empty, {"1", "2", "", "3", "4", "5"}},
-    TestParams<std::string_view>{"Split string on space, dropping empty items",
+    TestParams{"Split string on space, dropping empty items",
         "1,2,,3,4,5", ',', string::split_behaviour::drop_empty, {"1", "2", "3", "4", "5"}},
-    TestParams<std::string_view>{"Split string without any delimiters in it",
+    TestParams{"Split string without any delimiters in it",
         "1 2 3 4 5", ',', string::split_behaviour::drop_empty, {"1 2 3 4 5"}},
-    TestParams<std::string_view>{"Split string containing only delimiters works, keeping empty items",
+    TestParams{"Split string containing only delimiters works, keeping empty items",
         "  ", ' ', string::split_behaviour::keep_empty, {"", "", ""}},
-    TestParams<std::string_view>{"Split string containing only delimiters works, dropping empty items",
+    TestParams{"Split string containing only delimiters works, dropping empty items",
         "       ", ' ', string::split_behaviour::drop_empty, {}},
-    TestParams<std::string_view>{"Split string starting with a delimiter works, keeping empty items",
+    TestParams{"Split string starting with a delimiter works, keeping empty items",
         " 1", ' ', string::split_behaviour::keep_empty, {"", "1"}},
-    TestParams<std::string_view>{"Split string starting with a delimiter works, dropping empty items",
+    TestParams{"Split string starting with a delimiter works, dropping empty items",
         " 1", ' ', string::split_behaviour::drop_empty, {"1"}},
-    TestParams<std::string_view>{"Split string ending with a delimiter works, keeping empty items",
+    TestParams{"Split string ending with a delimiter works, keeping empty items",
         "1 ", ' ', string::split_behaviour::keep_empty, {"1", ""}},
-    TestParams<std::string_view>{"Split string starting with a delimiter works, dropping empty items",
+    TestParams{"Split string starting with a delimiter works, dropping empty items",
         " 1", ' ', string::split_behaviour::drop_empty, {"1"}}
   );
 
   SECTION(testParams.name){
-    const auto words = string::split(testParams.toSplit, testParams.delimiter, testParams.behaviour);
+    
+    SECTION("To strings") {
+      const auto words = string::split_to<std::string>(testParams.toSplit, testParams.delimiter, testParams.behaviour);
 
-    REQUIRE(testParams.expected.size() == words.size());
-    REQUIRE(std::equal(testParams.expected.begin(), testParams.expected.end(), words.begin()));
+      REQUIRE(testParams.expected.size() == words.size());
+      REQUIRE(std::equal(testParams.expected.begin(), testParams.expected.end(), words.begin()));
+    }
+    
+    SECTION("To string_views") {
+      const auto words = string::split_to<std::string_view>(testParams.toSplit, testParams.delimiter, testParams.behaviour);
+
+      REQUIRE(testParams.expected.size() == words.size());
+      REQUIRE(std::equal(testParams.expected.begin(), testParams.expected.end(), words.begin()));
+    }
   }
 }
