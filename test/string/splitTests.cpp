@@ -22,10 +22,10 @@ struct TestParams {
 TEST_CASE("Split string tests", "[string]") {
   SECTION("Defaults to using space as a delimiter", "[string]") {
     const auto words = string::split("one two three");
-    const auto expected = std::vector<std::string_view>{"one", "two", "three"};
+    const auto expected = std::vector<std::string>{"one", "two", "three"};
 
     REQUIRE(expected.size() == words.size());
-    REQUIRE(std::equal(expected.begin(), expected.end(), words.begin()));
+    REQUIRE(expected == words);
   }
 
   const auto testParams = GENERATE(

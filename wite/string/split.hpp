@@ -78,8 +78,8 @@ std::vector<Result_T> split_to(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline std::vector<std::string_view> split(std::string_view str, char delimiter = ' ', split_behaviour behaviour=split_behaviour::drop_empty) {
-  return split_to<std::string_view>(str, delimiter, behaviour);
+inline std::vector<std::string> split(std::string_view str, char delimiter = ' ', split_behaviour behaviour=split_behaviour::drop_empty) {
+  return split_to<std::string>(str, delimiter, behaviour);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
