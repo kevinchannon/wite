@@ -11,6 +11,7 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(wite_test
 	"string/splitTests.cpp"
 	"string/joinTests.cpp"
+	"string/trimTests.cpp"
   )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
