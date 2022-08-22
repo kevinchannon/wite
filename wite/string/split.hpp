@@ -20,8 +20,8 @@ enum class split_behaviour : uint8_t{
 
 namespace detail {
 
-template<typename Iter_T>  
-Iter_T advance_past_delimiter(Iter_T begin, const Iter_T end, char delimiter, split_behaviour behaviour)
+template<typename Iter_T, typename Char_T>  
+[[nodiscard]] Iter_T advance_past_delimiter(Iter_T begin, const Iter_T end, Char_T delimiter, split_behaviour behaviour)
 {
   auto out = (begin == end ? begin : std::next(begin));
   if (behaviour == split_behaviour::drop_empty) {
@@ -30,11 +30,23 @@ Iter_T advance_past_delimiter(Iter_T begin, const Iter_T end, char delimiter, sp
   
   return out;
 }
+
+template<typename Char_T>
+[[nodiscard]] constexpr auto space_character() -> Char_T
+{
+  if constexpr (std::is_same_v<Char_T, char>) {
+    return ' ';
+  } else if constexpr (std::is_same_v<Char_T, wchar_t>) {
+    return L' ';
+  } else {
+    static_assert(std::is_same_v<Char_T, char>, "Invalid character type");
+  }
+}
   
 template<typename Result_T>
-std::tuple<Result_T, std::string_view, bool> first_token(
-  std::string_view str,
-  char delimiter,
+[[nodiscard]] std::tuple<Result_T, std::basic_string_view<typename Result_T::value_type>, bool> first_token(
+  std::basic_string_view<typename Result_T::value_type> str,
+  typename Result_T::value_type delimiter,
   split_behaviour behaviour)
 {
   const auto token_end = std::find(str.begin(), str.end(), delimiter);
@@ -47,15 +59,15 @@ std::tuple<Result_T, std::string_view, bool> first_token(
   };
 }
 
-}
+} // namespace detail
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Result_T>
-Result_T split_to(
+[[nodiscard]] Result_T split_to(
   std::basic_string_view<typename Result_T::value_type::value_type> str,
-  char delimiter=' ',
-  split_behaviour behaviour=split_behaviour::drop_empty)
+  typename Result_T::value_type::value_type delimiter = detail::space_character<typename Result_T::value_type::value_type>(),
+  split_behaviour behaviour = split_behaviour::drop_empty)
 {
   auto out = Result_T{};
 
@@ -78,8 +90,33 @@ Result_T split_to(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline std::vector<std::string> split(std::string_view str, char delimiter = ' ', split_behaviour behaviour=split_behaviour::drop_empty) {
-  return split_to<std::vector<std::string>>(str, delimiter, behaviour);
+template<typename Char_T>
+requires std::is_pod_v<Char_T>
+[[nodiscard]] std::vector<std::basic_string<Char_T>> split_to(
+  const Char_T* str,
+  Char_T delimiter=detail::space_character<Char_T>(),
+  split_behaviour behaviour=split_behaviour::drop_empty)
+{
+  return split_to(std::basic_string_view<Char_T>(str), delimiter, behaviour);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Char_T>
+[[nodiscard]] std::vector<std::basic_string<Char_T>> split(
+  std::basic_string_view<Char_T> str,
+  Char_T delimiter = detail::space_character<Char_T>(), 
+  split_behaviour behaviour=split_behaviour::drop_empty)
+{
+  return split_to<std::vector<std::basic_string<Char_T>>>(str, delimiter, behaviour);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Char_T>
+requires std::is_pod_v<Char_T>
+[[nodiscard]] std::vector<std::basic_string<Char_T>> split(const Char_T* str) {
+  return split(std::basic_string_view<Char_T>(str));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
