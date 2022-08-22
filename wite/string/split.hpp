@@ -115,7 +115,11 @@ template<typename Char_T>
 
 template<typename Char_T>
 requires std::is_pod_v<Char_T>
-[[nodiscard]] std::vector<std::basic_string<Char_T>> split(const Char_T* str) noexcept {
+[[nodiscard]] std::vector<std::basic_string<Char_T>> split(const Char_T* str) noexcept {  
+  if (nullptr == str) {
+  return {};
+  }
+  
   return split(std::basic_string_view<Char_T>(str));
 }
 

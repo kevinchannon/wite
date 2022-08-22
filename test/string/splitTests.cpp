@@ -29,6 +29,22 @@ TEST_CASE("Split string tests", "[string]") {
       REQUIRE(expected.size() == words.size());
       REQUIRE(expected == words);
     }
+    
+    SECTION("NULL string literal returns empty") {
+      const auto words = string::split((const char*)nullptr);
+      const auto expected = std::vector<std::string>{};
+
+      REQUIRE(expected.size() == words.size());
+      REQUIRE(expected == words);
+    }
+    
+    SECTION("Default constructed string_view returns empty") {
+      const auto words = string::split(std::string_view{});
+      const auto expected = std::vector<std::string>{};
+
+      REQUIRE(expected.size() == words.size());
+      REQUIRE(expected == words);
+    }
 
     const auto testParams = GENERATE(
       TestParams<char>{"Split to string view on space",
@@ -77,6 +93,22 @@ TEST_CASE("Split string tests", "[string]") {
     SECTION("Defaults to using space as a delimiter and drops empty items", "[string]") {
       const auto words = string::split(L"one two   three");
       const auto expected = std::vector<std::wstring>{L"one", L"two", L"three"};
+
+      REQUIRE(expected.size() == words.size());
+      REQUIRE(expected == words);
+    }
+    
+    SECTION("NULL string literal returns empty") {
+      const auto words = string::split((const wchar_t*)nullptr);
+      const auto expected = std::vector<std::wstring>{};
+
+      REQUIRE(expected.size() == words.size());
+      REQUIRE(expected == words);
+    }
+    
+    SECTION("Default constructed string_view returns empty") {
+      const auto words = string::split(std::wstring_view{});
+      const auto expected = std::vector<std::wstring>{};
 
       REQUIRE(expected.size() == words.size());
       REQUIRE(expected == words);
