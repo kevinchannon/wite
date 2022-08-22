@@ -38,6 +38,14 @@ TEST_CASE("Split string tests", "[string]") {
       REQUIRE(expected == words);
     }
     
+    SECTION("NULL string literal returns empty when split to") {
+      const auto words = string::split_to<std::vector<std::string>>((const char*)nullptr);
+      const auto expected = std::vector<std::string>{};
+
+      REQUIRE(expected.size() == words.size());
+      REQUIRE(expected == words);
+    }
+    
     SECTION("Default constructed string_view returns empty") {
       const auto words = string::split(std::string_view{});
       const auto expected = std::vector<std::string>{};
@@ -100,6 +108,14 @@ TEST_CASE("Split string tests", "[string]") {
     
     SECTION("NULL string literal returns empty") {
       const auto words = string::split((const wchar_t*)nullptr);
+      const auto expected = std::vector<std::wstring>{};
+
+      REQUIRE(expected.size() == words.size());
+      REQUIRE(expected == words);
+    }
+    
+    SECTION("NULL string literal returns empty when split to") {
+      const auto words = string::split_to<std::vector<std::wstring>>((const wchar_t*)nullptr);
       const auto expected = std::vector<std::wstring>{};
 
       REQUIRE(expected.size() == words.size());

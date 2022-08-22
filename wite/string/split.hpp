@@ -90,14 +90,18 @@ template<typename Result_T>
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Char_T>
+template<typename Result_T, typename Char_T>
 requires std::is_pod_v<Char_T>
-[[nodiscard]] std::vector<std::basic_string<Char_T>> split_to(
+[[nodiscard]] Result_T split_to(
   const Char_T* str,
   Char_T delimiter=detail::space_character<Char_T>(),
   split_behaviour behaviour=split_behaviour::drop_empty) noexcept
 {
-  return split_to(std::basic_string_view<Char_T>(str), delimiter, behaviour);
+  if (nullptr == str) {
+    return {};
+  }
+  
+  return split_to<Result_T>(std::basic_string_view<Char_T>(str), delimiter, behaviour);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
