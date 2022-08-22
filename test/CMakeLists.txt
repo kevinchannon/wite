@@ -12,6 +12,7 @@ add_executable(wite_test
 	"string/splitTests.cpp"
 	"string/joinTests.cpp"
 	"string/trimTests.cpp"
+	"string/stripTests.cpp"
   )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

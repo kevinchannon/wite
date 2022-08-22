@@ -33,11 +33,11 @@ std::basic_string<Char_T> trim_left(std::basic_string_view<Char_T> str)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Char_T>
-std::basic_string<Char_T> trim_left(const Char_T* str)
-{
-return trim_left(std::basic_string_view<Char_T>{str});
-}
+//template<typename Char_T>
+//std::basic_string<Char_T> trim_left(const Char_T* str)
+//{
+//return trim_left(std::basic_string_view<Char_T>{str});
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -49,11 +49,11 @@ std::basic_string<Char_T> trim_right(std::basic_string_view<Char_T> str)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Char_T>
-std::basic_string<Char_T> trim_right(const Char_T* str)
-{
-return trim_right(std::basic_string_view<Char_T>{str});
-}
+//template<typename Char_T>
+//std::basic_string<Char_T> trim_right(const Char_T* str)
+//{
+//return trim_right(std::basic_string_view<Char_T>{str});
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 
