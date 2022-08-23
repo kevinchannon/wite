@@ -14,7 +14,7 @@ namespace wite::string {
 
 namespace detail {
   template <typename Char_T>
-  consteval auto space_character() {
+  [[nodiscard]] consteval auto space_character() noexcept {
     if constexpr (std::is_same_v<char, Char_T>) {
       return ' ';
     } else if constexpr (std::is_same_v<wchar_t, Char_T>) {
@@ -28,7 +28,7 @@ namespace detail {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Range_T>
-typename std::basic_string<typename Range_T::value_type::value_type> join(
+[[nodiscard]] std::basic_string<typename Range_T::value_type::value_type> join(
     const Range_T& strings,
     typename Range_T::value_type::value_type delimiter = detail::space_character<typename Range_T::value_type::value_type>()) {
   using Char_t = typename Range_T::value_type::value_type;
