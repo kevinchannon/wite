@@ -75,7 +75,7 @@ const auto values = ws::split(csv_row, ',', ws::split_behaviour::drop_empty);
 ```
 
 #### `split_to`
-If you really want to control the thing, you can call `split_to`, which allows you to specify how the output if returned.  So, if you know that the string that you're splitting is going to out-live the result of the split and it's not going to change, then you can do something like:
+If you really want to control the thing, you can call `split_to`, which allows you to specify how the output is returned.  So, if you know that the string that you're splitting is going to out-live the result of the split and it's not going to change, then you can do something like:
 ```
 const auto long_lived_values = { "1.618,2.718,3.142" };
 
