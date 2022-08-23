@@ -3,7 +3,7 @@
 A small collection of string functions.
 
 ## `join`
-Take a collection of strings and make them into a sngle string, separated by a specified character
+Take a collection of strings and make them into a single string, separated by a specified character
 
 ```
 const auto strings = {"One", "small", "step", "for", "a", "man..."};
