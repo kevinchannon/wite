@@ -13,7 +13,7 @@ add_executable(wite_test
 	"string/joinTests.cpp"
 	"string/trimTests.cpp"
 	"string/stripTests.cpp"
-  )
+   "collections/stackVectorTests.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET wite_test PROPERTY CXX_STANDARD 20)
