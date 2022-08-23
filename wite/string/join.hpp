@@ -47,6 +47,7 @@ template <typename Range_T>
       strings.size() - 1;
 
   std::basic_string<Char_t> result(size, Char_t{});
+  
   auto pos = std::copy(strings.begin()->begin(), strings.begin()->end(), result.begin());
   std::for_each(std::next(strings.begin()), strings.end(), [&pos, delimiter](const auto& s) {
     *pos++ = delimiter;
