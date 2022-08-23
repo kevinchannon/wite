@@ -59,7 +59,7 @@ const auto csv_row = ws::join(values, ',');
 ```
 
 ### `split`
-You can tell `split` a specific chracter that you want to split on:
+You can tell `split` a specific character that you want to split on:
 
 ```
 const auto csv_row = { "1.618,2.718,3.142" };
