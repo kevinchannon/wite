@@ -50,6 +50,16 @@ TEST_CASE("Stack vector swaps", "[stack_vector]") {
   REQUIRE(std::ranges::equal(expected_2, v_2));
 }
 
+TEST_CASE("Stack vector comparison works") {
+  auto v_1 = collections::stack_vector<int, 5>{1, 2, 3, 4, 5};
+  auto v_2 = collections::stack_vector<int, 5>{1, 2, 3, 4, 5};
+
+  REQUIRE(v_1 == v_2);
+
+  auto v_3 = collections::stack_vector<int, 5>{6, 7, 8, 9, 10};
+  REQUIRE(v_1 != v_3);
+}
+
 TEST_CASE("Stack vector works with std::distance", "[stack_vector]") {
   const auto v = collections::stack_vector<char, 10>{'a', 'b', 'c'};
   REQUIRE(3 == std::distance(v.begin(), v.end()));
