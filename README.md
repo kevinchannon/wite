@@ -1,5 +1,16 @@
 # wite
 Wite stands for "Why isn't this easy!?". It's a collection of routines and classes that aims to make easy things that should be eay in C++, but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
+# Collections
+### `stack_vector`
+This is a vector with a compile-time capacity, but a run-time size. It stores it's data on the stack, so don't put too many huge things in it.  Other than not being able to call `reserve` on it, the interface is pretty much like that of `std::vector`. For example, you can do something like:
+
+```
+auto v = wite::collections::stack_vector<int, 20>{};
+
+v.push_back(1);
+
+```
+
 # String
 A small collection of string functions.  The aim is that the most common use case is the simplest thing to do and just does what you want without too much fuss. It might not be the most efficient way to do it, but it should be good enough for 99% of use cases. If you want to do something a bit more fancy, then there might be a way to do that using this library, or there might not.
 
