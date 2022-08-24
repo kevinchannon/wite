@@ -67,10 +67,10 @@ class stack_vector {
   [[nodiscard]] constexpr auto empty() const noexcept { return _item_count == 0; }
   [[nodiscard]] constexpr auto operator[](size_type pos) noexcept -> reference { return _data[pos]; }
   [[nodiscard]] constexpr auto operator[](size_type pos) const noexcept -> const_reference { return _data[pos]; }
-  [[nodiscard]] constexpr auto front() noexcept -> reference { return _data.at(0); }
-  [[nodiscard]] constexpr auto front() const noexcept -> const_reference { return at(0); }
-  [[nodiscard]] constexpr auto back() noexcept -> reference { return at(size() - 1); }
-  [[nodiscard]] constexpr auto back() const noexcept -> const_reference { return at(size() - 1); }
+  [[nodiscard]] constexpr auto front() -> reference { return at(0); }
+  [[nodiscard]] constexpr auto front() const -> const_reference { return at(0); }
+  [[nodiscard]] constexpr auto back() -> reference { return at(size() - 1); }
+  [[nodiscard]] constexpr auto back() const -> const_reference { return at(size() - 1); }
   [[nodiscard]] constexpr auto data() noexcept { return _data.data(); }
   [[nodiscard]] constexpr auto data() const noexcept { return _data.data(); }
 
