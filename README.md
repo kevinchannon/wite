@@ -1,5 +1,6 @@
-# wite.string
-
+# wite
+Wite stands for "Why isn't this easy!?". It's a collection of routines and classes that aims to make easy things that should be eay in C++, but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
+# String
 A small collection of string functions.  The aim is that the most common use case is the simplest thing to do and just does what you want without too much fuss. It might not be the most efficient way to do it, but it should be good enough for 99% of use cases. If you want to do something a bit more fancy, then there might be a way to do that using this library, or there might not.
 
 ## Basic usage
