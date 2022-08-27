@@ -7,7 +7,11 @@
 #include <span>
 #include <stdexcept>
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace wite::io::buffers {
+
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
 Value_T read(std::span<const std::byte> buffer) {
@@ -20,6 +24,8 @@ Value_T read(std::span<const std::byte> buffer) {
   return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 struct byte_read_buffer_view {
   explicit byte_read_buffer_view(std::span<const std::byte> buf) : data{std::move(buf)}, read_position{data.begin()} {}
 
@@ -30,6 +36,8 @@ struct byte_read_buffer_view {
   std::span<const std::byte>::iterator read_position;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 Value_T read(byte_read_buffer_view& buffer) {
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
@@ -37,6 +45,8 @@ Value_T read(byte_read_buffer_view& buffer) {
 
   return out;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 // TODO: This should be in its own "streams" io file.
 template <typename Value_T>
@@ -50,4 +60,8 @@ Value_T read(std::istream& stream) {
   return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 }  // namespace wite::io::buffers
+
+///////////////////////////////////////////////////////////////////////////////
