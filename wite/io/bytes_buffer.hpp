@@ -32,13 +32,7 @@ struct byte_read_buffer_view {
 
 template <typename Value_T>
 Value_T read(byte_read_buffer_view& buffer) {
-  if (std::distance(buffer.read_position, buffer.data.end()) < sizeof(Value_T)) {
-    throw std::out_of_range{"Insufficient buffer space for read"};
-  }
-
-  auto out = Value_T{};
-
-  std::copy_n(buffer.read_position, sizeof(Value_T), reinterpret_cast<std::byte*>(&out));
+  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
 
   return out;
