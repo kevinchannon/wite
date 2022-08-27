@@ -29,6 +29,10 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
     REQUIRE(uint32_t(0x0123) == io::buffers::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
   }
 
+  SECTION("Read past the end of the buffer is an error") {
+    const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
+    REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf), std::out_of_range);
+  }
 }
 
 TEST_CASE("Byte streams", "[buffer_io]") {
@@ -37,5 +41,11 @@ TEST_CASE("Byte streams", "[buffer_io]") {
 
     REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>(stream));
     REQUIRE(uint32_t(0x89ABCDEF) == io::buffers::read<uint32_t>(stream));
+  }
+
+  SECTION("Read past the end of the buffer is an error") {
+    std::stringstream stream("\xAB\x89\x67");
+
+    REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(stream), std::out_of_range);
   }
 }
