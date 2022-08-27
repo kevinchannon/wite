@@ -39,17 +39,17 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
 TEST_CASE("Values from pointers to array", "[buffer_io]") {
   constexpr auto buf_size               = 8;
   const std::byte data_buffer[buf_size] = {std::byte{0x67},
-                                              std::byte{0x45},
-                                              std::byte{0x23},
-                                              std::byte{0x01},
-                                              std::byte{0xEF},
-                                              std::byte{0xCD},
-                                              std::byte{0xAB},
-                                              std::byte{0x89}};
+                                           std::byte{0x45},
+                                           std::byte{0x23},
+                                           std::byte{0x01},
+                                           std::byte{0xEF},
+                                           std::byte{0xCD},
+                                           std::byte{0xAB},
+                                           std::byte{0x89}};
 
   const std::byte* buf_begin = data_buffer;
   const std::byte* buf_end   = buf_begin + buf_size;
-  
+
   SECTION("Read int") {
     REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>({buf_begin, buf_end}));
   }
@@ -61,6 +61,37 @@ TEST_CASE("Values from pointers to array", "[buffer_io]") {
 
   SECTION("Read past the end of the buffer is an error") {
     const auto read_buf = std::span{std::next(buf_begin, 6), buf_end};
+    REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf), std::out_of_range);
+  }
+}
+
+TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
+  const auto array_buffer = std::array{std::byte{0x67},
+                                       std::byte{0x45},
+                                       std::byte{0x23},
+                                       std::byte{0x01},
+                                       std::byte{0xEF},
+                                       std::byte{0xCD},
+                                       std::byte{0xAB},
+                                       std::byte{0x89}};
+
+  SECTION("Read int") {
+    auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
+    
+    REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>(read_buf));
+    REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
+  }
+
+  SECTION("Read 2 shorts") {
+    auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
+
+    REQUIRE(uint32_t(0x4567) == io::buffers::read<uint16_t>(read_buf));
+    REQUIRE(uint32_t(0x0123) == io::buffers::read<uint16_t>(read_buf));
+  }
+
+  SECTION("Read past the end of the buffer is an error") {
+    auto read_buf = io::buffers::byte_read_buffer_view(array_buffer, 6);
+
     REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf), std::out_of_range);
   }
 }

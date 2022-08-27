@@ -20,6 +20,31 @@ Value_T read(std::span<const std::byte> buffer) {
   return out;
 }
 
+struct byte_read_buffer_view {
+  explicit byte_read_buffer_view(std::span<const std::byte> buf) : data{std::move(buf)}, read_position{data.begin()} {}
+
+  byte_read_buffer_view(std::span<const std::byte> buf, typename std::span<const std::byte>::size_type offset)
+      : data{std::move(buf)}, read_position{std::next(data.begin(), offset)} {}
+
+  std::span<const std::byte> data;
+  std::span<const std::byte>::iterator read_position;
+};
+
+template <typename Value_T>
+Value_T read(byte_read_buffer_view& buffer) {
+  if (std::distance(buffer.read_position, buffer.data.end()) < sizeof(Value_T)) {
+    throw std::out_of_range{"Insufficient buffer space for read"};
+  }
+
+  auto out = Value_T{};
+
+  std::copy_n(buffer.read_position, sizeof(Value_T), reinterpret_cast<std::byte*>(&out));
+  std::advance(buffer.read_position, sizeof(Value_T));
+
+  return out;
+}
+
+// TODO: This should be in its own "streams" io file.
 template <typename Value_T>
 Value_T read(std::istream& stream) {
   auto out = Value_T{};
