@@ -127,6 +127,44 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   }
 }
 
+TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
+  auto array_buffer = std::array<std::byte, 10>{};
+
+  SECTION("Write int at start of buffer") {
+    auto write_buffer = io::buffers::byte_write_buffer_view{array_buffer};
+    io::buffers::write(write_buffer, 0x89ABCDEF);
+    REQUIRE(std::next(write_buffer.data.begin(), 4) == write_buffer.write_position);
+
+    REQUIRE(0xEF == std::to_integer<uint8_t>(array_buffer[0]));
+    REQUIRE(0xCD == std::to_integer<uint8_t>(array_buffer[1]));
+    REQUIRE(0xAB == std::to_integer<uint8_t>(array_buffer[2]));
+    REQUIRE(0x89 == std::to_integer<uint8_t>(array_buffer[3]));
+
+    REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+
+    SECTION("and then another write to the buffer") {
+      io::buffers::write(write_buffer, 0x01234567);
+      REQUIRE(std::next(write_buffer.data.begin(), 8) == write_buffer.write_position);
+
+      REQUIRE(0x67 == std::to_integer<uint8_t>(array_buffer[4]));
+      REQUIRE(0x45 == std::to_integer<uint8_t>(array_buffer[5]));
+      REQUIRE(0x23 == std::to_integer<uint8_t>(array_buffer[6]));
+      REQUIRE(0x01 == std::to_integer<uint8_t>(array_buffer[7]));
+
+      REQUIRE(std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+
+      SECTION("and then another write throws std::out_of_range") {
+        REQUIRE_THROWS_AS(io::buffers::write(write_buffer, 0x01234567), std::out_of_range);
+
+        SECTION("and the buffer is not written to") {
+          REQUIRE(std::next(write_buffer.data.begin(), 8) == write_buffer.write_position);
+          REQUIRE(std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+        }
+      }
+    }
+  }
+}
+
 TEST_CASE("Byte streams", "[buffer_io]") {
   SECTION("Read int") {
     std::stringstream stream("\x67\x45\x23\x01\xEF\xCD\xAB\x89");

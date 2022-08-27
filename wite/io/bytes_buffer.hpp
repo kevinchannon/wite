@@ -63,6 +63,27 @@ Value_T read(byte_read_buffer_view& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct byte_write_buffer_view {
+  explicit byte_write_buffer_view(std::span<std::byte> buf) : data{std::move(buf)}, write_position{data.begin()} {}
+
+  byte_write_buffer_view(std::span<std::byte> buf, typename std::span<const std::byte>::size_type offset)
+      : data{std::move(buf)}, write_position{std::next(data.begin(), offset)} {}
+
+  std::span<std::byte> data;
+  std::span<std::byte>::iterator write_position;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+void write(byte_write_buffer_view& buffer, Value_T value) {
+  write<Value_T>({buffer.write_position, buffer.data.end()}, value);
+  std::advance(buffer.write_position, sizeof(Value_T));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 // TODO: This should be in its own "streams" io file.
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
