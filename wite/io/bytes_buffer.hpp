@@ -14,15 +14,15 @@ namespace wite::io::buffers {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-Value_T read(std::span<const std::byte> buffer, std::endian endianness = std::endian::native) {
+template <typename Value_T, std::endian ENDIANNESS>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value_T
+read(std::span<const std::byte> buffer) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
   auto out = Value_T{};
-  if (std::endian::little == endianness) {
+  if constexpr (std::endian::little == ENDIANNESS) {
     std::copy_n(buffer.begin(), sizeof(Value_T), reinterpret_cast<std::byte*>(&out));
   } else {
     std::copy_n(buffer.begin(),
@@ -30,6 +30,18 @@ Value_T read(std::span<const std::byte> buffer, std::endian endianness = std::en
                 std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&out), sizeof(Value_T))));
   }
   return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+Value_T read(std::span<const std::byte> buffer, std::endian endianness = std::endian::native) {
+  if (std::endian::little == endianness) {
+    return read<Value_T, std::endian::little>(buffer);
+  } else {
+    return read<Value_T, std::endian::big>(buffer);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
