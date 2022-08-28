@@ -89,8 +89,8 @@ struct byte_write_buffer_view {
 
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-void write(byte_write_buffer_view& buffer, Value_T value) {
-  write<Value_T>({buffer.write_position, buffer.data.end()}, value);
+void write(byte_write_buffer_view& buffer, Value_T value, std::endian endianness = std::endian::native) {
+  write<Value_T>({buffer.write_position, buffer.data.end()}, value, endianness);
   std::advance(buffer.write_position, sizeof(Value_T));
 }
 
