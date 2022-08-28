@@ -205,9 +205,15 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   SECTION("Big-endian") {
     SECTION("Read int") {
       auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
+      SECTION("Dynmic endianness"){
+        REQUIRE(uint32_t(0x67452301) == io::buffers::read<uint32_t>(read_buf, std::endian::big));
+        REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
+      }
 
-      REQUIRE(uint32_t(0x67452301) == io::buffers::read<uint32_t>(read_buf, std::endian::big));
-      REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
+      SECTION("Static endianness") {
+        REQUIRE(uint32_t(0x67452301) == io::buffers::read<uint32_t, std::endian::big>(read_buf));
+        REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
+      }
     }
 
     SECTION("Read 2 shorts") {
