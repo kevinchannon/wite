@@ -36,12 +36,18 @@ Value_T read(std::span<const std::byte> buffer, std::endian endianness = std::en
 
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-void write(std::span<std::byte> buffer, Value_T value) {
+void write(std::span<std::byte> buffer, Value_T value, std::endian endianness = std::endian::native) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer.begin());
+  if (std::endian::little == endianness) {
+    std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer.begin());
+  } else {
+    std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&value), sizeof(Value_T))),
+                sizeof(Value_T),
+                buffer.begin());
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

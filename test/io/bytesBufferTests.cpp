@@ -88,31 +88,64 @@ TEST_CASE("Values from pointers to array", "[buffer_io]") {
 TEST_CASE("Write values to byte arrays", "[buffer_io]") {
   auto array_buffer = std::array<std::byte, 10>{};
 
-  SECTION("Write int at start of buffer") {
-    io::buffers::write(array_buffer, 0x89ABCDEF);
+  SECTION("Little-endian") {
+    SECTION("Write int at start of buffer") {
+      io::buffers::write(array_buffer, 0x89ABCDEF, std::endian::little);
 
-    REQUIRE(0xEF == std::to_integer<uint8_t>(array_buffer[0]));
-    REQUIRE(0xCD == std::to_integer<uint8_t>(array_buffer[1]));
-    REQUIRE(0xAB == std::to_integer<uint8_t>(array_buffer[2]));
-    REQUIRE(0x89 == std::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0xEF == std::to_integer<uint8_t>(array_buffer[0]));
+      REQUIRE(0xCD == std::to_integer<uint8_t>(array_buffer[1]));
+      REQUIRE(0xAB == std::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0x89 == std::to_integer<uint8_t>(array_buffer[3]));
 
-    REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+      REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+    }
+
+    SECTION("Write int not at start of buffer") {
+      io::buffers::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, std::endian::little);
+
+      REQUIRE(0xEF == std::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0xCD == std::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0xAB == std::to_integer<uint8_t>(array_buffer[4]));
+      REQUIRE(0x89 == std::to_integer<uint8_t>(array_buffer[5]));
+
+      REQUIRE(std::all_of(array_buffer.begin(), std::next(array_buffer.begin(), 2), [](auto&& x) { return x == std::byte{0}; }));
+      REQUIRE(std::all_of(std::next(array_buffer.begin(), 6), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+    }
+
+    SECTION("Write past the end of the buffer fails with std::out_of_range exception") {
+      REQUIRE_THROWS_AS(io::buffers::write({std::next(array_buffer.begin(), 7), array_buffer.end()}, 0x89ABCDEF, std::endian::little),
+                        std::out_of_range);
+    }
   }
 
-  SECTION("Write int not at start of buffer") {
-    io::buffers::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF);
+  SECTION("Big-endian") {
+    SECTION("Write int at start of buffer") {
+      io::buffers::write(array_buffer, 0x89ABCDEF, std::endian::big);
 
-    REQUIRE(0xEF == std::to_integer<uint8_t>(array_buffer[2]));
-    REQUIRE(0xCD == std::to_integer<uint8_t>(array_buffer[3]));
-    REQUIRE(0xAB == std::to_integer<uint8_t>(array_buffer[4]));
-    REQUIRE(0x89 == std::to_integer<uint8_t>(array_buffer[5]));
+      REQUIRE(0x89 == std::to_integer<uint8_t>(array_buffer[0]));
+      REQUIRE(0xAB == std::to_integer<uint8_t>(array_buffer[1]));
+      REQUIRE(0xCD == std::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0xEF == std::to_integer<uint8_t>(array_buffer[3]));
 
-    REQUIRE(std::all_of(array_buffer.begin(), std::next(array_buffer.begin(), 2), [](auto&& x) { return x == std::byte{0}; }));
-    REQUIRE(std::all_of(std::next(array_buffer.begin(), 6), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
-  }
+      REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+    }
 
-  SECTION("Write past the end of the buffer fails with std::out_of_range exception") {
-    REQUIRE_THROWS_AS(io::buffers::write({std::next(array_buffer.begin(), 7), array_buffer.end()}, 0x89ABCDEF), std::out_of_range);
+    SECTION("Write int not at start of buffer") {
+      io::buffers::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, std::endian::big);
+
+      REQUIRE(0x89 == std::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0xAB == std::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0xCD == std::to_integer<uint8_t>(array_buffer[4]));
+      REQUIRE(0xEF == std::to_integer<uint8_t>(array_buffer[5]));
+
+      REQUIRE(std::all_of(array_buffer.begin(), std::next(array_buffer.begin(), 2), [](auto&& x) { return x == std::byte{0}; }));
+      REQUIRE(std::all_of(std::next(array_buffer.begin(), 6), array_buffer.end(), [](auto&& x) { return x == std::byte{0}; }));
+    }
+
+    SECTION("Write past the end of the buffer fails with std::out_of_range exception") {
+      REQUIRE_THROWS_AS(io::buffers::write({std::next(array_buffer.begin(), 7), array_buffer.end()}, 0x89ABCDEF, std::endian::big),
+                        std::out_of_range);
+    }
   }
 }
 
