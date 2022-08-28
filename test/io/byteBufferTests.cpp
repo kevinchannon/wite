@@ -1,5 +1,6 @@
 #include <wite/io/byte_buffer.hpp>
 #include <wite/io/byte_stream.hpp>  // This is here to make sure that things build in eachothers presence.
+#include <wite/io/byte_collections.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -347,5 +348,30 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
         }
       }
     }
+  }
+}
+
+TEST_CASE("Byte buffers write-read tests", "[buffer_io]") {
+  auto buffer = io::stack_byte_buffer<32>{};
+
+  SECTION("Double value") {
+    const auto val = 2.718;
+    io::write(buffer, val);
+
+    REQUIRE(val == io::read<double>(buffer));
+  }
+
+  SECTION("Uint32 value") {
+    const auto val = uint32_t{0xCDCDCDCD};
+    io::write(buffer, val);
+
+    REQUIRE(val == io::read<uint32_t>(buffer));
+  }
+
+  SECTION("Bool value") {
+    const auto val = GENERATE(true, false);
+    io::write(buffer, val);
+
+    REQUIRE(val == io::read<bool>(buffer));
   }
 }
