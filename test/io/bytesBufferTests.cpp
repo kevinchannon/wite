@@ -21,18 +21,38 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
                                                  std::byte{0xAB},
                                                  std::byte{0x89}};
 
-  SECTION("Read int") {
-    REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>(vec_buffer));
+  SECTION("Little-endian") {
+    SECTION("Read int") {
+      REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>(vec_buffer, std::endian::little));
+    }
+
+    SECTION("Read 2 shorts") {
+      REQUIRE(uint32_t(0x4567) == io::buffers::read<uint16_t>(vec_buffer, std::endian::little));
+      REQUIRE(uint32_t(0x0123) ==
+              io::buffers::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}, std::endian::little));
+    }
+
+    SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
+      const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
+      REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf, std::endian::little), std::out_of_range);
+    }
   }
 
-  SECTION("Read 2 shorts") {
-    REQUIRE(uint32_t(0x4567) == io::buffers::read<uint16_t>(vec_buffer));
-    REQUIRE(uint32_t(0x0123) == io::buffers::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
-  }
+  SECTION("Big-endian") {
+    SECTION("Read int") {
+      REQUIRE(uint32_t(0x67452301) == io::buffers::read<uint32_t>(vec_buffer, std::endian::big));
+    }
 
-  SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
-    const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
-    REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf), std::out_of_range);
+    SECTION("Read 2 shorts") {
+      REQUIRE(uint32_t(0x6745) == io::buffers::read<uint16_t>(vec_buffer, std::endian::big));
+      REQUIRE(uint32_t(0x2301) ==
+              io::buffers::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}, std::endian::big));
+    }
+
+    SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
+      const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
+      REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf, std::endian::big), std::out_of_range);
+    }
   }
 }
 
