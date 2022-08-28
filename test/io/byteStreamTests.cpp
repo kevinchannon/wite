@@ -45,5 +45,12 @@ TEST_CASE("Byte streams write-read tests", "[buffer_io]") {
     
     REQUIRE(val == io::read<double>(stream));
   }
+
+  SECTION("Uint32 value") {
+    const auto val = uint32_t{0xCDCDCDCD};
+    io::write(stream, val);
+
+    REQUIRE(val == io::read<uint32_t>(stream));
+  }
 }
 
