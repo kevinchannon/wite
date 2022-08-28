@@ -52,5 +52,12 @@ TEST_CASE("Byte streams write-read tests", "[buffer_io]") {
 
     REQUIRE(val == io::read<uint32_t>(stream));
   }
+
+  SECTION("Bool value") {
+    const auto val = GENERATE(true, false);
+    io::write(stream, val);
+
+    REQUIRE(val == io::read<bool>(stream));
+  }
 }
 
