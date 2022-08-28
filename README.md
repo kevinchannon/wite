@@ -52,7 +52,19 @@ This example is using `byte_read_buffer_view` and `byte_write_buffer_view` to ma
 Because it's not specified above, then the write operations are using the native platform endianness.  The endianness may be specified as a template parameter (if you know it at compile time), or as an additional parameter if it's only known at runtime, for some reason.
 
 ## Fancier usage
-TODO: Add more examples.
+### Controlling edianness
+Sometimes you want to write the bytes of a value with a particular endianness.  If you know the endianness that you're going to need at build time, then you can specify it as a template parameter. So, to write some `int` called `my_int` to a buffer then:
+```
+wite::io::buffer::write<std::endian::big>(buffer, my_int);
+```
+You can also specify the endianness when reading:
+```
+const auto my_int = wite::io::buffer::read<int, std::endian::big>(buffer);
+```
+If you only know the endianness at runtime, for some reason, then you can provide a final argument to `read` and `write` to specify the endianness:
+```
+const auto my_int = wite::io::buffer::read<int>(buffer, std::endian::little);
+```
 
 # String
 A small collection of string functions.  The aim is that the most common use case is the simplest thing to do and just does what you want without too much fuss. It might not be the most efficient way to do it, but it should be good enough for 99% of use cases. If you want to do something a bit more fancy, then there might be a way to do that using this library, or there might not.
