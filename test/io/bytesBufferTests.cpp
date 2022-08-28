@@ -126,24 +126,48 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
                                        std::byte{0xAB},
                                        std::byte{0x89}};
 
-  SECTION("Read int") {
-    auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
+  SECTION("Little-endian") {
+    SECTION("Read int") {
+      auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
 
-    REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>(read_buf));
-    REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
+      REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>(read_buf, std::endian::little));
+      REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
+    }
+
+    SECTION("Read 2 shorts") {
+      auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
+
+      REQUIRE(uint32_t(0x4567) == io::buffers::read<uint16_t>(read_buf, std::endian::little));
+      REQUIRE(uint32_t(0x0123) == io::buffers::read<uint16_t>(read_buf, std::endian::little));
+    }
+
+    SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
+      auto read_buf = io::buffers::byte_read_buffer_view(array_buffer, 6);
+
+      REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf, std::endian::little), std::out_of_range);
+    }
   }
 
-  SECTION("Read 2 shorts") {
-    auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
+  SECTION("Big-endian") {
+    SECTION("Read int") {
+      auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
 
-    REQUIRE(uint32_t(0x4567) == io::buffers::read<uint16_t>(read_buf));
-    REQUIRE(uint32_t(0x0123) == io::buffers::read<uint16_t>(read_buf));
-  }
+      REQUIRE(uint32_t(0x67452301) == io::buffers::read<uint32_t>(read_buf, std::endian::big));
+      REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
+    }
 
-  SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
-    auto read_buf = io::buffers::byte_read_buffer_view(array_buffer, 6);
+    SECTION("Read 2 shorts") {
+      auto read_buf = io::buffers::byte_read_buffer_view(array_buffer);
 
-    REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf), std::out_of_range);
+      REQUIRE(uint32_t(0x6745) == io::buffers::read<uint16_t>(read_buf, std::endian::big));
+      REQUIRE(uint32_t(0x2301) == io::buffers::read<uint16_t>(read_buf, std::endian::big));
+    }
+
+    SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
+      auto read_buf = io::buffers::byte_read_buffer_view(array_buffer, 6);
+
+      REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(read_buf, std::endian::big), std::out_of_range);
+    }
   }
 }
 

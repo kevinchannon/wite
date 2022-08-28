@@ -60,8 +60,8 @@ struct byte_read_buffer_view {
 
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-Value_T read(byte_read_buffer_view& buffer) {
-  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
+Value_T read(byte_read_buffer_view& buffer, std::endian endienness = std::endian::native) {
+  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endienness);
   std::advance(buffer.read_position, sizeof(Value_T));
 
   return out;
