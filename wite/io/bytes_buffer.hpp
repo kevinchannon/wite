@@ -46,19 +46,31 @@ Value_T read(std::span<const std::byte> buffer, std::endian endianness) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
+template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-void write(std::span<std::byte> buffer, Value_T value, std::endian endianness = std::endian::native) {
+void write(std::span<std::byte> buffer, Value_T value) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  if (std::endian::little == endianness) {
+  if constexpr (std::endian::little == ENDIANNESS) {
     std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer.begin());
   } else {
     std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&value), sizeof(Value_T))),
                 sizeof(Value_T),
                 buffer.begin());
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+void write(std::span<std::byte> buffer, Value_T value, std::endian endianness) {
+  if (std::endian::little == endianness) {
+    write<std::endian::little>(buffer, value);
+  } else {
+    write<std::endian::big>(buffer, value);
   }
 }
 
@@ -110,9 +122,18 @@ struct byte_write_buffer_view {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+void write(byte_write_buffer_view& buffer, Value_T value) {
+  write<ENDIANNESS, Value_T>({buffer.write_position, buffer.data.end()}, value);
+  std::advance(buffer.write_position, sizeof(Value_T));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-void write(byte_write_buffer_view& buffer, Value_T value, std::endian endianness = std::endian::native) {
+void write(byte_write_buffer_view& buffer, Value_T value, std::endian endianness) {
   write<Value_T>({buffer.write_position, buffer.data.end()}, value, endianness);
   std::advance(buffer.write_position, sizeof(Value_T));
 }
