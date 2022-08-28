@@ -14,7 +14,7 @@ namespace wite::io::buffers {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T, std::endian ENDIANNESS>
+template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value_T
 read(std::span<const std::byte> buffer) {
   if (buffer.size() < sizeof(Value_T)) {
@@ -36,7 +36,7 @@ read(std::span<const std::byte> buffer) {
 
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-Value_T read(std::span<const std::byte> buffer, std::endian endianness = std::endian::native) {
+Value_T read(std::span<const std::byte> buffer, std::endian endianness) {
   if (std::endian::little == endianness) {
     return read<Value_T, std::endian::little>(buffer);
   } else {
@@ -76,9 +76,20 @@ struct byte_read_buffer_view {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value_T
+read(byte_read_buffer_view& buffer) {
+  const auto out = read<Value_T, ENDIANNESS>({buffer.read_position, buffer.data.end()});
+  std::advance(buffer.read_position, sizeof(Value_T));
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-Value_T read(byte_read_buffer_view& buffer, std::endian endienness = std::endian::native) {
+Value_T read(byte_read_buffer_view& buffer, std::endian endienness) {
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endienness);
   std::advance(buffer.read_position, sizeof(Value_T));
 
