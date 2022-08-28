@@ -31,20 +31,20 @@ auto buffer_data = std::vector<std::byte>(100, std::byte{0x00});
   const auto u16 = uint16_t{100};
 
   // Write something to the buffer
-  auto writer = wite::io::buffer::bytes_write_buffer_view{my_buffer};
+  auto writer = wite::io::bytes_write_buffer_view{my_buffer};
 
-  wite::io::buffer::write(writer, d);
-  wite::io::buffer::write(writer, i32);
-  wite::io::buffer::write(writer, u16);
+  wite::io::write(writer, d);
+  wite::io::write(writer, i32);
+  wite::io::write(writer, u16);
 }
 
 // Read things from the buffer
 {
-  auto reader = wite::io::buffer::byte_read_buffer_view{buffer_data};
+  auto reader = wite::io::byte_read_buffer_view{buffer_data};
 
-  const auto d = wite::io::buffer::read<double>(reader);
-  const auto i32 = wite::io::buffer::read<int32_t>(reader);
-  const auto u16 = wite::io::buffer::read<uint16_t>(reader);
+  const auto d = wite::io::read<double>(reader);
+  const auto i32 = wite::io::read<int32_t>(reader);
+  const auto u16 = wite::io::read<uint16_t>(reader);
 }
 ```
 This example is using `byte_read_buffer_view` and `byte_write_buffer_view` to manipulate the bytes in the buffer. This does things like increment the read/write position and things like that.
@@ -55,15 +55,15 @@ Because it's not specified above, then the write operations are using the native
 ### Controlling edianness
 Sometimes you want to write the bytes of a value with a particular endianness.  If you know the endianness that you're going to need at build time, then you can specify it as a template parameter. So, to write some `int` called `my_int` to a buffer then:
 ```
-wite::io::buffer::write<std::endian::big>(buffer, my_int);
+wite::io::write<std::endian::big>(buffer, my_int);
 ```
 You can also specify the endianness when reading:
 ```
-const auto my_int = wite::io::buffer::read<int, std::endian::big>(buffer);
+const auto my_int = wite::io::read<int, std::endian::big>(buffer);
 ```
 If you only know the endianness at runtime, for some reason, then you can provide a final argument to `read` and `write` to specify the endianness:
 ```
-const auto my_int = wite::io::buffer::read<int>(buffer, std::endian::little);
+const auto my_int = wite::io::read<int>(buffer, std::endian::little);
 ```
 
 # String

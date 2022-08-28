@@ -1,4 +1,5 @@
 #include <wite/io/byte_stream.hpp>
+#include <wite/io/byte_buffer.hpp>  // This is here to make sure that things build in eachothers presence.
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -10,17 +11,39 @@ using namespace wite;
 // Helps the REQUIRE_THROW_AS macro to work in some cases.
 #define COMMA ,
 
-TEST_CASE("Byte streams", "[buffer_io]") {
+TEST_CASE("Byte streams read", "[buffer_io]") {
   SECTION("Read int") {
     std::stringstream stream("\x67\x45\x23\x01\xEF\xCD\xAB\x89");
 
-    REQUIRE(uint32_t(0x01234567) == io::stream::read<uint32_t>(stream));
-    REQUIRE(uint32_t(0x89ABCDEF) == io::stream::read<uint32_t>(stream));
+    REQUIRE(uint32_t(0x01234567) == io::read<uint32_t>(stream));
+    REQUIRE(uint32_t(0x89ABCDEF) == io::read<uint32_t>(stream));
   }
 
   SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
     std::stringstream stream("\xAB\x89\x67");
 
-    REQUIRE_THROWS_AS(io::stream::read<uint32_t>(stream), std::out_of_range);
+    REQUIRE_THROWS_AS(io::read<uint32_t>(stream), std::out_of_range);
   }
 }
+
+TEST_CASE("Byte streams write tests", "[buffer_io]") {
+  SECTION("Write int") {
+    std::stringstream stream{};
+
+    io::write(stream, uint32_t{0xACEACE99});
+
+    REQUIRE("\x99\xCE\xEA\xAC" == stream.str());
+  }
+}
+
+TEST_CASE("Byte streams write-read tests", "[buffer_io]") {
+  std::stringstream stream;
+
+  SECTION("Double value") {
+    const auto val = 2.718;
+    io::write(stream, val);
+    
+    REQUIRE(val == io::read<double>(stream));
+  }
+}
+

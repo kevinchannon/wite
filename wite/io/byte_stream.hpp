@@ -1,10 +1,11 @@
 #pragma once
 
 #include <istream>
+#include <ostream>
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace wite::io::stream {
+namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -17,6 +18,14 @@ requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value
   }
 
   return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+void write(std::ostream& stream, Value_T value) {
+  stream.write(reinterpret_cast<char*>(&value), sizeof(Value_T));
 }
 
 }  // namespace wite::io::stream
