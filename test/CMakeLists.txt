@@ -14,8 +14,8 @@ add_executable(wite_test
 	"string/trimTests.cpp"
 	"string/stripTests.cpp"
 	"collections/stackVectorTests.cpp"
-	"io/bytesBufferTests.cpp"
-)
+	"io/byteBufferTests.cpp"
+    "io/byteStreamTests.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET wite_test PROPERTY CXX_STANDARD 20)

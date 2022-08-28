@@ -1,4 +1,4 @@
-#include <wite/io/bytes_buffer.hpp>
+#include <wite/io/byte_buffer.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -346,20 +346,5 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
         }
       }
     }
-  }
-}
-
-TEST_CASE("Byte streams", "[buffer_io]") {
-  SECTION("Read int") {
-    std::stringstream stream("\x67\x45\x23\x01\xEF\xCD\xAB\x89");
-
-    REQUIRE(uint32_t(0x01234567) == io::buffers::read<uint32_t>(stream));
-    REQUIRE(uint32_t(0x89ABCDEF) == io::buffers::read<uint32_t>(stream));
-  }
-
-  SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
-    std::stringstream stream("\xAB\x89\x67");
-
-    REQUIRE_THROWS_AS(io::buffers::read<uint32_t>(stream), std::out_of_range);
   }
 }

@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <istream>
 #include <iterator>
 #include <span>
 #include <stdexcept>
@@ -136,21 +135,6 @@ requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
 void write(byte_write_buffer_view& buffer, Value_T value, std::endian endianness) {
   write<Value_T>({buffer.write_position, buffer.data.end()}, value, endianness);
   std::advance(buffer.write_position, sizeof(Value_T));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-// TODO: This should be in its own "streams" io file.
-template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-Value_T read(std::istream& stream) {
-  auto out = Value_T{};
-  stream.read(reinterpret_cast<char*>(&out), sizeof(Value_T));
-  if (stream.eof()) {
-    throw std::out_of_range{"Insufficient buffer space for read"};
-  }
-
-  return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
