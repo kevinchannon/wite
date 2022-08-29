@@ -17,29 +17,8 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
-requires std::is_base_of_v<io::encoding, Value_T>
-typename Value_T::value_type read(std::span<const std::byte> buffer) {
-  if (buffer.size() < sizeof(Value_T)) {
-    throw std::out_of_range{"Insufficient buffer space for read"};
-  }
-
-  auto out = typename Value_T::value_type{};
-
-  if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
-    return read<Value_T, std::endian::little>(buffer);
-  } else if constexpr (std::is_same_v<io::big_endian<typename Value_T::value_type>, Value_T>) {
-    return read<Value_T, std::endian::big>(buffer);
-  }
-
-  return out;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
 requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
-         (not std::is_base_of_v<io::encoding, Value_T>))
-  Value_T read(std::span<const std::byte> buffer) {
+         (not std::is_base_of_v<io::encoding, Value_T>)) Value_T read(std::span<const std::byte> buffer) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
@@ -52,6 +31,28 @@ requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
     std::copy_n(buffer.begin(),
                 sizeof(Value_T),
                 std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&out), sizeof(Value_T))));
+  }
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
+requires std::is_base_of_v<io::encoding, Value_T>
+typename Value_T::value_type read(std::span<const std::byte> buffer) {
+  if (buffer.size() < sizeof(Value_T)) {
+    throw std::out_of_range{"Insufficient buffer space for read"};
+  }
+
+  using OuptutValue_t = typename Value_T::value_type;
+
+  auto out = OuptutValue_t{};
+
+  if constexpr (std::is_same_v<io::little_endian<OuptutValue_t>, Value_T>) {
+    return read<OuptutValue_t, std::endian::little>(buffer);
+  } else if constexpr (std::is_same_v<io::big_endian<OuptutValue_t>, Value_T>) {
+    return read<OuptutValue_t, std::endian::big>(buffer);
   }
 
   return out;
