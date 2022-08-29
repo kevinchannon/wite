@@ -1,11 +1,14 @@
 #pragma once
 
+#include <wite/io/encoding.hpp>
+
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <span>
 #include <stdexcept>
 #include <type_traits>
+#include <bit>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -14,12 +17,35 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value_T read(std::span<const std::byte> buffer) {
+requires std::is_base_of_v<io::encoding, Value_T>
+typename Value_T::value_type read(std::span<const std::byte> buffer) {
+  if (buffer.size() < sizeof(Value_T)) {
+    throw std::out_of_range{"Insufficient buffer space for read"};
+  }
+
+  auto out = typename Value_T::value_type{};
+
+  if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
+    return read<Value_T, std::endian::little>(buffer);
+  } else if constexpr (std::is_same_v<io::big_endian<typename Value_T::value_type>, Value_T>) {
+    return read<Value_T, std::endian::big>(buffer);
+  }
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
+requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
+         (not std::is_base_of_v<io::encoding, Value_T>))
+  Value_T read(std::span<const std::byte> buffer) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
   auto out = Value_T{};
+
   if constexpr (std::endian::little == ENDIANNESS) {
     std::copy_n(buffer.begin(), sizeof(Value_T), reinterpret_cast<std::byte*>(&out));
   } else {
@@ -27,14 +53,15 @@ requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value
                 sizeof(Value_T),
                 std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&out), sizeof(Value_T))));
   }
+
   return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value_T read(std::span<const std::byte> buffer,
-                                                                                        std::endian endianness) {
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+Value_T read(std::span<const std::byte> buffer, std::endian endianness) {
   if (std::endian::little == endianness) {
     return read<Value_T, std::endian::little>(buffer);
   } else {
@@ -51,12 +78,20 @@ void write(std::span<std::byte> buffer, Value_T value) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  if constexpr (std::endian::little == ENDIANNESS) {
-    std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer.begin());
+  if constexpr (std::is_base_of_v<io::encoding, Value_T>) {
+    if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
+      write<std::endian::little>(buffer, value.value);
+    } else if constexpr (std::is_same_v<io::big_endian<typename Value_T::value_type>, Value_T>) {
+      write<std::endian::big>(buffer, value.value);
+    }
   } else {
-    std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&value), sizeof(Value_T))),
-                sizeof(Value_T),
-                buffer.begin());
+    if constexpr (std::endian::little == ENDIANNESS) {
+      std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer.begin());
+    } else {
+      std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&value), sizeof(Value_T))),
+                  sizeof(Value_T),
+                  buffer.begin());
+    }
   }
 }
 
