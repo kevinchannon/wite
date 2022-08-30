@@ -13,6 +13,7 @@ class result : public std::variant<Value_T, Error_T> {
   result(Error_T error) : base_t(error) {}
 
   [[nodiscard]] bool ok() const noexcept { return this->index() == 0; }
+  [[nodiscard]] bool is_error() const noexcept { return not ok(); }
 };
 
 }

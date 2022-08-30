@@ -15,3 +15,8 @@ TEST_CASE("Result ok returns the expected value") {
   REQUIRE(TestResult_t{10}.ok());
   REQUIRE_FALSE(TestResult_t{ETestError::error_1}.ok());
 }
+
+TEST_CASE("Result is_error returns the expected value") {
+  REQUIRE_FALSE(TestResult_t{10}.is_error());
+  REQUIRE(TestResult_t{ETestError::error_1}.is_error());
+}
