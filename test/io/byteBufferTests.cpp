@@ -489,18 +489,39 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
 }
 
 TEST_CASE("try_read returns value on good read") {
-  const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
+  SECTION("From raw buffer") {
+    const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
 
-  SECTION("with default endianness") {
-    const auto val = io::try_read<uint32_t>(data);
-    REQUIRE(val.ok());
-    REQUIRE(uint32_t{0xFFAB4567} == val.value());
+    SECTION("with default endianness") {
+      const auto val = io::try_read<uint32_t>(data);
+      REQUIRE(val.ok());
+      REQUIRE(uint32_t{0xFFAB4567} == val.value());
+    }
+
+    SECTION("with specified endianness") {
+      const auto val = io::try_read<io::big_endian<uint32_t>>(data);
+      REQUIRE(val.ok());
+      REQUIRE(uint32_t{0x6745ABFF} == val.value());
+    }
   }
 
-  SECTION("with specified endianness") {
-    const auto val = io::try_read<io::big_endian<uint32_t>>(data);
-    REQUIRE(val.ok());
-    REQUIRE(uint32_t{0x6745ABFF} == val.value());
+  SECTION("Via byte_read_buffer_view") {
+    const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
+    auto buffer     = io::byte_read_buffer_view {data};
+
+    SECTION("with default endianness") {
+      const auto val = io::try_read<uint32_t>(buffer);
+      REQUIRE(val.ok());
+      REQUIRE(uint32_t{0xFFAB4567} == val.value());
+      REQUIRE(std::next(buffer.data.begin(), 4) == buffer.read_position);
+    }
+
+    SECTION("with specified endianness") {
+      const auto val = io::try_read<io::big_endian<uint32_t>>(buffer);
+      REQUIRE(val.ok());
+      REQUIRE(uint32_t{0x6745ABFF} == val.value());
+      REQUIRE(std::next(buffer.data.begin(), 4) == buffer.read_position);
+    }
   }
 }
 
