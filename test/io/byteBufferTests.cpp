@@ -350,6 +350,37 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
       }
     }
   }
+
+  SECTION("Endian adapter interface") {
+    auto raw_buffer = io::stack_byte_buffer<10>{};
+    auto write_buffer = io::byte_write_buffer_view{raw_buffer};
+    auto read_buffer  = io::byte_read_buffer_view{raw_buffer};
+
+    const auto val_1 = uint32_t{0x01234567};
+    io::write(write_buffer, io::little_endian{val_1});
+
+    const auto val_2 = uint32_t{0x89ABCDEF};
+    io::write(write_buffer, io::big_endian{val_2});
+
+    const auto val_3 = int16_t{0x7D04};
+    io::write(write_buffer, val_3);
+
+    REQUIRE(std::ranges::equal(io::stack_byte_buffer<10>{std::byte{0x67},
+                                                         std::byte{0x45},
+                                                         std::byte{0x23},
+                                                         std::byte{0x01},
+                                                         std::byte{0x89},
+                                                         std::byte{0xAB},
+                                                         std::byte{0xCD},
+                                                         std::byte{0xEF},
+                                                         std::byte{0x04},
+                                                         std::byte{0x7D}},
+                               raw_buffer));
+
+    REQUIRE(val_1 == io::read<uint32_t>(read_buffer));
+    REQUIRE(val_2 == io::read<io::big_endian<uint32_t>>(read_buffer));
+    REQUIRE(val_3 == io::read<io::little_endian<int16_t>>(read_buffer));
+  }
 }
 
 TEST_CASE("Byte buffers write-read tests", "[buffer_io]") {

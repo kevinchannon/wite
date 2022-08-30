@@ -51,10 +51,6 @@ Value_T read(const std::span<const std::byte>& buffer) {
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
 requires std::is_base_of_v<io::encoding, Value_T>
 typename Value_T::value_type read(const std::span<const std::byte>& buffer) {
-  if (buffer.size() < sizeof(Value_T)) {
-    throw std::out_of_range{"Insufficient buffer space for read"};
-  }
-
   using OuptutValue_t = typename Value_T::value_type;
 
   auto out = OuptutValue_t{};
@@ -133,11 +129,26 @@ struct byte_read_buffer_view {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> Value_T read(byte_read_buffer_view& buffer) {
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>) 
+Value_T read(byte_read_buffer_view& buffer) {
   const auto out = read<Value_T, ENDIANNESS>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
 
   return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
+requires std::is_base_of_v<io::encoding, Value_T>
+typename Value_T::value_type read(byte_read_buffer_view& buffer) {
+  using OuptutValue_t = typename Value_T::value_type;
+
+  if constexpr (std::is_same_v<io::little_endian<OuptutValue_t>, Value_T>) {
+    return read<OuptutValue_t, std::endian::little>(buffer);
+  } else if constexpr (std::is_same_v<io::big_endian<OuptutValue_t>, Value_T>) {
+    return read<OuptutValue_t, std::endian::big>(buffer);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
