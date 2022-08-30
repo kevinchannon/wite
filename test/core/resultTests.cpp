@@ -24,3 +24,7 @@ TEST_CASE("result::is_error returns the expected value") {
 TEST_CASE("result::value returns the value") {
   REQUIRE(10 == TestResult_t{10}.value());
 }
+
+TEST_CASE("result::error returns the error value") {
+  REQUIRE(ETestError::error_2 == TestResult_t{ETestError::error_2}.error());
+}
