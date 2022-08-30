@@ -9,6 +9,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(wite_test
+	"core/resultTests.cpp"
 	"string/splitTests.cpp"
 	"string/joinTests.cpp"
 	"string/trimTests.cpp"
