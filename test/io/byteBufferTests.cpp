@@ -491,9 +491,17 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
 TEST_CASE("try_read returns value on good read") {
   const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
 
-  const auto val = io::try_read<uint32_t>(data);
-  REQUIRE(val.ok());
-  REQUIRE(uint32_t{0xFFAB4567} == val.value());
+  SECTION("with default endianness") {
+    const auto val = io::try_read<uint32_t>(data);
+    REQUIRE(val.ok());
+    REQUIRE(uint32_t{0xFFAB4567} == val.value());
+  }
+
+  SECTION("with specified endianness") {
+    const auto val = io::try_read<io::big_endian<uint32_t>>(data);
+    REQUIRE(val.ok());
+    REQUIRE(uint32_t{0x6745ABFF} == val.value());
+  }
 }
 
 TEST_CASE("try_read returns error on bad read") {

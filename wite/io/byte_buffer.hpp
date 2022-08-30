@@ -67,15 +67,25 @@ requires std::is_base_of_v<io::encoding, Value_T>
 typename Value_T::value_type read(const std::span<const std::byte>& buffer) {
   using OuptutValue_t = typename Value_T::value_type;
 
-  auto out = OuptutValue_t{};
-
   if constexpr (std::is_same_v<io::little_endian<OuptutValue_t>, Value_T>) {
     return read<OuptutValue_t, std::endian::little>(buffer);
   } else if constexpr (std::is_same_v<io::big_endian<OuptutValue_t>, Value_T>) {
     return read<OuptutValue_t, std::endian::big>(buffer);
   }
+}
 
-  return out;
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
+requires std::is_base_of_v<io::encoding, Value_T>
+read_result_t<typename Value_T::value_type> try_read(const std::span<const std::byte>& buffer) {
+  using OuptutValue_t = typename Value_T::value_type;
+
+  if constexpr (std::is_same_v<io::little_endian<OuptutValue_t>, Value_T>) {
+    return try_read<OuptutValue_t, std::endian::little>(buffer);
+  } else if constexpr (std::is_same_v<io::big_endian<OuptutValue_t>, Value_T>) {
+    return try_read<OuptutValue_t, std::endian::big>(buffer);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
