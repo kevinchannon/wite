@@ -1,6 +1,6 @@
 #include <wite/io/byte_buffer.hpp>
 #include <wite/io/byte_stream.hpp>  // This is here to make sure that things build in eachothers presence.
-#include <wite/io/byte_collections.hpp>
+#include <wite/io/types.hpp>
 #include <wite/io/encoding.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -486,4 +486,20 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
       REQUIRE(val == io::read<io::big_endian<uint16_t>>(buffer));
     }
   }
+}
+
+TEST_CASE("try_read returns value on good read") {
+  const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
+
+  const auto val = io::try_read<uint32_t>(data);
+  REQUIRE(val.ok());
+  REQUIRE(uint32_t{0xFFAB4567} == val.value());
+}
+
+TEST_CASE("try_read returns error on bad read") {
+  const auto data = io::stack_byte_buffer<3>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}};
+
+  const auto val = io::try_read<uint32_t>(data);
+  REQUIRE(val.is_error());
+  REQUIRE(io::read_error::insufficient_buffer == val.error());
 }
