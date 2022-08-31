@@ -551,3 +551,11 @@ TEST_CASE("try_write returns true on good write") {
     }
   }
 }
+
+TEST_CASE("try_write returns error on bad write") {
+  auto data = io::stack_byte_buffer<3>{};
+
+  const auto result = io::try_write(data, uint32_t{0xCDCDCDCD});
+  REQUIRE(result.is_error());
+  REQUIRE(io::write_error::insufficient_buffer == result.error());
+}
