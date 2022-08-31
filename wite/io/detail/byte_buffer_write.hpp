@@ -18,22 +18,27 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-void unchecked_write(std::span<std::byte> buffer, Value_T value) {
-  if constexpr (std::is_base_of_v<io::encoding, Value_T>) {
-    if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
-      write<std::endian::little>(buffer, value.value);
-    } else if constexpr (std::is_same_v<io::big_endian<typename Value_T::value_type>, Value_T>) {
-      write<std::endian::big>(buffer, value.value);
-    }
-  } else {
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> and
+    (not std::is_base_of_v<io::encoding, Value_T>)
+void unchecked_write(auto buffer, Value_T value) {
     if constexpr (std::endian::little == ENDIANNESS) {
-      std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer.begin());
+      std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer);
     } else {
       std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&value), sizeof(Value_T))),
                   sizeof(Value_T),
-                  buffer.begin());
+                  buffer);
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
+requires std::is_base_of_v<io::encoding, Value_T>
+void unchecked_write(auto buffer, Value_T value) {
+  if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
+    unchecked_write<std::endian::little>(buffer, value.value);
+  } else if constexpr (std::is_same_v<io::big_endian<typename Value_T::value_type>, Value_T>) {
+    unchecked_write<std::endian::big>(buffer, value.value);
   }
 }
 
@@ -46,19 +51,20 @@ void write(std::span<std::byte> buffer, Value_T value) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  unchecked_write<ENDIANNESS, Value_T>(buffer, value);
+  unchecked_write<ENDIANNESS, Value_T>(buffer.begin(), value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> write_result_t try_write(std::span<std::byte> buffer,
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+write_result_t try_write(std::span<std::byte> buffer,
                                                                                                     Value_T value) {
   if (buffer.size() < sizeof(Value_T)) {
     return write_error::insufficient_buffer;
   }
 
-  unchecked_write<ENDIANNESS, Value_T>(buffer, value);
+  unchecked_write<ENDIANNESS, Value_T>(buffer.begin(), value);
 
   return true;
 }

@@ -19,7 +19,8 @@ namespace wite::io {
 
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
 requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
-         (not std::is_base_of_v<io::encoding, Value_T>)) Value_T unchecked_read(auto buffer) {
+         (not std::is_base_of_v<io::encoding, Value_T>))
+Value_T unchecked_read(auto buffer) {
   auto out = Value_T{};
 
   if constexpr (std::endian::little == ENDIANNESS) {
@@ -36,7 +37,8 @@ requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
 
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
 requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
-         (not std::is_base_of_v<io::encoding, Value_T>)) Value_T read(const std::span<const std::byte>& buffer) {
+         (not std::is_base_of_v<io::encoding, Value_T>))
+Value_T read(const std::span<const std::byte>& buffer) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
@@ -48,7 +50,7 @@ requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
 
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
 requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>))
-    read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
+read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
   if (buffer.size() < sizeof(Value_T)) {
     return read_error::insufficient_buffer;
   }
