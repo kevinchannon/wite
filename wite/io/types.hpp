@@ -32,8 +32,7 @@ enum class write_error {
   insufficient_buffer
 };
 
-template<typename Value_T>
-using write_result_t = wite::result<Value_T, write_error>;
+using write_result_t = wite::result<bool, write_error>;
 
 ///////////////////////////////////////////////////////////////////////////////
 

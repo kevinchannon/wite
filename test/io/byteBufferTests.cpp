@@ -1,7 +1,7 @@
 #include <wite/io/byte_buffer.hpp>
 #include <wite/io/byte_stream.hpp>  // This is here to make sure that things build in eachothers presence.
-#include <wite/io/types.hpp>
 #include <wite/io/encoding.hpp>
+#include <wite/io/types.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -36,8 +36,7 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
     SECTION("Read 2 shorts") {
       REQUIRE(uint32_t(0x4567) == io::read<uint16_t>(vec_buffer, std::endian::little));
       REQUIRE(uint32_t(0x4567) == io::read<uint16_t, std::endian::little>(vec_buffer));
-      REQUIRE(uint32_t(0x0123) ==
-              io::read<uint16_t, std::endian::little>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
+      REQUIRE(uint32_t(0x0123) == io::read<uint16_t, std::endian::little>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
     }
 
     SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
@@ -56,8 +55,7 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
     SECTION("Read 2 shorts") {
       REQUIRE(uint32_t(0x6745) == io::read<uint16_t>(vec_buffer, std::endian::big));
       REQUIRE(uint32_t(0x6745) == io::read<uint16_t, std::endian::big>(vec_buffer));
-      REQUIRE(uint32_t(0x2301) ==
-              io::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}, std::endian::big));
+      REQUIRE(uint32_t(0x2301) == io::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}, std::endian::big));
     }
 
     SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
@@ -232,7 +230,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   SECTION("Big-endian") {
     SECTION("Read int") {
       auto read_buf = io::byte_read_buffer_view(array_buffer);
-      SECTION("Dynmic endianness"){
+      SECTION("Dynmic endianness") {
         REQUIRE(uint32_t(0x67452301) == io::read<uint32_t>(read_buf, std::endian::big));
         REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
       }
@@ -259,7 +257,6 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
 }
 
 TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
-
   SECTION("Little-endian") {
     auto array_buffer = std::array<std::byte, 14>{};
 
@@ -290,8 +287,8 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
           io::write(write_buffer, 0x463235F9);
           REQUIRE(std::next(write_buffer.data.begin(), 12) == write_buffer.write_position);
 
-          REQUIRE((std::endian::native == std::endian::little ? 0xF9 : 0x46) == std::to_integer<uint8_t>(array_buffer[ 8]));
-          REQUIRE((std::endian::native == std::endian::little ? 0x35 : 0x32) == std::to_integer<uint8_t>(array_buffer[ 9]));
+          REQUIRE((std::endian::native == std::endian::little ? 0xF9 : 0x46) == std::to_integer<uint8_t>(array_buffer[8]));
+          REQUIRE((std::endian::native == std::endian::little ? 0x35 : 0x32) == std::to_integer<uint8_t>(array_buffer[9]));
           REQUIRE((std::endian::native == std::endian::little ? 0x32 : 0x35) == std::to_integer<uint8_t>(array_buffer[10]));
           REQUIRE((std::endian::native == std::endian::little ? 0x46 : 0xF9) == std::to_integer<uint8_t>(array_buffer[11]));
 
@@ -352,7 +349,7 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
   }
 
   SECTION("Endian adapter interface") {
-    auto raw_buffer = io::stack_byte_buffer<10>{};
+    auto raw_buffer   = io::stack_byte_buffer<10>{};
     auto write_buffer = io::byte_write_buffer_view{raw_buffer};
     auto read_buffer  = io::byte_read_buffer_view{raw_buffer};
 
@@ -507,7 +504,7 @@ TEST_CASE("try_read returns value on good read") {
 
   SECTION("Via byte_read_buffer_view") {
     const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
-    auto buffer     = io::byte_read_buffer_view {data};
+    auto buffer     = io::byte_read_buffer_view{data};
 
     SECTION("with default endianness") {
       const auto val = io::try_read<uint32_t>(buffer);
@@ -531,4 +528,26 @@ TEST_CASE("try_read returns error on bad read") {
   const auto val = io::try_read<uint32_t>(data);
   REQUIRE(val.is_error());
   REQUIRE(io::read_error::insufficient_buffer == val.error());
+}
+
+TEST_CASE("try_write returns true on good write") {
+  SECTION("To raw buffer") {
+    auto data = io::stack_byte_buffer<4>{};
+
+    SECTION("with default endianness") {
+      const auto val = uint32_t{0xFE01CD23};
+
+      REQUIRE(io::try_write(data, val).ok());
+      REQUIRE(
+          std::ranges::equal(io::stack_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
+    }
+
+    SECTION("with specified endianness") {
+      const auto val = uint32_t{0x23CD01FE};
+
+      REQUIRE(io::try_write(data, io::big_endian{val}).ok());
+      REQUIRE(
+          std::ranges::equal(io::stack_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
+    }
+  }
 }

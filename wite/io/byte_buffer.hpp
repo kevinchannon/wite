@@ -104,11 +104,7 @@ Value_T read(const std::span<const std::byte>& buffer, std::endian endianness) {
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-void write(std::span<std::byte> buffer, Value_T value) {
-  if (buffer.size() < sizeof(Value_T)) {
-    throw std::out_of_range{"Insufficient buffer space for write"};
-  }
-
+void unchecked_write(std::span<std::byte> buffer, Value_T value) {
   if constexpr (std::is_base_of_v<io::encoding, Value_T>) {
     if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
       write<std::endian::little>(buffer, value.value);
@@ -124,6 +120,32 @@ void write(std::span<std::byte> buffer, Value_T value) {
                   buffer.begin());
     }
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+void write(std::span<std::byte> buffer, Value_T value) {
+  if (buffer.size() < sizeof(Value_T)) {
+    throw std::out_of_range{"Insufficient buffer space for write"};
+  }
+
+  unchecked_write<ENDIANNESS, Value_T>(buffer, value);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
+  if (buffer.size() < sizeof(Value_T)) {
+    return write_error::insufficient_buffer;
+  }
+
+  unchecked_write<ENDIANNESS, Value_T>(buffer, value);
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
