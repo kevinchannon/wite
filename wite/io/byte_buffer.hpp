@@ -257,6 +257,19 @@ void write(byte_write_buffer_view& buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
+requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+write_result_t try_write(byte_write_buffer_view& buffer, Value_T value) {
+  const auto result = try_write<ENDIANNESS, Value_T>({buffer.write_position, buffer.data.end()}, value);
+  if (result.ok()) {
+    std::advance(buffer.write_position, sizeof(Value_T));
+  }
+
+  return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
 void write(byte_write_buffer_view& buffer, Value_T value, std::endian endianness) {
