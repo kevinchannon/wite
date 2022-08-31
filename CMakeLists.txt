@@ -7,5 +7,4 @@ project ("wite")
 
 # Include sub-projects.
 add_subdirectory("test")
-
-enable_testing()
+add_subdirectory("examples")

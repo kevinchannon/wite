@@ -349,7 +349,7 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
   }
 
   SECTION("Endian adapter interface") {
-    auto raw_buffer   = io::stack_byte_buffer<10>{};
+    auto raw_buffer   = io::static_byte_buffer<10>{};
     auto write_buffer = io::byte_write_buffer_view{raw_buffer};
     auto read_buffer  = io::byte_read_buffer_view{raw_buffer};
 
@@ -362,7 +362,7 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
     const auto val_3 = int16_t{0x7D04};
     io::write(write_buffer, val_3);
 
-    REQUIRE(std::ranges::equal(io::stack_byte_buffer<10>{std::byte{0x67},
+    REQUIRE(std::ranges::equal(io::static_byte_buffer<10>{std::byte{0x67},
                                                          std::byte{0x45},
                                                          std::byte{0x23},
                                                          std::byte{0x01},
@@ -381,7 +381,7 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
 }
 
 TEST_CASE("Byte buffers write-read tests", "[buffer_io]") {
-  auto buffer = io::stack_byte_buffer<32>{};
+  auto buffer = io::static_byte_buffer<32>{};
 
   SECTION("Double value") {
     const auto val = 2.718;
@@ -406,7 +406,7 @@ TEST_CASE("Byte buffers write-read tests", "[buffer_io]") {
 }
 
 TEST_CASE("Write-read using encodings", "[buffer_io]") {
-  auto buffer = io::stack_byte_buffer<32>{};
+  auto buffer = io::static_byte_buffer<32>{};
 
   SECTION("Uint64") {
     const auto val = uint64_t{0x0011223344556677};
@@ -487,7 +487,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
 
 TEST_CASE("try_read returns value on good read") {
   SECTION("From raw buffer") {
-    const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
+    const auto data = io::static_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
 
     SECTION("with default endianness") {
       const auto val = io::try_read<uint32_t>(data);
@@ -503,7 +503,7 @@ TEST_CASE("try_read returns value on good read") {
   }
 
   SECTION("Via byte_read_buffer_view") {
-    const auto data = io::stack_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
+    const auto data = io::static_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
     auto buffer     = io::byte_read_buffer_view{data};
 
     SECTION("with default endianness") {
@@ -523,7 +523,7 @@ TEST_CASE("try_read returns value on good read") {
 }
 
 TEST_CASE("try_read returns error on bad read") {
-  const auto data = io::stack_byte_buffer<3>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}};
+  const auto data = io::static_byte_buffer<3>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}};
 
   const auto val = io::try_read<uint32_t>(data);
   REQUIRE(val.is_error());
@@ -532,14 +532,14 @@ TEST_CASE("try_read returns error on bad read") {
 
 TEST_CASE("try_write returns true on good write") {
   SECTION("To raw buffer") {
-    auto data = io::stack_byte_buffer<4>{};
+    auto data = io::static_byte_buffer<4>{};
 
     SECTION("with default endianness") {
       const auto val = uint32_t{0xFE01CD23};
 
       REQUIRE(io::try_write(data, val).ok());
       REQUIRE(
-          std::ranges::equal(io::stack_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
+          std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
     }
 
     SECTION("with specified endianness") {
@@ -547,12 +547,12 @@ TEST_CASE("try_write returns true on good write") {
 
       REQUIRE(io::try_write(data, io::big_endian{val}).ok());
       REQUIRE(
-          std::ranges::equal(io::stack_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
+          std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
     }
   }
 
   SECTION("Via byte_read_buffer_view") {
-    auto data = io::stack_byte_buffer<4>{};
+    auto data = io::static_byte_buffer<4>{};
     auto buffer     = io::byte_write_buffer_view{data};
 
     SECTION("with default endianness") {
@@ -561,7 +561,7 @@ TEST_CASE("try_write returns true on good write") {
       REQUIRE(io::try_write(buffer, val).ok());
       REQUIRE(std::next(buffer.data.begin(), 4) == buffer.write_position);
       REQUIRE(
-          std::ranges::equal(io::stack_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, buffer.data));
+          std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, buffer.data));
     }
 
     SECTION("with specified endianness adapter") {
@@ -569,14 +569,14 @@ TEST_CASE("try_write returns true on good write") {
 
       REQUIRE(io::try_write(buffer, io::big_endian{val}).ok());
       REQUIRE(std::next(buffer.data.begin(), 4) == buffer.write_position);
-      REQUIRE(std::ranges::equal(io::stack_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}},
+      REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}},
                                  buffer.data));
     }
   }
 }
 
 TEST_CASE("try_write returns error on bad write") {
-  auto data = io::stack_byte_buffer<3>{};
+  auto data = io::static_byte_buffer<3>{};
 
   const auto result = io::try_write(data, uint32_t{0xCDCDCDCD});
   REQUIRE(result.is_error());
