@@ -5,7 +5,7 @@
 namespace wite {
 
 template <typename Value_T, typename Error_T>
-class result : public std::variant<Value_T, Error_T> {
+class result : std::variant<Value_T, Error_T> {
   using base_t = std::variant<Value_T, Error_T>;
 
  public:

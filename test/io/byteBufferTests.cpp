@@ -582,3 +582,21 @@ TEST_CASE("try_write returns error on bad write") {
   REQUIRE(result.is_error());
   REQUIRE(io::write_error::insufficient_buffer == result.error());
 }
+
+TEST_CASE("unchecked_add returns value and next read position") {
+  const auto data = io::static_byte_buffer<8>{std::byte{0x67},
+                                              std::byte{0x45},
+                                              std::byte{0x23},
+                                              std::byte{0x01},
+                                              std::byte{0xEF},
+                                              std::byte{0xCD},
+                                              std::byte{0xAB},
+                                              std::byte{0x89}};
+
+  const std::byte* buf = data.data();
+
+  const auto [value, next] = io::unchecked_read<uint32_t>(buf);
+
+  REQUIRE(uint32_t{0x01234567} == value);
+  REQUIRE(buf + 4 == next);
+}

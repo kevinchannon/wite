@@ -20,7 +20,7 @@ namespace wite::io {
 template <typename Value_T, std::endian ENDIANNESS = std::endian::native>
 requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T> and
          (not std::is_base_of_v<io::encoding, Value_T>))
-Value_T unchecked_read(auto buffer) {
+auto unchecked_read(auto buffer) -> std::pair<Value_T, decltype(buffer)> {
   auto out = Value_T{};
 
   if constexpr (std::endian::little == ENDIANNESS) {
@@ -30,7 +30,7 @@ Value_T unchecked_read(auto buffer) {
         buffer, sizeof(Value_T), std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&out), sizeof(Value_T))));
   }
 
-  return out;
+  return {out, std::next(buffer, sizeof(out))};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ Value_T read(const std::span<const std::byte>& buffer) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
-  return unchecked_read<Value_T, ENDIANNESS>(buffer.begin());
+  return unchecked_read<Value_T, ENDIANNESS>(buffer.begin()).first;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
     return read_error::insufficient_buffer;
   }
 
-  return unchecked_read<Value_T, ENDIANNESS>(buffer.begin());
+  return unchecked_read<Value_T, ENDIANNESS>(buffer.begin()).first;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
