@@ -2,6 +2,7 @@
 
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
+#include <wite/io/concepts.hpp>
 
 #include <algorithm>
 #include <bit>
@@ -14,9 +15,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace wite::io {
-
-template<typename Value_T>
-concept is_buffer_readable = std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>;
 
 ///////////////////////////////////////////////////////////////////////////////
 
