@@ -19,7 +19,7 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
+requires is_buffer_writeable<Value_T> and (not is_encoded<Value_T>)
 void unchecked_write(auto buffer, Value_T value) {
     if constexpr (std::endian::little == ENDIANNESS) {
       std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer);
@@ -33,7 +33,7 @@ void unchecked_write(auto buffer, Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
+requires is_buffer_writeable<Value_T> and is_encoded<Value_T>
 void unchecked_write(auto buffer, Value_T value) {
   if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
     unchecked_write<std::endian::little>(buffer, value.value);

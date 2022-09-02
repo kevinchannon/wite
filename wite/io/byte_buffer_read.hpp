@@ -60,7 +60,7 @@ auto read(const std::span<const std::byte>& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires is_buffer_readable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
+requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
 read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
   if (buffer.size() < sizeof(Value_T)) {
     return read_error::insufficient_buffer;
@@ -72,7 +72,7 @@ read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires is_buffer_readable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
+requires is_buffer_readable<Value_T> and is_encoded<Value_T>
 read_result_t<typename Value_T::value_type> try_read( const std::span<const std::byte>& buffer) {
   if (buffer.size() < sizeof(typename Value_T::value_type)) {
     return read_error::insufficient_buffer;
