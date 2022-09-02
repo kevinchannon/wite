@@ -29,19 +29,19 @@ struct byte_write_buffer_view {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
+template <typename Value_T>
 requires is_buffer_writeable<Value_T>
 void write(byte_write_buffer_view& buffer, Value_T value) {
-  write<ENDIANNESS, Value_T>({buffer.write_position, buffer.data.end()}, value);
+  write<Value_T>({buffer.write_position, buffer.data.end()}, value);
   std::advance(buffer.write_position, sizeof(Value_T));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
+template <typename Value_T>
 requires is_buffer_writeable<Value_T>
 write_result_t try_write(byte_write_buffer_view& buffer, Value_T value) {
-  const auto result = try_write<ENDIANNESS, Value_T>({buffer.write_position, buffer.data.end()}, value);
+  const auto result = try_write<Value_T>({buffer.write_position, buffer.data.end()}, value);
   if (result.ok()) {
     std::advance(buffer.write_position, sizeof(Value_T));
   }
