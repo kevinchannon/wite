@@ -60,6 +60,14 @@ auto read(const std::span<const std::byte>& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+requires is_buffer_readable<Value_T>
+auto from_bytes(const std::span<const std::byte>& buffer) {
+  return read<Value_T>(buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
 requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
 read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
   if (buffer.size() < sizeof(Value_T)) {

@@ -42,7 +42,7 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
     SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
       const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
       REQUIRE_THROWS_AS(io::read<uint32_t>(read_buf, std::endian::little), std::out_of_range);
-      REQUIRE_THROWS_AS(io::read < io::little_endian<uint32_t>>(read_buf), std::out_of_range);
+      REQUIRE_THROWS_AS(io::read<io::little_endian<uint32_t>>(read_buf), std::out_of_range);
     }
   }
 
@@ -54,14 +54,14 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
 
     SECTION("Read 2 shorts") {
       REQUIRE(uint32_t(0x6745) == io::read<uint16_t>(vec_buffer, std::endian::big));
-      REQUIRE(uint32_t(0x6745) == io::read < io::big_endian<uint16_t>>(vec_buffer));
+      REQUIRE(uint32_t(0x6745) == io::read<io::big_endian<uint16_t>>(vec_buffer));
       REQUIRE(uint32_t(0x2301) == io::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}, std::endian::big));
     }
 
     SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
       const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
       REQUIRE_THROWS_AS(io::read<uint32_t>(read_buf, std::endian::big), std::out_of_range);
-      REQUIRE_THROWS_AS(io::read < io::big_endian<uint32_t>>(read_buf), std::out_of_range);
+      REQUIRE_THROWS_AS(io::read<io::big_endian<uint32_t>>(read_buf), std::out_of_range);
     }
   }
 }
@@ -236,7 +236,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       }
 
       SECTION("Static endianness") {
-        REQUIRE(uint32_t(0x67452301) == io::read < io::big_endian<uint32_t>>(read_buf));
+        REQUIRE(uint32_t(0x67452301) == io::read<io::big_endian<uint32_t>>(read_buf));
         REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
       }
     }
@@ -363,15 +363,15 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
     io::write(write_buffer, val_3);
 
     REQUIRE(std::ranges::equal(io::static_byte_buffer<10>{std::byte{0x67},
-                                                         std::byte{0x45},
-                                                         std::byte{0x23},
-                                                         std::byte{0x01},
-                                                         std::byte{0x89},
-                                                         std::byte{0xAB},
-                                                         std::byte{0xCD},
-                                                         std::byte{0xEF},
-                                                         std::byte{0x04},
-                                                         std::byte{0x7D}},
+                                                          std::byte{0x45},
+                                                          std::byte{0x23},
+                                                          std::byte{0x01},
+                                                          std::byte{0x89},
+                                                          std::byte{0xAB},
+                                                          std::byte{0xCD},
+                                                          std::byte{0xEF},
+                                                          std::byte{0x04},
+                                                          std::byte{0x7D}},
                                raw_buffer));
 
     REQUIRE(val_1 == io::read<uint32_t>(read_buffer));
@@ -485,7 +485,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
   }
 }
 
-TEST_CASE("try_read returns value on good read") {
+TEST_CASE("try_read returns value on good read", "[buffer_io]") {
   SECTION("From raw buffer") {
     const auto data = io::static_byte_buffer<4>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}, std::byte{0xFF}};
 
@@ -522,7 +522,7 @@ TEST_CASE("try_read returns value on good read") {
   }
 }
 
-TEST_CASE("try_read returns error on bad read") {
+TEST_CASE("try_read returns error on bad read", "[buffer_io]") {
   const auto data = io::static_byte_buffer<3>{std::byte{0x67}, std::byte{0x45}, std::byte{0xAB}};
 
   const auto val = io::try_read<uint32_t>(data);
@@ -530,7 +530,7 @@ TEST_CASE("try_read returns error on bad read") {
   REQUIRE(io::read_error::insufficient_buffer == val.error());
 }
 
-TEST_CASE("try_write returns true on good write") {
+TEST_CASE("try_write returns true on good write", "[buffer_io]") {
   SECTION("To raw buffer") {
     auto data = io::static_byte_buffer<4>{};
 
@@ -538,30 +538,30 @@ TEST_CASE("try_write returns true on good write") {
       const auto val = uint32_t{0xFE01CD23};
 
       REQUIRE(io::try_write(data, val).ok());
-      REQUIRE(
-          std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
+      REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}},
+                                 data));
     }
 
     SECTION("with specified endianness") {
       const auto val = uint32_t{0x23CD01FE};
 
       REQUIRE(io::try_write(data, io::big_endian{val}).ok());
-      REQUIRE(
-          std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, data));
+      REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}},
+                                 data));
     }
   }
 
   SECTION("Via byte_read_buffer_view") {
-    auto data = io::static_byte_buffer<4>{};
-    auto buffer     = io::byte_write_buffer_view{data};
+    auto data   = io::static_byte_buffer<4>{};
+    auto buffer = io::byte_write_buffer_view{data};
 
     SECTION("with default endianness") {
       const auto val = uint32_t{0xFE01CD23};
 
       REQUIRE(io::try_write(buffer, val).ok());
       REQUIRE(std::next(buffer.data.begin(), 4) == buffer.write_position);
-      REQUIRE(
-          std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}}, buffer.data));
+      REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x23}, std::byte{0xCD}, std::byte{0x01}, std::byte{0xFE}},
+                                 buffer.data));
     }
 
     SECTION("with specified endianness adapter") {
@@ -575,7 +575,7 @@ TEST_CASE("try_write returns true on good write") {
   }
 }
 
-TEST_CASE("try_write returns error on bad write") {
+TEST_CASE("try_write returns error on bad write", "[buffer_io]") {
   auto data = io::static_byte_buffer<3>{};
 
   const auto result = io::try_write(data, uint32_t{0xCDCDCDCD});
@@ -583,7 +583,7 @@ TEST_CASE("try_write returns error on bad write") {
   REQUIRE(io::write_error::insufficient_buffer == result.error());
 }
 
-TEST_CASE("unchecked_add returns value and next read position") {
+TEST_CASE("unchecked_add returns value and next read position", "[buffer_io]") {
   const auto data = io::static_byte_buffer<8>{std::byte{0x67},
                                               std::byte{0x45},
                                               std::byte{0x23},
@@ -599,4 +599,17 @@ TEST_CASE("unchecked_add returns value and next read position") {
 
   REQUIRE(uint32_t{0x01234567} == value);
   REQUIRE(buf + 4 == next);
+}
+
+TEST_CASE("from bytes", "[buffer_io]") {
+  const auto bytes = std::array<std::byte, sizeof(uint64_t)>{std::byte{0x11},
+                                                             std::byte{0xFF},
+                                                             std::byte{0x22},
+                                                             std::byte{0xEE},
+                                                             std::byte{0x33},
+                                                             std::byte{0xDD},
+                                                             std::byte{0x44},
+                                                             std::byte{0xCC}};
+
+  REQUIRE(uint64_t{0xCC44DD33EE22FF11} == io::from_bytes<uint64_t>(bytes));
 }
