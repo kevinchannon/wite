@@ -30,38 +30,38 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
   SECTION("Little-endian") {
     SECTION("Read int") {
       REQUIRE(uint32_t(0x01234567) == io::read<uint32_t>(vec_buffer, std::endian::little));
-      REQUIRE(uint32_t(0x01234567) == io::read<uint32_t, std::endian::little>(vec_buffer));
+      REQUIRE(uint32_t(0x01234567) == io::read<io::little_endian<uint32_t>>(vec_buffer));
     }
 
     SECTION("Read 2 shorts") {
       REQUIRE(uint32_t(0x4567) == io::read<uint16_t>(vec_buffer, std::endian::little));
-      REQUIRE(uint32_t(0x4567) == io::read<uint16_t, std::endian::little>(vec_buffer));
-      REQUIRE(uint32_t(0x0123) == io::read<uint16_t, std::endian::little>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
+      REQUIRE(uint32_t(0x4567) == io::read<io::little_endian<uint16_t>>(vec_buffer));
+      REQUIRE(uint32_t(0x0123) == io::read<io::little_endian<uint16_t>>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
     }
 
     SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
       const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
       REQUIRE_THROWS_AS(io::read<uint32_t>(read_buf, std::endian::little), std::out_of_range);
-      REQUIRE_THROWS_AS(io::read<uint32_t COMMA std::endian::little>(read_buf), std::out_of_range);
+      REQUIRE_THROWS_AS(io::read < io::little_endian<uint32_t>>(read_buf), std::out_of_range);
     }
   }
 
   SECTION("Big-endian") {
     SECTION("Read int") {
       REQUIRE(uint32_t(0x67452301) == io::read<uint32_t>(vec_buffer, std::endian::big));
-      REQUIRE(uint32_t(0x67452301) == io::read<uint32_t, std::endian::big>(vec_buffer));
+      REQUIRE(uint32_t(0x67452301) == io::read<io::big_endian<uint32_t>>(vec_buffer));
     }
 
     SECTION("Read 2 shorts") {
       REQUIRE(uint32_t(0x6745) == io::read<uint16_t>(vec_buffer, std::endian::big));
-      REQUIRE(uint32_t(0x6745) == io::read<uint16_t, std::endian::big>(vec_buffer));
+      REQUIRE(uint32_t(0x6745) == io::read < io::big_endian<uint16_t>>(vec_buffer));
       REQUIRE(uint32_t(0x2301) == io::read<uint16_t>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}, std::endian::big));
     }
 
     SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
       const auto read_buf = std::span{std::next(vec_buffer.begin(), 6), vec_buffer.end()};
       REQUIRE_THROWS_AS(io::read<uint32_t>(read_buf, std::endian::big), std::out_of_range);
-      REQUIRE_THROWS_AS(io::read<uint32_t COMMA std::endian::big>(read_buf), std::out_of_range);
+      REQUIRE_THROWS_AS(io::read < io::big_endian<uint32_t>>(read_buf), std::out_of_range);
     }
   }
 }
@@ -203,7 +203,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       }
 
       SECTION("Static endianness") {
-        REQUIRE(uint32_t(0x01234567) == io::read<uint32_t, std::endian::little>(read_buf));
+        REQUIRE(uint32_t(0x01234567) == io::read<io::little_endian<uint32_t>>(read_buf));
         REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
       }
 
@@ -236,7 +236,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       }
 
       SECTION("Static endianness") {
-        REQUIRE(uint32_t(0x67452301) == io::read<uint32_t, std::endian::big>(read_buf));
+        REQUIRE(uint32_t(0x67452301) == io::read < io::big_endian<uint32_t>>(read_buf));
         REQUIRE(std::next(read_buf.data.begin(), 4) == read_buf.read_position);
       }
     }
