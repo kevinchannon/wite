@@ -11,6 +11,9 @@ namespace wite::io {
 template <typename Value_T>
 concept is_buffer_readable = std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>;
 
+template <typename Value_T>
+concept is_buffer_writeable = std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace wite::io

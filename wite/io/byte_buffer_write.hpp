@@ -2,6 +2,7 @@
 
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
+#include <wite/io/concepts.hpp>
 
 #include <algorithm>
 #include <bit>
@@ -18,8 +19,7 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> and
-    (not std::is_base_of_v<io::encoding, Value_T>)
+requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
 void unchecked_write(auto buffer, Value_T value) {
     if constexpr (std::endian::little == ENDIANNESS) {
       std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(Value_T), buffer);
@@ -33,7 +33,7 @@ void unchecked_write(auto buffer, Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_base_of_v<io::encoding, Value_T>
+requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
 void unchecked_write(auto buffer, Value_T value) {
   if constexpr (std::is_same_v<io::little_endian<typename Value_T::value_type>, Value_T>) {
     unchecked_write<std::endian::little>(buffer, value.value);
@@ -45,7 +45,7 @@ void unchecked_write(auto buffer, Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+requires is_buffer_writeable<Value_T>
 void write(std::span<std::byte> buffer, Value_T value) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
@@ -57,9 +57,8 @@ void write(std::span<std::byte> buffer, Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
-write_result_t try_write(std::span<std::byte> buffer,
-                                                                                                    Value_T value) {
+requires is_buffer_writeable<Value_T>
+write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
   if (buffer.size() < sizeof(Value_T)) {
     return write_error::insufficient_buffer;
   }
@@ -72,7 +71,7 @@ write_result_t try_write(std::span<std::byte> buffer,
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+requires is_buffer_writeable<Value_T>
 void write(std::span<std::byte> buffer, Value_T value, std::endian endianness) {
   if (std::endian::little == endianness) {
     write<std::endian::little>(buffer, value);
