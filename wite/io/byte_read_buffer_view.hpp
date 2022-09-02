@@ -3,6 +3,7 @@
 #include <wite/io/byte_buffer_read.hpp>
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
+#include <wite/io/concepts.hpp>
 
 #include <bit>
 #include <cstddef>
@@ -29,8 +30,8 @@ struct byte_read_buffer_view {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> and
-    (not std::is_base_of_v<io::encoding, Value_T>) Value_T read(byte_read_buffer_view& buffer) {
+requires is_buffer_readable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
+Value_T read(byte_read_buffer_view& buffer) {
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
 
@@ -40,8 +41,7 @@ requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> and
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> and
-    (not std::is_base_of_v<io::encoding, Value_T>)
+requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
 read_result_t<Value_T> try_read(byte_read_buffer_view& buffer) {
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
@@ -52,7 +52,9 @@ read_result_t<Value_T> try_read(byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_base_of_v<io::encoding, Value_T> read_result_t<typename Value_T::value_type> try_read(
+requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
+read_result_t<typename Value_T::value_type>
+try_read(
     byte_read_buffer_view& buffer) {
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
@@ -63,7 +65,7 @@ requires std::is_base_of_v<io::encoding, Value_T> read_result_t<typename Value_T
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
 Value_T read(byte_read_buffer_view& buffer, std::endian endienness) {
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endienness);
   std::advance(buffer.read_position, sizeof(out));
@@ -74,7 +76,7 @@ Value_T read(byte_read_buffer_view& buffer, std::endian endienness) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_base_of_v<io::encoding, Value_T>
+requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
 typename Value_T::value_type read(byte_read_buffer_view& buffer) {
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(out));

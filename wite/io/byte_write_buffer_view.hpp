@@ -3,6 +3,7 @@
 #include <wite/io/byte_buffer_write.hpp>
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
+#include <wite/io/concepts.hpp>
 
 #include <bit>
 #include <cstddef>
@@ -29,7 +30,7 @@ struct byte_write_buffer_view {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+requires is_buffer_writeable<Value_T>
 void write(byte_write_buffer_view& buffer, Value_T value) {
   write<ENDIANNESS, Value_T>({buffer.write_position, buffer.data.end()}, value);
   std::advance(buffer.write_position, sizeof(Value_T));
@@ -38,8 +39,8 @@ void write(byte_write_buffer_view& buffer, Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <std::endian ENDIANNESS = std::endian::native, typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T> write_result_t
-try_write(byte_write_buffer_view& buffer, Value_T value) {
+requires is_buffer_writeable<Value_T>
+write_result_t try_write(byte_write_buffer_view& buffer, Value_T value) {
   const auto result = try_write<ENDIANNESS, Value_T>({buffer.write_position, buffer.data.end()}, value);
   if (result.ok()) {
     std::advance(buffer.write_position, sizeof(Value_T));
@@ -51,7 +52,7 @@ try_write(byte_write_buffer_view& buffer, Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>
+requires is_buffer_writeable<Value_T>
 void write(byte_write_buffer_view& buffer, Value_T value, std::endian endianness) {
   write<Value_T>({buffer.write_position, buffer.data.end()}, value, endianness);
   std::advance(buffer.write_position, sizeof(Value_T));
