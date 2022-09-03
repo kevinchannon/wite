@@ -40,13 +40,13 @@ TEST_CASE("Read multiple values from buffer", "[buffer_io]") {
   // clang-format off
   const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
     std::byte{0x78}, std::byte{0x56}, std::byte{0x34}, std::byte{0x12},
-    std::byte{0xAB}, std::byte{0xCD},
+    std::byte{0xCD}, std::byte{0xAB},
     std::byte{true},
     std::byte{0x98}, std::byte{0xBA}, std::byte{0xDC}, std::byte{0xFE}
   };
   // clang-format on
 
-  const auto [a, b, c, d] = io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+  const auto [a, b, c, d] = io::read<uint32_t, uint16_t, bool, uint32_t>(buffer);
 
   REQUIRE( a == uint32_t{0x12345678});
   REQUIRE( b == uint16_t{0xABCD});

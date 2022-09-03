@@ -11,6 +11,8 @@
 #include <span>
 #include <stdexcept>
 #include <type_traits>
+#include <tuple>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -59,9 +61,35 @@ auto read(const std::span<const std::byte>& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T, typename Value_Ts>
+namespace detail {
+
+  template <std::size_t ELEMENT, typename... TupleType_Ts>
+  void _read_into_tuple_element(const std::span<const std::byte>& buffer, std::tuple<TupleType_Ts...>& t) {
+    if constexpr (ELEMENT < sizeof...(TupleType_Ts)) {
+
+      using Value_t = std::decay_t<decltype(std::get<ELEMENT>(t))>;
+
+      std::get<ELEMENT>(t) = read<Value_t>(buffer);
+
+      _read_into_tuple_element<ELEMENT + 1, TupleType_Ts...>(std::span<const std::byte>{std::next(buffer.begin(), sizeof(Value_t)), buffer.end()}, t);
+    }
+  }
+
+  template<typename... TupleType_Ts>
+  void _read_into_tuple(const std::span<const std::byte>& buffer, std::tuple<TupleType_Ts...>& t) {
+    _read_into_tuple_element<0, TupleType_Ts...>(buffer, t);
+  }
+
+}  // namespace detail
+
+template <typename... Value_Ts>
+requires (sizeof...(Value_Ts) > 1)
 auto read(const std::span<const std::byte>& buffer) {
-  return // TODO: Figure out how to do this. Fold expressions?
+  auto out = ::std::tuple<Value_Ts...>{};
+
+  detail::_read_into_tuple<Value_Ts...>(buffer, out);
+
+  return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
