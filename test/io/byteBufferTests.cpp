@@ -14,9 +14,6 @@
 
 using namespace wite;
 
-// Helps the REQUIRE_THROW_AS macro to work in some cases.
-#define COMMA ,
-
 TEST_CASE("Values from vector buffer", "[buffer_io]") {
   const auto vec_buffer = std::vector<std::byte>{std::byte{0x67},
                                                  std::byte{0x45},

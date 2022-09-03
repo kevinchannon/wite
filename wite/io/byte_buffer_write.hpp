@@ -53,6 +53,17 @@ void write(std::span<std::byte> buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, typename... Value_Ts>
+void write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+  write(buffer, first_value);
+
+  if constexpr (sizeof...(other_values) > 0) {
+    write(std::span<std::byte>{std::next(buffer.begin(), sizeof(first_value)), buffer.end()}, other_values...);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
 requires is_buffer_writeable<Value_T>
 Result_T to_bytes(Value_T value) {
