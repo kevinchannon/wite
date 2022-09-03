@@ -53,6 +53,19 @@ void write(std::span<std::byte> buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
+requires is_buffer_writeable<Value_T>
+Result_T to_bytes(Value_T value) {
+
+  auto out = Result_T{};
+
+  write(out, value);
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
 write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
