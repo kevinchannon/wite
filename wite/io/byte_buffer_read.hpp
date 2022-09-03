@@ -80,6 +80,14 @@ read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
+read_result_t<Value_T> try_from_bytes(const std::span<const std::byte>& buffer) {
+  return try_read<Value_T>(buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
 requires is_buffer_readable<Value_T> and is_encoded<Value_T>
 read_result_t<typename Value_T::value_type> try_read( const std::span<const std::byte>& buffer) {
   if (buffer.size() < sizeof(typename Value_T::value_type)) {

@@ -80,6 +80,22 @@ write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
+requires is_buffer_writeable<Value_T>
+result<Result_T, write_error> try_to_bytes(Value_T value) {
+  auto out = Result_T{};
+
+  const auto result = try_write(out, value);
+  if (result.ok()) {
+    return {out};
+  }
+  else {
+    return {result.error()};
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
 void write(std::span<std::byte> buffer, Value_T value, std::endian endianness) {
