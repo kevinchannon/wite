@@ -20,7 +20,10 @@ v.push_back(1);
 ```
 #include <wite/io/bytes_buffer.hpp>
 ```
-A small collection of routines for doing IO to buffers and things like that. The type of "buffer" isn't defined, so you should be able to use vectors, arrays, pointers, whatever.  The main restriction is that a "buffer" is a thing of std::bytes.  To write to a buffer, then you can do:
+A small collection of routines for doing IO to buffers and things like that. The type of "buffer" isn't defined, so you should be able to use vectors, arrays, pointers, whatever.  The main restriction is that a "buffer" is a thing of std::bytes.
+
+## Buffer operations
+To write to a buffer, then you can do:
 
 ```
 auto buffer_data = std::vector<std::byte>(100, std::byte{0x00});
@@ -51,16 +54,33 @@ This example is using `byte_read_buffer_view` and `byte_write_buffer_view` to ma
 
 Because it's not specified above, then the write operations are using the native platform endianness.  The endianness may be specified as a template parameter (if you know it at compile time), or as an additional parameter if it's only known at runtime, for some reason.
 
+## Simple byte conversions
+If you have a value and you want to get it as an array of `std::bytes`, then you can simply do:
+```
+// "bytes" <- wite::io::static_byte_buffer<sizeof(my_value)>
+const auto bytes = wite::io::to_bytes(my_value);
+```
+of course, you can do the opposite too:
+```
+const auto bytes = std::array<std::byte, sizeof(uint32_t)>{
+    std::byte{0x12}, std::byte{0x34}, std::byte{0x56}, std::byte{078}};
+
+const auto i = wite::io::from_bytes<int>(bytes);
+```
+
 ## Fancier usage
 ### Controlling edianness
-Sometimes you want to write the bytes of a value with a particular endianness.  If you know the endianness that you're going to need at build time, then you can specify it as a template parameter. So, to write some `int` called `my_int` to a buffer then:
+Sometimes you want to write the bytes of a value with a particular endianness.  If you know the endianness that you're going to need at build time, then you can specify it using either of the two endian encoding adapters `wite::io::little_endian` or `wite::io::big_endian`. So, to write some `int` called `my_int` to a buffer as big endian, then:
 ```
-wite::io::write<std::endian::big>(buffer, my_int);
+wite::io::write(buffer, wite::io::big_endian{my_int});
 ```
 You can also specify the endianness when reading:
 ```
-const auto my_int = wite::io::read<int, std::endian::big>(buffer);
+const auto my_int = wite::io::read<wite::io::big_endian<int>>(buffer);
 ```
+
+The endianness adapters also work in an equivalent way with the `to_bytes` and `from_bytes` functions.
+
 If you only know the endianness at runtime, for some reason, then you can provide a final argument to `read` and `write` to specify the endianness:
 ```
 const auto my_int = wite::io::read<int>(buffer, std::endian::little);
