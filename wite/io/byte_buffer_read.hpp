@@ -59,6 +59,13 @@ auto read(const std::span<const std::byte>& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, typename Value_Ts>
+auto read(const std::span<const std::byte>& buffer) {
+  return // TODO: Figure out how to do this. Fold expressions?
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 requires is_buffer_readable<Value_T>
 auto from_bytes(const std::span<const std::byte>& buffer) {
