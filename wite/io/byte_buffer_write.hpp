@@ -1,8 +1,8 @@
 #pragma once
 
+#include <wite/io/concepts.hpp>
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
-#include <wite/io/concepts.hpp>
 
 #include <algorithm>
 #include <bit>
@@ -10,6 +10,7 @@
 #include <iterator>
 #include <span>
 #include <stdexcept>
+#include <tuple>
 #include <type_traits>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -21,11 +22,9 @@ namespace wite::io {
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
 void unchecked_write(auto buffer, Value_T value) {
-  
   if constexpr (is_encoded<Value_T>) {
-    
     using RawValue_t = typename Value_T::value_type;
-    
+
     if constexpr (std::is_same_v<little_endian<RawValue_t>, Value_T>) {
       std::copy_n(reinterpret_cast<std::byte*>(&value.value), sizeof(value.value), buffer);
     } else if constexpr (std::is_same_v<big_endian<RawValue_t>, Value_T>) {
@@ -33,8 +32,7 @@ void unchecked_write(auto buffer, Value_T value) {
                   sizeof(value.value),
                   buffer);
     }
-  }
-  else {
+  } else {
     std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(value), buffer);
   }
 }
@@ -65,9 +63,7 @@ void write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_v
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
-requires is_buffer_writeable<Value_T>
-Result_T to_bytes(Value_T value) {
-
+requires is_buffer_writeable<Value_T> Result_T to_bytes(Value_T value) {
   auto out = Result_T{};
 
   write(out, value);
@@ -78,8 +74,7 @@ Result_T to_bytes(Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires is_buffer_writeable<Value_T>
-write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
+requires is_buffer_writeable<Value_T> write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
   if (buffer.size() < sizeof(Value_T)) {
     return write_error::insufficient_buffer;
   }
@@ -91,16 +86,57 @@ write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+namespace detail::buffer::write {
+
+  template <typename Value_T>
+  requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
+  constexpr auto value_size() noexcept {
+    // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
+    // In that case, a new overload of this function will need to be added for the new type.
+    return sizeof(typename Value_T::value_type);
+  }
+
+  template <typename Value_T>
+  requires(std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>)
+  constexpr auto value_size() noexcept {
+    return sizeof(Value_T);
+  }
+
+  template <typename Value_T, typename... Value_Ts>
+  auto _recursive_try_write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+    auto first_result = std::make_tuple(try_write(buffer, first_value));
+
+    if constexpr (sizeof...(other_values) > 0) {
+      auto other_results =
+          _recursive_try_write(std::span<std::byte>{std::get<0>(first_result).ok()
+                                             ? std::next(buffer.begin(), value_size<Value_T>())
+                                             : buffer.end(),
+                                         buffer.end()},
+                    other_values...);
+
+      return std::tuple_cat(first_result, other_results);
+    } else {
+      return first_result;
+    }
+  }
+
+}  // namespace detail::buffer::write
+
+template <typename Value_T, typename... Value_Ts>
+auto try_write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+  return detail::buffer::write::_recursive_try_write(buffer, first_value, other_values...);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
-requires is_buffer_writeable<Value_T>
-result<Result_T, write_error> try_to_bytes(Value_T value) {
+requires is_buffer_writeable<Value_T> result<Result_T, write_error> try_to_bytes(Value_T value) {
   auto out = Result_T{};
 
   const auto result = try_write(out, value);
   if (result.ok()) {
     return {out};
-  }
-  else {
+  } else {
     return {result.error()};
   }
 }

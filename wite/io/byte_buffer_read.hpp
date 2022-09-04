@@ -128,7 +128,7 @@ read_result_t<Value_T> try_from_bytes(const std::span<const std::byte>& buffer) 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail {
+namespace detail::buffer::read {
 
   template<typename Value_T>
   requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
@@ -168,7 +168,7 @@ namespace detail {
 template <typename... Value_Ts>
 requires(sizeof...(Value_Ts) > 1)
 auto try_read(const std::span<const std::byte>& buffer) noexcept {
-  return detail::_recursive_try_read<Value_Ts...>(buffer);
+  return detail::buffer::read::_recursive_try_read<Value_Ts...>(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

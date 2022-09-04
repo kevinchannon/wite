@@ -126,3 +126,72 @@ TEST_CASE("Try read multiple values inserts errors if the buffer is too small", 
   REQUIRE(d.is_error());
   REQUIRE(io::read_error::insufficient_buffer == d.error());
 }
+
+TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
+  const auto a = uint32_t{0x12345678};
+  const auto b = uint16_t{0xABCD};
+  const auto c = true;
+  const auto d = uint32_t{0xFEDCBA98};
+
+  auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)>{};
+
+  const auto [rc_a, rc_b, rc_c, rc_d] = io::try_write(buffer, a, io::big_endian{b}, c, d);
+
+  REQUIRE(rc_a.ok());
+  REQUIRE(true == rc_a.value());
+
+  REQUIRE(rc_b.ok());
+  REQUIRE(true == rc_b.value());
+
+  REQUIRE(rc_c.ok());
+  REQUIRE(true == rc_c.value());
+
+  REQUIRE(rc_d.ok());
+  REQUIRE(true == rc_d.value());
+
+  REQUIRE(uint32_t{0x78} == std::to_integer<uint32_t>(buffer[0]));
+  REQUIRE(uint32_t{0x56} == std::to_integer<uint32_t>(buffer[1]));
+  REQUIRE(uint32_t{0x34} == std::to_integer<uint32_t>(buffer[2]));
+  REQUIRE(uint32_t{0x12} == std::to_integer<uint32_t>(buffer[3]));
+
+  REQUIRE(uint32_t{0xAB} == std::to_integer<uint32_t>(buffer[4]));
+  REQUIRE(uint32_t{0xCD} == std::to_integer<uint32_t>(buffer[5]));
+
+  REQUIRE(uint32_t{true} == std::to_integer<uint32_t>(buffer[6]));
+
+  REQUIRE(uint32_t{0x98} == std::to_integer<uint32_t>(buffer[7]));
+  REQUIRE(uint32_t{0xBA} == std::to_integer<uint32_t>(buffer[8]));
+  REQUIRE(uint32_t{0xDC} == std::to_integer<uint32_t>(buffer[9]));
+  REQUIRE(uint32_t{0xFE} == std::to_integer<uint32_t>(buffer[10]));
+}
+
+TEST_CASE("Try write multiple values from buffer inserts errors if the buffer is too small", "[buffer_io]") {
+  const auto a = uint32_t{0x12345678};
+  const auto b = uint16_t{0xABCD};
+  const auto c = true;
+  const auto d = uint32_t{0xFEDCBA98};
+
+  auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b)>{};
+
+  const auto [rc_a, rc_b, rc_c, rc_d] = io::try_write(buffer, a, io::big_endian{b}, c, d);
+
+  REQUIRE(rc_a.ok());
+  REQUIRE(true == rc_a.value());
+
+  REQUIRE(rc_b.ok());
+  REQUIRE(true == rc_b.value());
+
+  REQUIRE(rc_c.is_error());
+  REQUIRE(io::write_error::insufficient_buffer == rc_c.error());
+
+  REQUIRE(rc_d.is_error());
+  REQUIRE(io::write_error::insufficient_buffer == rc_d.error());
+
+  REQUIRE(uint32_t{0x78} == std::to_integer<uint32_t>(buffer[0]));
+  REQUIRE(uint32_t{0x56} == std::to_integer<uint32_t>(buffer[1]));
+  REQUIRE(uint32_t{0x34} == std::to_integer<uint32_t>(buffer[2]));
+  REQUIRE(uint32_t{0x12} == std::to_integer<uint32_t>(buffer[3]));
+
+  REQUIRE(uint32_t{0xAB} == std::to_integer<uint32_t>(buffer[4]));
+  REQUIRE(uint32_t{0xCD} == std::to_integer<uint32_t>(buffer[5]));
+}
