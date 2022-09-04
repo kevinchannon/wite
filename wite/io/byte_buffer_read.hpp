@@ -22,7 +22,7 @@ namespace wite::io {
 
 template <typename Value_T>
   requires is_buffer_readable<Value_T>
-auto unchecked_read(auto buffer)
+auto unchecked_read(auto buffer) noexcept
 {
   if constexpr (std::is_base_of_v<io::encoding, Value_T>) {
     using OutputValue_t = typename Value_T::value_type;
@@ -98,7 +98,7 @@ auto from_bytes(const std::span<const std::byte>& buffer) {
 
 template <typename Value_T>
 requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
+read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) noexcept {
   if (buffer.size() < sizeof(Value_T)) {
     return read_error::insufficient_buffer;
   }
@@ -109,21 +109,66 @@ read_result_t<Value_T> try_read(const std::span<const std::byte>& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-read_result_t<Value_T> try_from_bytes(const std::span<const std::byte>& buffer) {
-  return try_read<Value_T>(buffer);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-requires is_buffer_readable<Value_T> and is_encoded<Value_T>
-read_result_t<typename Value_T::value_type> try_read( const std::span<const std::byte>& buffer) {
+requires is_buffer_readable<Value_T> and is_encoded<Value_T> read_result_t<typename Value_T::value_type> try_read(
+    const std::span<const std::byte>& buffer) {
   if (buffer.size() < sizeof(typename Value_T::value_type)) {
     return read_error::insufficient_buffer;
   }
 
   return unchecked_read<Value_T>(buffer.begin()).first;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
+read_result_t<Value_T> try_from_bytes(const std::span<const std::byte>& buffer) noexcept {
+  return try_read<Value_T>(buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace detail {
+
+  template<typename Value_T>
+  requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
+  constexpr auto value_size() noexcept {
+    // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
+    // In that case, a new overload of this function will need to be added for the new type.
+    return sizeof(typename Value_T::value_type);
+  }
+
+  template <typename Value_T>
+  requires (std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>)
+  constexpr auto value_size() noexcept {
+    return sizeof(Value_T);
+  }
+
+  template <typename FirstValue_T, typename... OtherValue_Ts>
+  auto _recursive_try_read(const std::span<const std::byte>& buffer) noexcept {
+    auto first_value = std::make_tuple(try_read<FirstValue_T>(buffer));
+
+    if constexpr (sizeof...(OtherValue_Ts) > 0) {
+
+      constexpr auto increment = value_size<typename std::tuple_element_t<0, decltype(first_value)>>();
+
+      auto other_values = _recursive_try_read<OtherValue_Ts...>(std::span<const std::byte>{
+        std::get<0>(first_value).ok() ? std::next(buffer.begin(), increment) : buffer.end(),
+          buffer.end()}
+      );
+
+      return std::tuple_cat(first_value, other_values);
+    } else {
+      return first_value;
+    }
+  }
+
+}  // namespace detail
+
+template <typename... Value_Ts>
+requires(sizeof...(Value_Ts) > 1)
+auto try_read(const std::span<const std::byte>& buffer) noexcept {
+  return detail::_recursive_try_read<Value_Ts...>(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

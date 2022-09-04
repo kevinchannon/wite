@@ -78,3 +78,51 @@ TEST_CASE("Read multiple values from buffer throws out_of_range if the buffer is
 
   REQUIRE_THROWS_AS(io::read<uint32_t COMMA io::big_endian<uint16_t> COMMA bool COMMA uint32_t>(buffer), std::out_of_range);
 }
+
+TEST_CASE("Try read multiple values from buffer", "[buffer_io]") {
+  // clang-format off
+  const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+    std::byte{0x78}, std::byte{0x56}, std::byte{0x34}, std::byte{0x12},
+    std::byte{0xAB}, std::byte{0xCD},
+    std::byte{true},
+    std::byte{0x98}, std::byte{0xBA}, std::byte{0xDC}, std::byte{0xFE}
+  };
+  // clang-format on
+
+  const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+
+  REQUIRE(a.ok());
+  REQUIRE(a.value() == uint32_t{0x12345678});
+
+  REQUIRE(b.ok());
+  REQUIRE(b.value() == uint16_t{0xABCD});
+
+  REQUIRE(c.ok());
+  REQUIRE(c.value() == true);
+
+  REQUIRE(d.ok());
+  REQUIRE(d.value() == uint32_t{0xFEDCBA98});
+}
+
+TEST_CASE("Try read multiple values inserts errors if the buffer is too small", "[buffer_io]") {
+  // clang-format off
+  const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t)>{
+    std::byte{0x78}, std::byte{0x56}, std::byte{0x34}, std::byte{0x12},
+    std::byte{0xAB}, std::byte{0xCD}
+  };
+  // clang-format on
+
+  const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+
+  REQUIRE(a.ok());
+  REQUIRE(a.value() == uint32_t{0x12345678});
+
+  REQUIRE(b.ok());
+  REQUIRE(b.value() == uint16_t{0xABCD});
+
+  REQUIRE(c.is_error());
+  REQUIRE(io::read_error::insufficient_buffer == c.error());
+
+  REQUIRE(d.is_error());
+  REQUIRE(io::read_error::insufficient_buffer == d.error());
+}
