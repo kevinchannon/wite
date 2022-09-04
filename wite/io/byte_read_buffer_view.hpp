@@ -66,8 +66,8 @@ try_read(
 
 template <typename Value_T>
 requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
-Value_T read(byte_read_buffer_view& buffer, std::endian endienness) {
-  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endienness);
+Value_T read(byte_read_buffer_view& buffer, std::endian endianness) {
+  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endianness);
   std::advance(buffer.read_position, sizeof(out));
 
   return out;
