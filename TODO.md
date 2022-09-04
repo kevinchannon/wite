@@ -4,13 +4,17 @@
 * Add multiple read/write values to buffers via buffer views
 * Add read/write functionality via streams (in addition to the buffer interface)
 * Add macro to macro out exception-throwing code
+* Update readme with new things
+* Update examples with new things
 
 ## String
 * Add `hexilify` and `unhexilify`
 * Add `fragment_string`
+* Add exmples
 
 ## Collections
 * Add `static_lookup_table` (from StaticMap repo)
+* Add exmples
 
 ## Geometry
 * Add `point` classes (from AdventOfCode repo)
