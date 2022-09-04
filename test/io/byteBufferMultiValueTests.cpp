@@ -9,6 +9,8 @@
 
 using namespace wite;
 
+#define COMMA ,
+
 TEST_CASE("Write multiple values to buffer", "[buffer_io]") {
 
   const auto a = uint32_t{0x12345678};
@@ -36,6 +38,17 @@ TEST_CASE("Write multiple values to buffer", "[buffer_io]") {
   REQUIRE(uint32_t{0xFE} == std::to_integer<uint32_t>(buffer[10]));
 }
 
+TEST_CASE("Write multiple values from buffer throws out_of_range if the buffer is too small", "[buffer_io]") {
+  const auto a = uint32_t{0x12345678};
+  const auto b = uint16_t{0xABCD};
+  const auto c = true;
+  const auto d = uint32_t{0xFEDCBA98};
+
+  auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c)>{};
+
+  REQUIRE_THROWS_AS(io::write(buffer, a, io::big_endian{b}, c, d), std::out_of_range);
+}
+
 TEST_CASE("Read multiple values from buffer", "[buffer_io]") {
   // clang-format off
   const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
@@ -52,4 +65,16 @@ TEST_CASE("Read multiple values from buffer", "[buffer_io]") {
   REQUIRE( b == uint16_t{0xABCD});
   REQUIRE( c == true);
   REQUIRE( d == uint32_t{0xFEDCBA98});
+}
+
+TEST_CASE("Read multiple values from buffer throws out_of_range if the buffer is too small", "[buffer_io]") {
+  // clang-format off
+  const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool)>{
+    std::byte{0x78}, std::byte{0x56}, std::byte{0x34}, std::byte{0x12},
+    std::byte{0xAB}, std::byte{0xCD},
+    std::byte{true}
+  };
+  // clang-format on
+
+  REQUIRE_THROWS_AS(io::read<uint32_t COMMA io::big_endian<uint16_t> COMMA bool COMMA uint32_t>(buffer), std::out_of_range);
 }
