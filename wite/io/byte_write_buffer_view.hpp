@@ -38,6 +38,17 @@ void write(byte_write_buffer_view& buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, typename... Value_Ts>
+void write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) {
+  write(buffer, first_value);
+
+  if constexpr (sizeof...(other_values) > 0) {
+    write(buffer, other_values...);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
 write_result_t try_write(byte_write_buffer_view& buffer, Value_T value) {

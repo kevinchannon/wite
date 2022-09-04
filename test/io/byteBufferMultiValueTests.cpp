@@ -3,9 +3,14 @@
 #include <wite/io/types.hpp>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <array>
 #include <cstddef>
+#include <functional>
+#include <string>
+
+using namespace std::string_literals;
 
 using namespace wite;
 
@@ -20,7 +25,17 @@ TEST_CASE("Write multiple values to buffer", "[buffer_io]") {
 
   auto buffer  = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)>{};
 
-  io::write(buffer, a, io::big_endian{b}, c, d);
+  const auto [test_name, writer] =
+      GENERATE_REF(table<std::string, std::function<void()>>({
+        {"Direct buffer access"s, [&]() { io::write(buffer, a, io::big_endian{b}, c, d); }},
+        {"Via read buffer view"s, [&]() { 
+          auto write_view = io::byte_write_buffer_view{buffer};
+          io::write(write_view, a, io::big_endian{b}, c, d);
+        }}}));
+
+  SECTION(test_name) {
+    writer();
+  }
 
   REQUIRE(uint32_t{0x78} == std::to_integer<uint32_t>(buffer[ 0]));
   REQUIRE(uint32_t{0x56} == std::to_integer<uint32_t>(buffer[ 1]));
