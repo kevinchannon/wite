@@ -140,19 +140,35 @@ TEST_CASE("Try read multiple values from buffer", "[buffer_io]") {
   };
   // clang-format on
 
-  const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+  using Result_t = std::tuple<
+    io::read_result_t<uint32_t>,
+    io::read_result_t<uint16_t>,
+    io::read_result_t<bool>,
+    io::read_result_t<uint32_t>>;
 
-  REQUIRE(a.ok());
-  REQUIRE(a.value() == uint32_t{0x12345678});
+  const auto [test_name, read_from_buffer] = GENERATE_REF(table<std::string, std::function<Result_t()>>(
+      {{"Direct buffer access"s,
+        [&]() -> Result_t { return io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer); }},
+       {"Via read buffer view"s, [&]() -> Result_t {
+          auto read_view = io::byte_read_buffer_view{buffer};
+          return io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
+        }}}));
 
-  REQUIRE(b.ok());
-  REQUIRE(b.value() == uint16_t{0xABCD});
+  SECTION(test_name) {
+    const auto [a, b, c, d] = read_from_buffer();
 
-  REQUIRE(c.ok());
-  REQUIRE(c.value() == true);
+    REQUIRE(a.ok());
+    REQUIRE(a.value() == uint32_t{0x12345678});
 
-  REQUIRE(d.ok());
-  REQUIRE(d.value() == uint32_t{0xFEDCBA98});
+    REQUIRE(b.ok());
+    REQUIRE(b.value() == uint16_t{0xABCD});
+
+    REQUIRE(c.ok());
+    REQUIRE(c.value() == true);
+
+    REQUIRE(d.ok());
+    REQUIRE(d.value() == uint32_t{0xFEDCBA98});
+  }
 }
 
 TEST_CASE("Try read multiple values inserts errors if the buffer is too small", "[buffer_io]") {
@@ -163,19 +179,32 @@ TEST_CASE("Try read multiple values inserts errors if the buffer is too small", 
   };
   // clang-format on
 
-  const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+  using Result_t =
+      std::tuple<io::read_result_t<uint32_t>, io::read_result_t<uint16_t>, io::read_result_t<bool>, io::read_result_t<uint32_t>>;
 
-  REQUIRE(a.ok());
-  REQUIRE(a.value() == uint32_t{0x12345678});
+  const auto [test_name, read_from_buffer] = GENERATE_REF(table<std::string, std::function<Result_t()>>(
+      {{"Direct buffer access"s,
+        [&]() -> Result_t { return io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer); }},
+       {"Via read buffer view"s, [&]() -> Result_t {
+          auto read_view = io::byte_read_buffer_view{buffer};
+          return io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
+        }}}));
 
-  REQUIRE(b.ok());
-  REQUIRE(b.value() == uint16_t{0xABCD});
+  SECTION(test_name) {
+    const auto [a, b, c, d] = read_from_buffer();
 
-  REQUIRE(c.is_error());
-  REQUIRE(io::read_error::insufficient_buffer == c.error());
+    REQUIRE(a.ok());
+    REQUIRE(a.value() == uint32_t{0x12345678});
 
-  REQUIRE(d.is_error());
-  REQUIRE(io::read_error::insufficient_buffer == d.error());
+    REQUIRE(b.ok());
+    REQUIRE(b.value() == uint16_t{0xABCD});
+
+    REQUIRE(c.is_error());
+    REQUIRE(io::read_error::insufficient_buffer == c.error());
+
+    REQUIRE(d.is_error());
+    REQUIRE(io::read_error::insufficient_buffer == d.error());
+  }
 }
 
 TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {

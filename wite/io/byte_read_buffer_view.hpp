@@ -97,10 +97,21 @@ read_result_t<Value_T> try_read(byte_read_buffer_view& buffer) {
 template <typename Value_T>
 requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
 read_result_t<typename Value_T::value_type>
-try_read(
-    byte_read_buffer_view& buffer) {
+try_read(byte_read_buffer_view& buffer) {
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+requires(sizeof...(Value_Ts) > 1)
+auto try_read(byte_read_buffer_view& buffer) noexcept {
+  const auto out = try_read<Value_Ts...>(buffer.data);
+
+  std::advance(buffer.read_position, std::min<ptrdiff_t>(detail::buffer_view::read::byte_count<Value_Ts...>(), std::distance(buffer.read_position, buffer.data.end())));
 
   return out;
 }
