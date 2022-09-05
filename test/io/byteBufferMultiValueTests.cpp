@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <tuple>
 
 using namespace std::string_literals;
 
@@ -25,16 +26,16 @@ TEST_CASE("Write multiple values to buffer", "[buffer_io]") {
 
   auto buffer  = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)>{};
 
-  const auto [test_name, writer] =
+  const auto [test_name, write_to_buffer] =
       GENERATE_REF(table<std::string, std::function<void()>>({
         {"Direct buffer access"s, [&]() { io::write(buffer, a, io::big_endian{b}, c, d); }},
-        {"Via read buffer view"s, [&]() { 
+        {"Via write buffer view"s, [&]() { 
           auto write_view = io::byte_write_buffer_view{buffer};
           io::write(write_view, a, io::big_endian{b}, c, d);
         }}}));
 
   SECTION(test_name) {
-    writer();
+    write_to_buffer();
   }
 
   REQUIRE(uint32_t{0x78} == std::to_integer<uint32_t>(buffer[ 0]));
@@ -61,15 +62,15 @@ TEST_CASE("Write multiple values from buffer throws out_of_range if the buffer i
 
   auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c)>{};
 
-  const auto [test_name, writer] = GENERATE_REF(table<std::string, std::function<void()>>(
+  const auto [test_name, write_to_buffer] = GENERATE_REF(table<std::string, std::function<void()>>(
       {{"Direct buffer access"s, [&]() { io::write(buffer, a, io::big_endian{b}, c, d); }},
-       {"Via read buffer view"s, [&]() {
+       {"Via write buffer view"s, [&]() {
           auto write_view = io::byte_write_buffer_view{buffer};
           io::write(write_view, a, io::big_endian{b}, c, d);
         }}}));
 
   SECTION(test_name) {
-    REQUIRE_THROWS_AS(writer(), std::out_of_range);
+    REQUIRE_THROWS_AS(write_to_buffer(), std::out_of_range);
   }
 }
 
@@ -83,12 +84,26 @@ TEST_CASE("Read multiple values from buffer", "[buffer_io]") {
   };
   // clang-format on
 
-  const auto [a, b, c, d] = io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+  using Result_t = std::tuple<uint32_t, uint16_t, bool, uint32_t>;
 
-  REQUIRE( a == uint32_t{0x12345678});
-  REQUIRE( b == uint16_t{0xABCD});
-  REQUIRE( c == true);
-  REQUIRE( d == uint32_t{0xFEDCBA98});
+  const auto [test_name, read_from_buffer] =
+      GENERATE_REF(table<std::string, std::function<Result_t()>>(
+      {{"Direct buffer access"s,
+        [&]() -> Result_t {
+              return io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer); }},
+       {"Via read buffer view"s, [&]() -> Result_t {
+              auto write_view = io::byte_read_buffer_view{buffer};
+              return io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(write_view);
+            }}}));
+
+  SECTION(test_name) {
+    const auto [a, b, c, d] = read_from_buffer();
+
+    REQUIRE( a == uint32_t{0x12345678});
+    REQUIRE( b == uint16_t{0xABCD});
+    REQUIRE( c == true);
+    REQUIRE( d == uint32_t{0xFEDCBA98});
+  }
 }
 
 TEST_CASE("Read multiple values from buffer throws out_of_range if the buffer is too small", "[buffer_io]") {
