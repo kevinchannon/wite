@@ -61,7 +61,16 @@ TEST_CASE("Write multiple values from buffer throws out_of_range if the buffer i
 
   auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c)>{};
 
-  REQUIRE_THROWS_AS(io::write(buffer, a, io::big_endian{b}, c, d), std::out_of_range);
+  const auto [test_name, writer] = GENERATE_REF(table<std::string, std::function<void()>>(
+      {{"Direct buffer access"s, [&]() { io::write(buffer, a, io::big_endian{b}, c, d); }},
+       {"Via read buffer view"s, [&]() {
+          auto write_view = io::byte_write_buffer_view{buffer};
+          io::write(write_view, a, io::big_endian{b}, c, d);
+        }}}));
+
+  SECTION(test_name) {
+    REQUIRE_THROWS_AS(writer(), std::out_of_range);
+  }
 }
 
 TEST_CASE("Read multiple values from buffer", "[buffer_io]") {
