@@ -1,7 +1,6 @@
 # TODO
 
 ## IO
-* Add multiple read/write values to buffers via buffer views
 * Add read/write functionality via streams (in addition to the buffer interface)
 * Add macro to macro out exception-throwing code
 * Update readme with new things
@@ -29,3 +28,4 @@
 
 ## Build things
 * Build in x64 and x86 in debug and release, to check things still work.
+* Build in different environments and compiler versions
