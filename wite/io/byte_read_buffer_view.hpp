@@ -111,7 +111,13 @@ requires(sizeof...(Value_Ts) > 1)
 auto try_read(byte_read_buffer_view& buffer) noexcept {
   const auto out = try_read<Value_Ts...>(buffer.data);
 
-  std::advance(buffer.read_position, std::min<ptrdiff_t>(detail::buffer_view::read::byte_count<Value_Ts...>(), std::distance(buffer.read_position, buffer.data.end())));
+  std::advance(
+    buffer.read_position,
+    std::min<ptrdiff_t>(
+      detail::buffer_view::read::byte_count<Value_Ts...>(),
+      std::distance(buffer.read_position, buffer.data.end())
+      )
+  );
 
   return out;
 }
