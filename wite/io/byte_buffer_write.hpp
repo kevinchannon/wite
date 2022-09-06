@@ -123,7 +123,7 @@ namespace detail::buffer::write {
 }  // namespace detail::buffer::write
 
 template <typename Value_T, typename... Value_Ts>
-auto try_write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+auto try_write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
   return detail::buffer::write::_recursive_try_write(buffer, first_value, other_values...);
 }
 

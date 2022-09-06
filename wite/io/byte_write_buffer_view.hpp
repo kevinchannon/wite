@@ -95,7 +95,7 @@ namespace detail::buffer_view::write {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename... Value_Ts>
-auto try_write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) {
+auto try_write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) noexcept {
   const auto out = try_write(buffer.data, first_value, other_values...);
 
   std::advance(buffer.write_position,
