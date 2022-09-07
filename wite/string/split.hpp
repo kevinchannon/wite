@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wite/configure/features.hpp>
+
 #include <cstdint>
 #include <string_view>
 #include <tuple>
@@ -83,10 +85,14 @@ template <typename Result_T>
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Result_T, typename Char_T>
-requires std::is_pod_v<Char_T>
-[[nodiscard]] Result_T split_to(const Char_T* str,
-                                Char_T delimiter          = detail::space_character<Char_T>(),
-                                split_behaviour behaviour = split_behaviour::drop_empty) noexcept {
+#if _WITE_HAS_CONCEPTS
+requires std::is_pod_v<Char_T> [[nodiscard]] Result_T split_to(
+#else
+    [[nodiscard]] std::enable_if_t<std::is_pod_v<Char_T> , Result_T> split_to(
+#endif
+    const Char_T* str,
+    Char_T delimiter          = detail::space_character<Char_T>(),
+    split_behaviour behaviour = split_behaviour::drop_empty) noexcept {
   if (nullptr == str) {
     return {};
   }
@@ -106,8 +112,13 @@ template <typename Char_T>
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Char_T>
+#if _WITE_HAS_CONCEPTS
 requires std::is_pod_v<Char_T>
 [[nodiscard]] std::vector<std::basic_string<Char_T>> split(const Char_T* str) noexcept {
+#else
+[[nodiscard]] std::enable_if_t<std::is_pod_v<Char_T>, std::vector<std::basic_string<Char_T>>> split(const Char_T* str) noexcept {
+#endif
+
   if (nullptr == str) {
     return {};
   }

@@ -17,7 +17,7 @@ class result : std::variant<Value_T, Error_T> {
   result(Error_T error) : _base_t(error) {}
 
   [[nodiscard]] bool ok() const noexcept { return this->index() == 0; }
-  [[nodiscard]] bool is_error() const noexcept { return not ok(); }
+  [[nodiscard]] bool is_error() const noexcept { return false == ok(); }
   [[nodiscard]] const Value_T& value() const noexcept { return std::get<Value_T>(*this); }
   [[nodiscard]] const Error_T& error() const noexcept { return std::get<Error_T>(*this); }
 };

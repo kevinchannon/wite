@@ -1,5 +1,7 @@
 #include <wite/collections/stack_vector.hpp>
 
+#include "../utils.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -34,7 +36,7 @@ TEST_CASE("Stack vector constructor throws if initializer list is too long", "[s
 TEST_CASE("Stack vector intializer-list assignment operator works", "[stack_vector]") {
   collections::stack_vector<double, 10> v = {1.1, 2.2, 3.3};
   REQUIRE(3 == v.size());
-  REQUIRE(std::ranges::equal(std::vector<double>{1.1, 2.2, 3.3}, v));
+  REQUIRE(test::ranges_equal(std::vector<double>{1.1, 2.2, 3.3}, v));
 }
 
 TEST_CASE("Stack vector swaps", "[stack_vector]") {
@@ -46,8 +48,8 @@ TEST_CASE("Stack vector swaps", "[stack_vector]") {
   const auto expected_1 = {6, 7, 8, 9, 10};
   const auto expected_2 = {1, 2, 3, 4, 5};
 
-  REQUIRE(std::ranges::equal(expected_1, v_1));
-  REQUIRE(std::ranges::equal(expected_2, v_2));
+  REQUIRE(test::ranges_equal(expected_1, v_1));
+  REQUIRE(test::ranges_equal(expected_2, v_2));
 }
 
 TEST_CASE("Stack vector comparison works") {

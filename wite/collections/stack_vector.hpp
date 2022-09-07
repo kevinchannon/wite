@@ -18,17 +18,17 @@ class stack_vector {
   using data_type = std::array<Value_T, CAPACITY>;
 
  public:
-  using value_type             = data_type::value_type;
-  using size_type              = data_type::size_type;
-  using difference_type        = data_type::difference_type;
-  using pointer                = data_type::pointer;
-  using const_pointer          = data_type::const_pointer;
-  using reference              = data_type::reference;
-  using const_reference        = data_type::const_reference;
-  using iterator               = data_type::iterator;
-  using const_iterator         = data_type::const_iterator;
-  using reverse_iterator       = data_type::reverse_iterator;
-  using const_reverse_iterator = data_type::const_reverse_iterator;
+  using value_type             = typename data_type::value_type;
+  using size_type              = typename data_type::size_type;
+  using difference_type        = typename data_type::difference_type;
+  using pointer                = typename data_type::pointer;
+  using const_pointer          = typename data_type::const_pointer;
+  using reference              = typename data_type::reference;
+  using const_reference        = typename data_type::const_reference;
+  using iterator               = typename data_type::iterator;
+  using const_iterator         = typename data_type::const_iterator;
+  using reverse_iterator       = typename data_type::reverse_iterator;
+  using const_reverse_iterator = typename data_type::const_reverse_iterator;
 
   DEFAULT_CONSTRUCTORS(stack_vector);
 

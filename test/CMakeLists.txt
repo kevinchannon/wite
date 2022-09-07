@@ -21,7 +21,7 @@ add_executable(wite_test
 	"io/byteBufferMultiValueTests.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET wite_test PROPERTY CXX_STANDARD 20)
+  set_property(TARGET wite_test PROPERTY CXX_STANDARD 17)
 endif()
 
 target_include_directories(wite_test PRIVATE
