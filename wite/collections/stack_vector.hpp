@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wite/env/features.hpp>
+#include <wite/env/environment.hpp>
 #include <wite/common/constructor_macros.hpp>
 
 #include <algorithm>
@@ -31,7 +31,7 @@ class stack_vector {
   using reverse_iterator       = typename data_type::reverse_iterator;
   using const_reverse_iterator = typename data_type::const_reverse_iterator;
 
-  DEFAULT_CONSTRUCTORS(stack_vector);
+  WITE_DEFAULT_CONSTRUCTORS(stack_vector);
 
   constexpr explicit stack_vector(uint8_t size) : _item_count{size} {}
 
@@ -53,8 +53,20 @@ class stack_vector {
 
   _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return _data.begin(); }
   _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return _data.cbegin(); }
-  _WITE_NODISCARD constexpr auto end() noexcept { return iterator(std::next(_data.data(), _item_count)); }
-  _WITE_NODISCARD constexpr auto end() const noexcept { return const_iterator(std::next(_data.data(), _item_count)); }
+  _WITE_NODISCARD constexpr auto end() noexcept {
+    #ifdef _WITE_COMPILER_MSVC
+      return iterator(_data.data(), _item_count);
+    #else
+      return iterator(std::next(_data.data(), _item_count));
+    #endif
+  }
+  _WITE_NODISCARD constexpr auto end() const noexcept { 
+    #ifdef _WITE_COMPILER_MSVC
+      return const_iterator(_data.data(), _item_count);
+    #else
+      return const_iterator(std::next(_data.data(), _item_count));
+    #endif
+  }
   _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rend() noexcept { return reverse_iterator(begin()); }
@@ -112,7 +124,7 @@ class stack_vector {
       return false;
     }
 
-    return std::equal(begin(), end(), other.begin());
+    return 0 == std::memcmp(_data.data(), other._data.data(), _item_count);
   }
 
   _WITE_NODISCARD constexpr bool operator!=(const stack_vector& other) const noexcept { return !(*this == other); }

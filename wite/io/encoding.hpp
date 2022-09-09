@@ -30,14 +30,14 @@ struct endianness : public encoding {
 
   endianness(Value_T val) : value{val} {}
 
-  DEFAULT_CONSTRUCTORS(endianness);
+  WITE_DEFAULT_CONSTRUCTORS(endianness);
 };
 
 template <typename Value_T>
 struct little_endian : public endianness<Value_T, endian::little> {
   little_endian(Value_T val) : endianness<Value_T, endian::little>{val} {}
 
-  DEFAULT_CONSTRUCTORS(little_endian);
+  WITE_DEFAULT_CONSTRUCTORS(little_endian);
 };
 
 template <typename Value_T>
@@ -47,7 +47,7 @@ template <typename Value_T>
 struct big_endian : public endianness<Value_T, endian::big> {
   big_endian(Value_T val) : endianness<Value_T, endian::big>{val} {}
 
-  DEFAULT_CONSTRUCTORS(big_endian);
+  WITE_DEFAULT_CONSTRUCTORS(big_endian);
 };
 
 template <typename Value_T>
