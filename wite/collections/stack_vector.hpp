@@ -53,8 +53,8 @@ class stack_vector {
 
   _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return _data.begin(); }
   _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return _data.cbegin(); }
-  _WITE_NODISCARD constexpr auto end() noexcept { return iterator(_data.data(), _item_count); }
-  _WITE_NODISCARD constexpr auto end() const noexcept { return const_iterator(_data.data(), _item_count); }
+  _WITE_NODISCARD constexpr auto end() noexcept { return iterator(std::next(_data.data(), _item_count)); }
+  _WITE_NODISCARD constexpr auto end() const noexcept { return const_iterator(std::next(_data.data(), _item_count)); }
   _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rend() noexcept { return reverse_iterator(begin()); }

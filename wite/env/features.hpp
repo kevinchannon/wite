@@ -18,7 +18,7 @@
 #else
 #define _WITE_FEATURE_USE_NODISCARD 0
 #endif
-#endif  // _WITE_FEATURE_NODISCARD
+#endif  // _WITE_FEATURE_USE_NODISCARD
 
 #ifndef _WITE_FEATURE_USE_STD_FORMAT
 #ifdef __cpp_lib_format

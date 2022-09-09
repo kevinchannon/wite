@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wite/env/features.hpp>
+#include <wite/common/concepts.hpp>
 
 #include <cstdint>
 #include <string_view>
@@ -86,7 +87,7 @@ template <typename Result_T>
 
 template <typename Result_T, typename Char_T>
 #if _WITE_HAS_CONCEPTS
-requires std::is_pod_v<Char_T> [[nodiscard]] Result_T split_to(
+requires common::is_pod_like<Char_T> [[nodiscard]] Result_T split_to(
 #else
     [[nodiscard]] std::enable_if_t<std::is_pod_v<Char_T> , Result_T> split_to(
 #endif
@@ -113,7 +114,7 @@ template <typename Char_T>
 
 template <typename Char_T>
 #if _WITE_HAS_CONCEPTS
-requires std::is_pod_v<Char_T>
+requires std::is_standard_layout_v<Char_T> && std::is_trivial_v<Char_T>
 [[nodiscard]] std::vector<std::basic_string<Char_T>> split(const Char_T* str) noexcept {
 #else
 [[nodiscard]] std::enable_if_t<std::is_pod_v<Char_T>, std::vector<std::basic_string<Char_T>>> split(const Char_T* str) noexcept {

@@ -1,10 +1,19 @@
 #pragma once
 
-#if __has_include(<span>) && __cpp_lib_span >= 202002
+#undef _WITE_USING_STD_SPAN_IMPLEMENTATION
+
+#if __has_include(<span>)
 #include <span>
+#if __cpp_lib_span >= 202002L
+#define _WITE_USING_STD_SPAN_IMPLEMENTATION 1
 #else
+#define _WITE_USING_STD_SPAN_IMPLEMENTATION 0
+#endif
+#else
+#define _WITE_USING_STD_SPAN_IMPLEMENTATION 0
+#endif
 
-
+#if !_WITE_USING_STD_SPAN_IMPLEMENTATION
 /*
 This is an implementation of C++20's std::span
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf

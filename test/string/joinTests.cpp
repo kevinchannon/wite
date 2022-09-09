@@ -1,6 +1,6 @@
 #include <wite/string/join.hpp>
 
-#include <wite/env/compiler.hpp>
+#include <wite/env/environment.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -11,9 +11,9 @@
 using namespace std::string_literals;
 using namespace wite;
 
-#ifdef _WITE_COMPILER_CLANG
+#ifndef _WITE_COMPILER_MSVC
 namespace std {
-template <class T>
+template <typename T>
 initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 } 
 #endif

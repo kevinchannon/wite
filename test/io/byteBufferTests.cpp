@@ -14,6 +14,13 @@
 
 using namespace wite;
 
+#ifndef _WITE_COMPILER_MSVC
+namespace std {
+template <typename T>
+initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
+}
+#endif
+
 TEST_CASE("Values from vector buffer", "[buffer_io]") {
   const auto vec_buffer = std::vector<std::byte>{std::byte{0x67},
                                                  std::byte{0x45},
@@ -33,7 +40,7 @@ TEST_CASE("Values from vector buffer", "[buffer_io]") {
     SECTION("Read 2 shorts") {
       REQUIRE(uint32_t(0x4567) == io::read<uint16_t>(vec_buffer, io::endian::little));
       REQUIRE(uint32_t(0x4567) == io::read<io::little_endian<uint16_t>>(vec_buffer));
-      REQUIRE(uint32_t(0x0123) == io::read<io::little_endian<uint16_t>>({std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
+      REQUIRE(uint32_t(0x0123) == io::read<io::little_endian<uint16_t>>(std::span<const std::byte>{std::next(vec_buffer.begin(), 2), vec_buffer.end()}));
     }
 
     SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
