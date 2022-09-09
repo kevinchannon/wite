@@ -30,7 +30,7 @@ TEST_CASE("Stack vector has correct size on construction", "[stack_vector]") {
 #define COMMA ,
 
 TEST_CASE("Stack vector constructor throws if initializer list is too long", "[stack vector]") {
-  REQUIRE_THROWS_AS(collections::stack_vector<int COMMA 3>{1 COMMA 2 COMMA 3 COMMA 4}, std::invalid_argument);
+  REQUIRE_THROWS_AS((collections::stack_vector<int, 3>{1, 2, 3, 4}), std::invalid_argument);
 }
 
 TEST_CASE("Stack vector intializer-list assignment operator works", "[stack_vector]") {
@@ -102,7 +102,7 @@ TEST_CASE("Stack vector front() returns the first element", "[stack_vector]") {
   REQUIRE(2 == collections::stack_vector<uint32_t, 5>{2, 3, 4}.front());
 
   SECTION("And throws if the vector is empty") {
-    REQUIRE_THROWS_AS(collections::stack_vector<uint32_t COMMA 5>{}.front(), std::out_of_range);
+    REQUIRE_THROWS_AS((collections::stack_vector<uint32_t, 5>{}.front()), std::out_of_range);
   }
 }
 
@@ -110,7 +110,7 @@ TEST_CASE("Stack vector back() returns the last element", "[stack_vector]") {
   REQUIRE(4 == collections::stack_vector<uint32_t, 5>{2, 3, 4}.back());
 
   SECTION("And throws if the vector is empty") {
-    REQUIRE_THROWS_AS(collections::stack_vector<uint32_t COMMA 5>{}.back(), std::out_of_range);
+    REQUIRE_THROWS_AS((collections::stack_vector<uint32_t, 5>{}.back()), std::out_of_range);
   }
 }
 

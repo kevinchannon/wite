@@ -1,0 +1,75 @@
+#pragma once
+
+#if __cpp_concepts >= 201907
+#define _WITE_HAS_CONCEPTS 1
+#define _WITE_CONCEPT      concept
+#else
+#define _WITE_HAS_CONCEPTS 0
+#define _WITE_CONCEPT      constexpr auto
+#endif
+
+#ifndef _WITE_FEATURE_USE_NODISCARD
+#ifndef __has_cpp_attribute
+#define _WITE_FEATURE_USE_NODISCARD 0
+#define _WITE_NODISCARD
+#elif __has_cpp_attribute(nodiscard) >= 201603L
+#define _WITE_FEATURE_USE_NODISCARD 1
+#define _WITE_NODISCARD             [[nodiscard]]
+#else
+#define _WITE_FEATURE_USE_NODISCARD 0
+#endif
+#endif  // _WITE_FEATURE_NODISCARD
+
+#ifndef _WITE_FEATURE_USE_STD_FORMAT
+#ifdef __cpp_lib_format
+#define _WITE_FEATURE_USE_STD_FORMAT 1
+#else
+#define _WITE_FEATURE_USE_STD_FORMAT 0
+#endif  // __cpp_lib_format
+#endif // _WITE_FEATURE_USE_STD_FORMAT
+
+#ifndef _WITE_FEATURE_USE_NORETURN
+#ifndef __has_cpp_attribute
+#define _WITE_FEATURE_USE_NORETURN 0
+#define _WITE_NORETURN
+#elif __has_cpp_attribute(noreturn) >= 200809L
+#define _WITE_FEATURE_USE_NORETURN 1
+#define _WITE_NORETURN             [[noreturn]]
+#else
+#define _WITE_FEATURE_USE_NORETURN 0
+#endif
+#endif  // _WITE_FEATURE_USE_NORETURN
+
+#ifndef _WITE_FEATURE_USE_CONSTEVAL
+#ifdef __cpp_consteval
+#define _WITE_FEATURE_USE_CONSTEVAL 1
+#define _WITE_CONSTEVAL             consteval
+#else
+#define _WITE_FEATURE_USE_CONSTEVAL 0
+#define _WITE_CONSTEVAL             constexpr
+#endif  // __cpp_consteval
+#endif  // _WITE_FEATURE_USE_CONSTEVAL
+
+#ifndef _WITE_FEATURE_USE_STD_BYTE
+#ifdef __cpp_lib_byte
+#define _WITE_FEATURE_USE_STD_BYTE 1
+#define _WITE_BYTE                 std::byte
+#else
+#define _WITE_FEATURE_USE_STD_BYTE 0
+#define _WITE_BYTE                 std::uint8_t
+#endif  // __cpp_lib_byte
+#endif  // _WITE_FEATURE_USE_STD_BYTE
+
+#ifndef _WITE_FEATURE_HAS_THREE_WAY_COMPARE
+#if __cpp_impl_three_way_comparison >= 201711
+#define _WITE_FEATURE_HAS_THREE_WAY_COMPARE 1
+#else
+#define _WITE_FEATURE_HAS_THREE_WAY_COMPARE 0
+#endif  // __cpp_impl_three_way_comparison >= 201711
+#endif  // _WITE_FEATURE_HAS_THREE_WAY_COMPARE
+
+#if __cpp_lib_ranges >= 201911
+#define _WITE_HAS_RANGES 1
+#else
+#define _WITE_HAS_RANGES 0
+#endif

@@ -14,9 +14,9 @@ namespace detail {
   template <typename Char_T>
   [[nodiscard]] constexpr auto is_not_whitespace(Char_T c) noexcept -> bool {
     if constexpr (std::is_same_v<Char_T, char>) {
-      return not std::isspace(c);
+      return ! std::isspace(c);
     } else if constexpr (std::is_same_v<Char_T, wchar_t>) {
-      return not std::iswspace(c);
+      return ! std::iswspace(c);
     } else {
       static_assert(std::is_same_v<Char_T, char>, "Invalid character type");
     }

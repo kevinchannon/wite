@@ -1,5 +1,7 @@
 #include <wite/string/join.hpp>
 
+#include <wite/env/compiler.hpp>
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -8,6 +10,13 @@
 
 using namespace std::string_literals;
 using namespace wite;
+
+#ifdef _WITE_COMPILER_CLANG
+namespace std {
+template <class T>
+initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
+} 
+#endif
 
 TEST_CASE("Join strings", "[string]") {
   SECTION("Empty input") {

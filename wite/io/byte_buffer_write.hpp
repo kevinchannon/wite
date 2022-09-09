@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wite/configure/features.hpp>
+#include <wite/env/features.hpp>
 
 #include <wite/io/concepts.hpp>
 #include <wite/io/encoding.hpp>
@@ -10,7 +10,7 @@
 #include <bit>
 #include <cstddef>
 #include <iterator>
-#include <span>
+#include <wite/compatibility/span.hpp>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
@@ -27,7 +27,7 @@ requires is_buffer_writeable<Value_T>
 void unchecked_write(auto buffer, Value_T value) {
 #else
 template <typename Value_T, typename Buffer_T>
-void unchecked_write(std::enable_if_t<is_iterator_v<Buffer_T>, Buffer_T> buffer, std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value) {
+void unchecked_write(Buffer_T buffer, std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value) {
 #endif
   if constexpr (is_encoded<Value_T>) {
     using RawValue_t = typename Value_T::value_type;

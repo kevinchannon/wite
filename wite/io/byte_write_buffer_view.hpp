@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wite/env/features.hpp>
+
 #include <wite/io/byte_buffer_write.hpp>
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
@@ -8,7 +10,7 @@
 #include <bit>
 #include <cstddef>
 #include <iterator>
-#include <span>
+#include <wite/compatibility/span.hpp>
 #include <type_traits>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,8 +32,12 @@ struct byte_write_buffer_view {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T>
 void write(byte_write_buffer_view& buffer, Value_T value) {
+#else
+void write(byte_write_buffer_view& buffer, std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value) {
+#endif
   write<Value_T>({buffer.write_position, buffer.data.end()}, value);
   std::advance(buffer.write_position, sizeof(Value_T));
 }
@@ -50,8 +56,12 @@ void write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... othe
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T>
 write_result_t try_write(byte_write_buffer_view& buffer, Value_T value) {
+#else
+    std::enable_if_t<is_buffer_writeable<Value_T>, write_result_t> try_write(byte_write_buffer_view& buffer, Value_T value) {
+#endif
   const auto result = try_write<Value_T>({buffer.write_position, buffer.data.end()}, value);
   if (result.ok()) {
     std::advance(buffer.write_position, sizeof(Value_T));
@@ -65,14 +75,22 @@ write_result_t try_write(byte_write_buffer_view& buffer, Value_T value) {
 namespace detail::buffer_view::write {
 
   template <typename Value_T>
+  #if _WITE_HAS_CONCEPTS
   requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>)) constexpr auto value_size() noexcept {
+  #else
+  constexpr auto value_size(std::enable_if_t<(! std::is_standard_layout_v<Value_T>) || (! std::is_trivial_v<Value_T>)>) noexcept {
+  #endif
     // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
     // In that case, a new overload of this function will need to be added for the new type.
     return sizeof(typename Value_T::value_type);
   }
 
   template <typename Value_T>
+  #if _WITE_HAS_CONCEPTS
   requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T>) constexpr auto value_size() noexcept {
+  #else
+  constexpr auto value_size(std::enable_if_t<std::is_standard_layout_v<Value_T> && std::is_trivial_v<Value_T>>) noexcept {
+  #endif
     return sizeof(Value_T);
   }
 
@@ -108,8 +126,14 @@ auto try_write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T>
-void write(byte_write_buffer_view& buffer, Value_T value, std::endian endianness) {
+void write(byte_write_buffer_view& buffer, Value_T value, endian endianness) {
+#else
+void write(byte_write_buffer_view& buffer,
+           std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value,
+           endian endianness) {
+#endif
   write<Value_T>({buffer.write_position, buffer.data.end()}, value, endianness);
   std::advance(buffer.write_position, sizeof(Value_T));
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <wite/env/features.hpp>
 #include <wite/common/constructor_macros.hpp>
 
 #include <algorithm>
@@ -50,35 +51,35 @@ class stack_vector {
     swap(_item_count, other._item_count);
   }
 
-  [[nodiscard]] constexpr auto begin() noexcept -> iterator { return _data.begin(); }
-  [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return _data.cbegin(); }
-  [[nodiscard]] constexpr auto end() noexcept { return iterator(_data.data(), _item_count); }
-  [[nodiscard]] constexpr auto end() const noexcept { return const_iterator(_data.data(), _item_count); }
-  [[nodiscard]] constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
-  [[nodiscard]] constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
-  [[nodiscard]] constexpr auto rend() noexcept { return reverse_iterator(begin()); }
-  [[nodiscard]] constexpr auto rend() const noexcept { return const_reverse_iterator(begin()); }
-  [[nodiscard]] constexpr auto cbegin() const noexcept { return begin(); }
-  [[nodiscard]] constexpr auto cend() const noexcept { return end(); }
-  [[nodiscard]] constexpr auto crbegin() const noexcept { return rbegin(); }
-  [[nodiscard]] constexpr auto crend() const noexcept { return rend(); }
-  [[nodiscard]] constexpr auto size() const noexcept { return _item_count; }
-  [[nodiscard]] constexpr auto capacity() const noexcept -> size_type { return _data.max_size(); }
-  [[nodiscard]] constexpr auto empty() const noexcept { return _item_count == 0; }
-  [[nodiscard]] constexpr auto operator[](size_type pos) noexcept -> reference { return _data[pos]; }
-  [[nodiscard]] constexpr auto operator[](size_type pos) const noexcept -> const_reference { return _data[pos]; }
-  [[nodiscard]] constexpr auto front() -> reference { return at(0); }
-  [[nodiscard]] constexpr auto front() const -> const_reference { return at(0); }
-  [[nodiscard]] constexpr auto back() -> reference { return at(size() - 1); }
-  [[nodiscard]] constexpr auto back() const -> const_reference { return at(size() - 1); }
-  [[nodiscard]] constexpr auto data() noexcept { return _data.data(); }
-  [[nodiscard]] constexpr auto data() const noexcept { return _data.data(); }
+  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return _data.begin(); }
+  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return _data.cbegin(); }
+  _WITE_NODISCARD constexpr auto end() noexcept { return iterator(_data.data(), _item_count); }
+  _WITE_NODISCARD constexpr auto end() const noexcept { return const_iterator(_data.data(), _item_count); }
+  _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
+  _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
+  _WITE_NODISCARD constexpr auto rend() noexcept { return reverse_iterator(begin()); }
+  _WITE_NODISCARD constexpr auto rend() const noexcept { return const_reverse_iterator(begin()); }
+  _WITE_NODISCARD constexpr auto cbegin() const noexcept { return begin(); }
+  _WITE_NODISCARD constexpr auto cend() const noexcept { return end(); }
+  _WITE_NODISCARD constexpr auto crbegin() const noexcept { return rbegin(); }
+  _WITE_NODISCARD constexpr auto crend() const noexcept { return rend(); }
+  _WITE_NODISCARD constexpr auto size() const noexcept { return _item_count; }
+  _WITE_NODISCARD constexpr auto capacity() const noexcept -> size_type { return _data.max_size(); }
+  _WITE_NODISCARD constexpr auto empty() const noexcept { return _item_count == 0; }
+  _WITE_NODISCARD constexpr auto operator[](size_type pos) noexcept -> reference { return _data[pos]; }
+  _WITE_NODISCARD constexpr auto operator[](size_type pos) const noexcept -> const_reference { return _data[pos]; }
+  _WITE_NODISCARD constexpr auto front() -> reference { return at(0); }
+  _WITE_NODISCARD constexpr auto front() const -> const_reference { return at(0); }
+  _WITE_NODISCARD constexpr auto back() -> reference { return at(size() - 1); }
+  _WITE_NODISCARD constexpr auto back() const -> const_reference { return at(size() - 1); }
+  _WITE_NODISCARD constexpr auto data() noexcept { return _data.data(); }
+  _WITE_NODISCARD constexpr auto data() const noexcept { return _data.data(); }
 
-  [[nodiscard]] constexpr auto at(size_type pos) -> reference {
+  _WITE_NODISCARD constexpr auto at(size_type pos) -> reference {
     return const_cast<reference>(const_cast<const stack_vector*>(this)->at(pos));
   }
 
-  [[nodiscard]] constexpr auto at(size_type pos) const -> const_reference {
+  _WITE_NODISCARD constexpr auto at(size_type pos) const -> const_reference {
     if (pos >= _item_count) {
       throw std::out_of_range{"Static vector access violation"};
     }
@@ -106,7 +107,7 @@ class stack_vector {
 
   void clear() noexcept { _item_count = 0; }
 
-  [[nodiscard]] constexpr bool operator==(const stack_vector& other) const noexcept {
+  _WITE_NODISCARD constexpr bool operator==(const stack_vector& other) const noexcept {
     if (_item_count != other._item_count) {
       return false;
     }
@@ -114,7 +115,7 @@ class stack_vector {
     return std::equal(begin(), end(), other.begin());
   }
 
-  [[nodiscard]] constexpr bool operator!=(const stack_vector& other) const noexcept { return not(*this == other); }
+  _WITE_NODISCARD constexpr bool operator!=(const stack_vector& other) const noexcept { return !(*this == other); }
 
  private:
   data_type _data{};

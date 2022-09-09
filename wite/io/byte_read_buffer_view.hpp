@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wite/env/features.hpp>
+
 #include <wite/io/byte_buffer_read.hpp>
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
@@ -7,7 +9,7 @@
 
 #include <bit>
 #include <cstddef>
-#include <span>
+#include <wite/compatibility/span.hpp>
 #include <type_traits>
 #include <iterator>
 
@@ -30,8 +32,13 @@ struct byte_read_buffer_view {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_readable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
 Value_T read(byte_read_buffer_view& buffer) {
+#else
+std::enable_if_t<is_buffer_readable<Value_T> && (!std::is_base_of_v<io::encoding, Value_T>), Value_T> read(
+    byte_read_buffer_view& buffer) {
+#endif
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
 
@@ -43,15 +50,24 @@ Value_T read(byte_read_buffer_view& buffer) {
 namespace detail::buffer_view::read {
 
   template <typename Value_T>
+  #if _WITE_HAS_CONCEPTS
   requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
   constexpr auto value_size() noexcept {
+  #else
+  constexpr auto value_size(
+      std::enable_if_t<(! std::is_standard_layout_v<Value_T>) || (! std::is_trivial_v<Value_T>)>) noexcept {
+  #endif
     // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
     // In that case, a new overload of this function will need to be added for the new type.
     return sizeof(typename Value_T::value_type);
   }
 
   template <typename Value_T>
+  #if _WITE_HAS_CONCEPTS
   requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T>) constexpr auto value_size() noexcept {
+  #else
+  constexpr auto value_size(std::enable_if_t<std::is_standard_layout_v<Value_T> && std::is_trivial_v<Value_T>>) noexcept {
+  #endif
     return sizeof(Value_T);
   }
 
@@ -73,7 +89,11 @@ namespace detail::buffer_view::read {
 }  // namespace detail::buffer_view::read
 
 template <typename... Value_Ts>
+#if _WITE_HAS_CONCEPTS
 requires(sizeof...(Value_Ts) > 1) auto read(byte_read_buffer_view& buffer) {
+#else
+auto read(std::enable_if_t<sizeof...(Value_Ts) != 1, byte_read_buffer_view& > buffer) {
+#endif
   const auto values = read<Value_Ts...>(buffer.data);
   
   std::advance(buffer.read_position, detail::buffer_view::read::byte_count<Value_Ts...>());
@@ -84,8 +104,13 @@ requires(sizeof...(Value_Ts) > 1) auto read(byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
 read_result_t<Value_T> try_read(byte_read_buffer_view& buffer) {
+#else
+std::enable_if_t<is_buffer_writeable<Value_T> && (! std::is_base_of_v<io::encoding, Value_T>), read_result_t<Value_T>>
+try_read(byte_read_buffer_view& buffer) {
+#endif
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
 
@@ -95,9 +120,13 @@ read_result_t<Value_T> try_read(byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
-read_result_t<typename Value_T::value_type>
+read_result_t<typename Value_T::value_type> try_read(byte_read_buffer_view& buffer) {
+#else
+std::enable_if_t<is_buffer_writeable<Value_T> && std::is_base_of_v<io::encoding, Value_T>, read_result_t<typename Value_T::value_type>>
 try_read(byte_read_buffer_view& buffer) {
+#endif
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(Value_T));
 
@@ -107,8 +136,12 @@ try_read(byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Value_Ts>
+#if _WITE_HAS_CONCEPTS
 requires(sizeof...(Value_Ts) > 1)
 auto try_read(byte_read_buffer_view& buffer) noexcept {
+#else
+auto try_read(std::enable_if_t<sizeof...(Value_Ts) != 1, byte_read_buffer_view&> buffer) noexcept {
+#endif
   const auto out = try_read<Value_Ts...>(buffer.data);
 
   std::advance(
@@ -125,8 +158,13 @@ auto try_read(byte_read_buffer_view& buffer) noexcept {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
 Value_T read(byte_read_buffer_view& buffer, std::endian endianness) {
+#else
+std::enable_if_t < is_buffer_writeable<Value_T> && (! std::is_base_of_v<io::encoding, Value_T>), Value_T>
+read(byte_read_buffer_view& buffer, endian endianness) {
+#endif
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endianness);
   std::advance(buffer.read_position, sizeof(out));
 
@@ -136,8 +174,13 @@ Value_T read(byte_read_buffer_view& buffer, std::endian endianness) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+#if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
 typename Value_T::value_type read(byte_read_buffer_view& buffer) {
+#else
+std::enable_if_t<is_buffer_writeable<Value_T> && std::is_base_of_v<io::encoding, Value_T>, typename Value_T::value_type>
+read(byte_read_buffer_view& buffer) {
+#endif
   const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, sizeof(out));
 

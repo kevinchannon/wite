@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wite/env/features.hpp>
+
 #include <algorithm>
 #include <numeric>
 #include <string>
@@ -14,22 +16,21 @@ namespace wite::string {
 
 namespace detail {
   template <typename Char_T>
-  requires std::is_same_v<char, Char_T>
-  [[nodiscard]] consteval auto space_character() noexcept {
+  _WITE_NODISCARD _WITE_CONSTEVAL auto space_character() noexcept {
+    if constexpr (std::is_same_v<char, Char_T>) {
       return ' ';
-  }
-
-  template <typename Char_T>
-    requires std::is_same_v<wchar_t, Char_T>
-  [[nodiscard]] consteval auto space_character() noexcept {
+    } else if constexpr (std::is_same_v<wchar_t, Char_T>) {
       return L' ';
+    } else {
+      static_assert(std::is_same_v<char, Char_T>, "Invalid character type");
+    }
   }
 }  // namespace detail
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Range_T>
-[[nodiscard]] std::basic_string<typename Range_T::value_type::value_type> join(
+_WITE_NODISCARD std::basic_string<typename Range_T::value_type::value_type> join(
     const Range_T& strings,
     typename Range_T::value_type::value_type delimiter = detail::space_character<typename Range_T::value_type::value_type>()) {
   using Char_t = typename Range_T::value_type::value_type;

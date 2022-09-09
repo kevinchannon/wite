@@ -1,5 +1,7 @@
 #include <wite/io/byte_buffer.hpp>
 
+#include "../utils.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <array>
@@ -77,34 +79,34 @@ TEST_CASE("to bytes", "[buffer_io]") {
                                                                std::byte{0x44},
                                                                std::byte{0xCC}};
 
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes(0xCC44DD33EE22FF11)));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes(0xCC44DD33EE22FF11)));
   }
 
   SECTION("uint32") {
     const auto bytes =
         std::array<std::byte, sizeof(uint32_t)>{std::byte{0x22}, std::byte{0xEE}, std::byte{0x33}, std::byte{0xDD}};
 
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes<io::little_endian<uint32_t>>(0xDD33EE22)));
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes<io::big_endian<uint32_t>>(0x22EE33DD)));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes<io::little_endian<uint32_t>>(0xDD33EE22)));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes<io::big_endian<uint32_t>>(0x22EE33DD)));
   }
 
   SECTION("uint16") {
     const auto bytes = std::array<std::byte, sizeof(uint16_t)>{std::byte{0xD3}, std::byte{0x4D}};
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes(uint16_t{0x4DD3})));
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes<io::big_endian<uint16_t>>(uint16_t{0xD34D})));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes(uint16_t{0x4DD3})));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes<io::big_endian<uint16_t>>(uint16_t{0xD34D})));
   }
 
   SECTION("uint8_t") {
     const auto bytes = std::array<std::byte, sizeof(uint8_t)>{std::byte{0xCC}};
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes<uint8_t>(uint8_t{0xCC})));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes<uint8_t>(uint8_t{0xCC})));
   }
 
   SECTION("bool") {
     const auto true_bytes = std::array<std::byte, sizeof(bool)>{std::byte{true}};
-    REQUIRE(std::ranges::equal(true_bytes, io::to_bytes(true)));
+    REQUIRE(test::ranges_equal(true_bytes, io::to_bytes(true)));
 
     const auto false_bytes = std::array<std::byte, sizeof(bool)>{std::byte{false}};
-    REQUIRE(std::ranges::equal(false_bytes, io::to_bytes(false)));
+    REQUIRE(test::ranges_equal(false_bytes, io::to_bytes(false)));
   }
 
   SECTION("double") {
@@ -112,7 +114,7 @@ TEST_CASE("to bytes", "[buffer_io]") {
     const auto d = 1.35743452e+55;
     std::copy_n(reinterpret_cast<const std::byte*>(&d), sizeof(d), bytes.begin());
 
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes(d)));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes(d)));
   }
 
   SECTION("float") {
@@ -120,14 +122,14 @@ TEST_CASE("to bytes", "[buffer_io]") {
     const auto f = 1.3574e+10f;
     std::copy_n(reinterpret_cast<const std::byte*>(&f), sizeof(f), bytes.begin());
 
-    REQUIRE(std::ranges::equal(bytes, io::to_bytes(f)));
+    REQUIRE(test::ranges_equal(bytes, io::to_bytes(f)));
   }
 }
 
 TEST_CASE("try_to_bytes", "[buffer_io]") {
   SECTION("successful conversion") {
     REQUIRE(io::try_to_bytes(int(999)).ok());
-    REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{std::byte{0x12}, std::byte{0x34}, std::byte{0x56}, std::byte{0x78}},
+    REQUIRE(test::ranges_equal(io::static_byte_buffer<4>{std::byte{0x12}, std::byte{0x34}, std::byte{0x56}, std::byte{0x78}},
                                io::try_to_bytes(0x78563412).value()));
   }
 

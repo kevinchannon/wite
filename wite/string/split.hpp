@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wite/configure/features.hpp>
+#include <wite/env/features.hpp>
 
 #include <cstdint>
 #include <string_view>
@@ -68,11 +68,11 @@ template <typename Result_T>
   while (true) {
     auto [token, remainder, performed_a_split] = detail::first_token<typename Result_T::value_type>(str, delimiter, behaviour);
 
-    if (split_behaviour::keep_empty == behaviour or (split_behaviour::drop_empty == behaviour and (not token.empty()))) {
+    if (split_behaviour::keep_empty == behaviour || (split_behaviour::drop_empty == behaviour && (! token.empty()))) {
       out.push_back(std::move(token));
     }
 
-    if (not performed_a_split) {
+    if (! performed_a_split) {
       break;
     }
 

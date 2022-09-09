@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wite/configure/features.hpp>
+#include <wite/env/features.hpp>
 
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
@@ -28,7 +28,7 @@ template <typename Value_T>
 auto unchecked_read(auto buffer) noexcept
 #else
 template <typename Value_T, typename Buffer_T>
-auto unchecked_read(std::enable_if_t<is_iterator_v<Buffer_T>, Buffer_T> buffer)
+auto unchecked_read(Buffer_T buffer)
 #endif
 {
   if constexpr (std::is_base_of_v<io::encoding, Value_T>) {
@@ -61,7 +61,7 @@ template <typename Value_T>
 requires is_buffer_readable<Value_T>
 auto read(const std::span<const std::byte>& buffer) {
 #else
-auto read(const std::span<const std::byte>& buffer, std::enable_if_t<is_buffer_readable<Value_T>>) {
+auto read(std::enable_if_t<is_buffer_readable<Value_T>, const std::span<const std::byte>&> buffer) {
 #endif
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for read"};
@@ -95,7 +95,7 @@ template <typename... Value_Ts>
 #if _WITE_HAS_CONCEPTS
 requires(sizeof...(Value_Ts) > 1) auto read(const std::span<const std::byte>& buffer) {
 #else
-auto read(const std::span<const std::byte>& buffer, std::enable_if_t<(sizeof...(Value_Ts) != 1)>) {
+auto read(std::enable_if_t<(sizeof...(Value_Ts) != 1),const std::span<const std::byte>&> buffer) {
 #endif
   return detail::_recursive_read<Value_Ts...>(buffer);
 }
@@ -106,7 +106,7 @@ template <typename Value_T>
 #if _WITE_HAS_CONCEPTS
 requires is_buffer_readable<Value_T> auto from_bytes(const std::span<const std::byte>& buffer) {
 #else
-auto from_bytes(const std::span<const std::byte>& buffer, std::enable_if_t<is_buffer_readable<Value_T>>) {
+auto from_bytes(std::enable_if_t<is_buffer_readable<Value_T>, const std::span<const std::byte>&> buffer) {
 #endif
   return read<Value_T>(buffer);
 }
