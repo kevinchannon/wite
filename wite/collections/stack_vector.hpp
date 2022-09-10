@@ -8,6 +8,22 @@
 #include <cstdint>
 #include <stdexcept>
 
+#ifdef _WITE_COMPILER_MSVC
+#define _WITE_USING_MSVC_ARRAY_ITERATOR 1
+#else
+#ifdef _WITE_COMPILER_GCC
+#define _WITE_USING_MSVC_ARRAY_ITERATOR 0
+#else
+#ifdef _WITE_COMPILER_CLANG
+#ifdef _WITE_PLATFORM_OS_WINDOWS
+#define _WITE_USING_MSVC_ARRAY_ITERATOR 1
+#else
+#define _WITE_USING_MSVC_ARRAY_ITERATOR 0
+#endif // _WITE_PLATFORM_OS_WINDOWS
+#endif // _WITE_COMPILER_CLANG
+#endif // _WITE_COMPILER_GCC
+#endif // _WITE_COMPILER_MSVC
+
 namespace wite::collections {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,14 +70,14 @@ class stack_vector {
   _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return _data.begin(); }
   _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return _data.cbegin(); }
   _WITE_NODISCARD constexpr auto end() noexcept {
-    #ifdef _WITE_COMPILER_MSVC
+    #if _WITE_USING_MSVC_ARRAY_ITERATOR
       return iterator(_data.data(), _item_count);
     #else
       return iterator(std::next(_data.data(), _item_count));
     #endif
   }
   _WITE_NODISCARD constexpr auto end() const noexcept { 
-    #ifdef _WITE_COMPILER_MSVC
+    #if _WITE_USING_MSVC_ARRAY_ITERATOR
       return const_iterator(_data.data(), _item_count);
     #else
       return const_iterator(std::next(_data.data(), _item_count));
@@ -124,7 +140,7 @@ class stack_vector {
       return false;
     }
 
-    return 0 == std::memcmp(_data.data(), other._data.data(), _item_count);
+    return std::equal(begin(), end(), other.begin());
   }
 
   _WITE_NODISCARD constexpr bool operator!=(const stack_vector& other) const noexcept { return !(*this == other); }
