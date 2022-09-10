@@ -12,8 +12,8 @@ namespace wite::string {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename String_T>
-_WITE_NODISCARD std::basic_string<typename String_T::value_type> strip(const String_T& str) {
-  return trim_left(trim_right(str));
+_WITE_NODISCARD std::basic_string<typename String_T::value_type> strip(String_T&& str) {
+  return trim_left(trim_right(std::forward<String_T>(str)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

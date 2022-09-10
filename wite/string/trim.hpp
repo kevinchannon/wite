@@ -28,7 +28,7 @@ namespace detail {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename String_T>
-_WITE_NODISCARD std::basic_string<typename String_T::value_type> trim_left(const String_T& str) {
+_WITE_NODISCARD std::basic_string<typename String_T::value_type> trim_left(String_T&& str) {
   return {std::find_if(str.begin(), str.end(), detail::is_not_whitespace<typename String_T::value_type>), str.end()};
 }
 
@@ -42,7 +42,7 @@ _WITE_NODISCARD std::basic_string<Char_T> trim_left(const Char_T* str) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename String_T>
-_WITE_NODISCARD std::basic_string<typename String_T::value_type> trim_right(const String_T& str) {
+_WITE_NODISCARD std::basic_string<typename String_T::value_type> trim_right(String_T&& str) {
   return {str.begin(), std::find_if(str.rbegin(), str.rend(), detail::is_not_whitespace<typename String_T::value_type>).base()};
 }
 
