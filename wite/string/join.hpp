@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wite/env/environment.hpp>
+
 #include <algorithm>
 #include <numeric>
 #include <string>
@@ -14,14 +16,22 @@ namespace wite::string {
 
 namespace detail {
   template <typename Char_T>
+#if _WITE_HAS_CONCEPTS
   requires std::is_same_v<char, Char_T>
-  [[nodiscard]] consteval auto space_character() noexcept {
+  _WITE_NODISCARD _WITE_CONSTEVAL char space_character() noexcept {
+#else
+      _WITE_NODISCARD _WITE_CONSTEVAL std::enable_if_t<std::is_same_v<char, Char_T>, char> space_character() noexcept {
+#endif
       return ' ';
   }
 
   template <typename Char_T>
+#if _WITE_HAS_CONCEPTS
     requires std::is_same_v<wchar_t, Char_T>
-  [[nodiscard]] consteval auto space_character() noexcept {
+  _WITE_NODISCARD _WITE_CONSTEVAL wchar_t space_character() noexcept {
+#else
+  _WITE_NODISCARD _WITE_CONSTEVAL std::enable_if_t<std::is_same_v<wchar_t, Char_T>, wchar_t> space_character() noexcept {
+#endif
       return L' ';
   }
 }  // namespace detail
@@ -29,7 +39,7 @@ namespace detail {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Range_T>
-[[nodiscard]] std::basic_string<typename Range_T::value_type::value_type> join(
+_WITE_NODISCARD std::basic_string<typename Range_T::value_type::value_type> join(
     const Range_T& strings,
     typename Range_T::value_type::value_type delimiter = detail::space_character<typename Range_T::value_type::value_type>()) {
   using Char_t = typename Range_T::value_type::value_type;

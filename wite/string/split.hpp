@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wite/env/features.hpp>
+#include <wite/env/environment.hpp>
 #include <wite/common/concepts.hpp>
 
 #include <cstdint>
@@ -21,7 +21,7 @@ enum class split_behaviour : uint8_t { keep_empty, drop_empty };
 namespace detail {
 
   template <typename Iter_T, typename Char_T>
-  [[nodiscard]] Iter_T advance_past_delimiter(Iter_T begin,
+  _WITE_NODISCARD Iter_T advance_past_delimiter(Iter_T begin,
                                               const Iter_T end,
                                               Char_T delimiter,
                                               split_behaviour behaviour) noexcept {
@@ -34,7 +34,7 @@ namespace detail {
   }
 
   template <typename Char_T>
-  [[nodiscard]] constexpr auto space_character() noexcept -> Char_T {
+  _WITE_NODISCARD constexpr auto space_character() noexcept -> Char_T {
     if constexpr (std::is_same_v<Char_T, char>) {
       return ' ';
     } else if constexpr (std::is_same_v<Char_T, wchar_t>) {
@@ -45,7 +45,7 @@ namespace detail {
   }
 
   template <typename Result_T>
-  [[nodiscard]] std::tuple<Result_T, std::basic_string_view<typename Result_T::value_type>, bool> first_token(
+  _WITE_NODISCARD std::tuple<Result_T, std::basic_string_view<typename Result_T::value_type>, bool> first_token(
       std::basic_string_view<typename Result_T::value_type> str,
       typename Result_T::value_type delimiter,
       split_behaviour behaviour) noexcept {
@@ -60,7 +60,7 @@ namespace detail {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Result_T>
-[[nodiscard]] Result_T split_to(
+_WITE_NODISCARD Result_T split_to(
     std::basic_string_view<typename Result_T::value_type::value_type> str,
     typename Result_T::value_type::value_type delimiter = detail::space_character<typename Result_T::value_type::value_type>(),
     split_behaviour behaviour                           = split_behaviour::drop_empty) noexcept {
@@ -87,9 +87,9 @@ template <typename Result_T>
 
 template <typename Result_T, typename Char_T>
 #if _WITE_HAS_CONCEPTS
-requires common::is_pod_like<Char_T> [[nodiscard]] Result_T split_to(
+requires common::is_pod_like<Char_T> _WITE_NODISCARD Result_T split_to(
 #else
-    [[nodiscard]] std::enable_if_t<std::is_pod_v<Char_T> , Result_T> split_to(
+    _WITE_NODISCARD std::enable_if_t<std::is_pod_v<Char_T> , Result_T> split_to(
 #endif
     const Char_T* str,
     Char_T delimiter          = detail::space_character<Char_T>(),
@@ -104,7 +104,7 @@ requires common::is_pod_like<Char_T> [[nodiscard]] Result_T split_to(
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Char_T>
-[[nodiscard]] std::vector<std::basic_string<Char_T>> split(std::basic_string_view<Char_T> str,
+_WITE_NODISCARD std::vector<std::basic_string<Char_T>> split(std::basic_string_view<Char_T> str,
                                                            Char_T delimiter          = detail::space_character<Char_T>(),
                                                            split_behaviour behaviour = split_behaviour::drop_empty) noexcept {
   return split_to<std::vector<std::basic_string<Char_T>>>(str, delimiter, behaviour);
@@ -115,9 +115,9 @@ template <typename Char_T>
 template <typename Char_T>
 #if _WITE_HAS_CONCEPTS
 requires std::is_standard_layout_v<Char_T> && std::is_trivial_v<Char_T>
-[[nodiscard]] std::vector<std::basic_string<Char_T>> split(const Char_T* str) noexcept {
+_WITE_NODISCARD std::vector<std::basic_string<Char_T>> split(const Char_T* str) noexcept {
 #else
-[[nodiscard]] std::enable_if_t<std::is_pod_v<Char_T>, std::vector<std::basic_string<Char_T>>> split(const Char_T* str) noexcept {
+_WITE_NODISCARD std::enable_if_t<std::is_pod_v<Char_T>, std::vector<std::basic_string<Char_T>>> split(const Char_T* str) noexcept {
 #endif
 
   if (nullptr == str) {
