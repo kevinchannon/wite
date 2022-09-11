@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wite/common/concepts.hpp>
+
 #undef _WITE_USING_STD_SPAN_IMPLEMENTATION
 
 #if __has_include(<span>)
@@ -291,6 +293,7 @@ class span {
   using reference        = element_type&;
   using const_reference  = const element_type&;
   using iterator         = pointer;
+  using const_iterator         = const_pointer;
   using reverse_iterator = std::reverse_iterator<iterator>;
 
   static constexpr size_type extent = Extent;
@@ -450,6 +453,12 @@ span(Container&) -> span<typename std::remove_reference<decltype(*detail::data(s
 
 template <class Container>
 span(const Container&) -> span<const typename Container::value_type>;
+
+template<typename Iter_T>
+span(Iter_T, Iter_T) -> span<typename Iter_T::value_type>;
+
+template <typename Iter_T>
+span(std::enable_if_t<wite::common::is_iterator_v<Iter_T>, Iter_T>, Iter_T) -> span<typename Iter_T::value_type>;
 
 #endif  // TCB_HAVE_DEDUCTION_GUIDES
 

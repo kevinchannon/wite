@@ -1,5 +1,6 @@
 #pragma once
 
+#include <wite/env/environment.hpp>
 #include <wite/core/result.hpp>
 
 #include <array>
@@ -10,12 +11,14 @@
 
 namespace wite::io {
 
+using byte = WITE_BYTE;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 template <size_t N>
-using static_byte_buffer = std::array<std::byte, N>;
+using static_byte_buffer = std::array<byte, N>;
 
-using dynamic_byte_buffer = std::vector<std::byte>;
+using dynamic_byte_buffer = std::vector<byte>;
 
 ///////////////////////////////////////////////////////////////////////////////
 

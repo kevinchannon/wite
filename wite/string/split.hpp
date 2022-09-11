@@ -7,6 +7,7 @@
 #include <string_view>
 #include <tuple>
 #include <vector>
+#include <algorithm>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -50,9 +51,23 @@ namespace detail {
       typename Result_T::value_type delimiter,
       split_behaviour behaviour) noexcept {
     const auto token_end = std::find(str.begin(), str.end(), delimiter);
-    auto start_next      = advance_past_delimiter(token_end, str.end(), delimiter, behaviour);
+    const auto start_next      = advance_past_delimiter(token_end, str.end(), delimiter, behaviour);
 
+#if _WITE_HAS_CONCEPTS
     return {{str.begin(), token_end}, {start_next, str.end()}, token_end != str.end()};
+#else
+    // In C++17, string_view doesn't have an iterator-pair constructor, so we need to express things in terms
+    // of a pointer and size.
+    const auto token_end_offset = std::distance(str.begin(), token_end);
+    const auto token            = Result_T(str.data(), token_end_offset);
+
+    const auto start_next_offset = std::distance(str.begin(), start_next);
+    const auto remainder =
+        std::basic_string_view<typename Result_T::value_type>(str.data() + start_next_offset, str.length() - start_next_offset);
+
+    return std::tuple<Result_T, std::basic_string_view<typename Result_T::value_type>, bool>(
+        token, remainder, token_end != str.end());
+#endif
   }
 
 }  // namespace detail

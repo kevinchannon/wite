@@ -2,7 +2,10 @@
 
 #include <wite/env/features.hpp>
 
+#include <wite/io/types.hpp>
+
 #include <algorithm>
+#include <type_traits>
 
 namespace wite::test {
 
@@ -17,6 +20,15 @@ bool ranges_equal(Left_T&& left, Right_T&& right) {
 
   return std::equal(left.begin(), left.end(), right.begin());
   #endif
+}
+
+template<typename Result_T>
+_WITE_NODISCARD Result_T to_integer(wite::io::byte b) {
+#if _WITE_FEATURE_USE_STD_BYTE
+  return std::to_integer<Result_T>(b);
+#else
+  return static_cast<Result_T>(b);
+#endif
 }
 
 }

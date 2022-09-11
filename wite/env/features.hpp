@@ -5,7 +5,7 @@
 #define _WITE_CONCEPT      concept
 #else
 #define _WITE_HAS_CONCEPTS 0
-#define _WITE_CONCEPT      constexpr auto
+#define _WITE_CONCEPT      constexpr bool
 #endif
 
 #ifndef _WITE_FEATURE_USE_NODISCARD
@@ -53,10 +53,10 @@
 #ifndef _WITE_FEATURE_USE_STD_BYTE
 #ifdef __cpp_lib_byte
 #define _WITE_FEATURE_USE_STD_BYTE 1
-#define _WITE_BYTE                 std::byte
+#define WITE_BYTE                 std::byte
 #else
 #define _WITE_FEATURE_USE_STD_BYTE 0
-#define _WITE_BYTE                 std::uint8_t
+#define WITE_BYTE                 unsigned char
 #endif  // __cpp_lib_byte
 #endif  // _WITE_FEATURE_USE_STD_BYTE
 

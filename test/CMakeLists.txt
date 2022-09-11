@@ -10,7 +10,7 @@ FetchContent_MakeAvailable(Catch2)
 
 enable_testing()
 
-add_executable(wite_test
+add_executable(wite_test 
 	"core/resultTests.cpp"
 	"string/splitTests.cpp"
 	"string/joinTests.cpp"

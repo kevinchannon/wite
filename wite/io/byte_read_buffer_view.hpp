@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wite/env/features.hpp>
+#include <wite/env/environment.hpp>
 
 #include <wite/io/byte_buffer_read.hpp>
 #include <wite/io/encoding.hpp>
@@ -20,13 +20,13 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 struct byte_read_buffer_view {
-  explicit byte_read_buffer_view(std::span<const std::byte> buf) : data{std::move(buf)}, read_position{data.begin()} {}
+  explicit byte_read_buffer_view(std::span<const io::byte> buf) : data{std::move(buf)}, read_position{data.begin()} {}
 
-  byte_read_buffer_view(std::span<const std::byte> buf, typename std::span<const std::byte>::size_type offset)
+  byte_read_buffer_view(std::span<const io::byte> buf, typename std::span<const io::byte>::size_type offset)
       : data{std::move(buf)}, read_position{std::next(data.begin(), offset)} {}
 
-  std::span<const std::byte> data;
-  std::span<const std::byte>::iterator read_position;
+  std::span<const io::byte> data;
+  std::span<const io::byte>::iterator read_position;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ namespace detail::buffer_view::read {
   constexpr auto value_size() noexcept {
   #else
   constexpr auto value_size(
-      std::enable_if_t<(! std::is_standard_layout_v<Value_T>) || (! std::is_trivial_v<Value_T>)>) noexcept {
+      std::enable_if_t<! common::is_pod_like<Value_T>>* = nullptr) noexcept {
   #endif
     // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
     // In that case, a new overload of this function will need to be added for the new type.
@@ -66,7 +66,7 @@ namespace detail::buffer_view::read {
   #if _WITE_HAS_CONCEPTS
   requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T>) constexpr auto value_size() noexcept {
   #else
-  constexpr auto value_size(std::enable_if_t<std::is_standard_layout_v<Value_T> && std::is_trivial_v<Value_T>>) noexcept {
+  constexpr auto value_size(std::enable_if_t<common::is_pod_like<Value_T>>* = nullptr) noexcept {
   #endif
     return sizeof(Value_T);
   }

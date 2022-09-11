@@ -33,14 +33,14 @@ void unchecked_write(Buffer_T buffer, std::enable_if_t<is_buffer_writeable<Value
     using RawValue_t = typename Value_T::value_type;
 
     if constexpr (std::is_same_v<little_endian<RawValue_t>, Value_T>) {
-      std::copy_n(reinterpret_cast<std::byte*>(&value.value), sizeof(value.value), buffer);
+      std::copy_n(reinterpret_cast<io::byte*>(&value.value), sizeof(value.value), buffer);
     } else if constexpr (std::is_same_v<big_endian<RawValue_t>, Value_T>) {
-      std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<std::byte*>(&value.value), sizeof(value.value))),
+      std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<io::byte*>(&value.value), sizeof(value.value))),
                   sizeof(value.value),
                   buffer);
     }
   } else {
-    std::copy_n(reinterpret_cast<std::byte*>(&value), sizeof(value), buffer);
+    std::copy_n(reinterpret_cast<io::byte*>(&value), sizeof(value), buffer);
   }
 }
 
@@ -49,9 +49,9 @@ void unchecked_write(Buffer_T buffer, std::enable_if_t<is_buffer_writeable<Value
 template <typename Value_T>
 #if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T>
-void write(std::span<std::byte> buffer, Value_T value) {
+void write(std::span<io::byte> buffer, Value_T value) {
 #else
-void write(std::span<std::byte> buffer, std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value) {
+void write(std::span<io::byte> buffer, std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value) {
 #endif
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
@@ -63,11 +63,11 @@ void write(std::span<std::byte> buffer, std::enable_if_t<is_buffer_writeable<Val
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename... Value_Ts>
-void write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+void write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
   write(buffer, first_value);
 
   if constexpr (sizeof...(other_values) > 0) {
-    write(std::span<std::byte>{std::next(buffer.begin(), sizeof(first_value)), buffer.end()}, other_values...);
+    write(std::span<io::byte>{std::next(buffer.begin(), sizeof(first_value)), buffer.end()}, other_values...);
   }
 }
 
@@ -90,9 +90,9 @@ std::enable_if_t<is_buffer_writeable<Value_T>, Result_T> to_bytes(Value_T value)
 
 template <typename Value_T>
 #if _WITE_HAS_CONCEPTS
-requires is_buffer_writeable<Value_T> write_result_t try_write(std::span<std::byte> buffer, Value_T value) {
+requires is_buffer_writeable<Value_T> write_result_t try_write(std::span<io::byte> buffer, Value_T value) {
 #else
-    std::enable_if_t<is_buffer_writeable<Value_T>, write_result_t> try_write(std::span<std::byte> buffer, Value_T value) {
+    std::enable_if_t<is_buffer_writeable<Value_T>, write_result_t> try_write(std::span<io::byte> buffer, Value_T value) {
 #endif
   if (buffer.size() < sizeof(Value_T)) {
     return write_error::insufficient_buffer;
@@ -131,12 +131,12 @@ namespace detail::buffer::write {
   }
 
   template <typename Value_T, typename... Value_Ts>
-  auto _recursive_try_write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+  auto _recursive_try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
     auto first_result = std::make_tuple(try_write(buffer, first_value));
 
     if constexpr (sizeof...(other_values) > 0) {
       auto other_results =
-          _recursive_try_write(std::span<std::byte>{std::get<0>(first_result).ok()
+          _recursive_try_write(std::span<io::byte>{std::get<0>(first_result).ok()
                                              ? std::next(buffer.begin(), value_size<Value_T>())
                                              : buffer.end(),
                                          buffer.end()},
@@ -151,7 +151,7 @@ namespace detail::buffer::write {
 }  // namespace detail::buffer::write
 
 template <typename Value_T, typename... Value_Ts>
-auto try_write(std::span<std::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
+auto try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
   return detail::buffer::write::_recursive_try_write(buffer, first_value, other_values...);
 }
 
@@ -178,11 +178,11 @@ std::enable_if_t<is_buffer_writeable<Value_T>, result<Result_T, write_error>> tr
 template <typename Value_T>
 #if _WITE_HAS_CONCEPTS
 requires is_buffer_writeable<Value_T>
-void write(std::span<std::byte> buffer, Value_T value, std::endian endianness) {
+void write(std::span<io::byte> buffer, Value_T value, endian endianness) {
 #else
-void write(std::span<std::byte> buffer, std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value, endian endianness) {
+void write(std::span<io::byte> buffer, std::enable_if_t<is_buffer_writeable<Value_T>, Value_T> value, endian endianness) {
 #endif
-  if (std::endian::little == endianness) {
+  if (endian::little == endianness) {
     write(buffer, little_endian{value});
   } else {
     write(buffer, big_endian{value});

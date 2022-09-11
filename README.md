@@ -26,7 +26,7 @@ A small collection of routines for doing IO to buffers and things like that. The
 To write to a buffer, then you can do:
 
 ```
-auto buffer_data = std::vector<std::byte>(100, std::byte{0x00});
+auto buffer_data = std::vector<io::byte>(100, io::byte{0x00});
 
 {
   const auto d = double{3.142};
@@ -62,8 +62,8 @@ const auto bytes = wite::io::to_bytes(my_value);
 ```
 of course, you can do the opposite too:
 ```
-const auto bytes = std::array<std::byte, sizeof(uint32_t)>{
-    std::byte{0x12}, std::byte{0x34}, std::byte{0x56}, std::byte{078}};
+const auto bytes = std::array<io::byte, sizeof(uint32_t)>{
+    io::byte{0x12}, io::byte{0x34}, io::byte{0x56}, io::byte{078}};
 
 const auto i = wite::io::from_bytes<int>(bytes);
 ```
