@@ -1,5 +1,13 @@
 #pragma once
 
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#define _WITE_CPP20
+#elif __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define _WITE_CPP17
+#elif __cplusplus >= 201402L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201402L)
+#define _WITE_CPP14
+#endif
+
 #if __cpp_concepts >= 201907
 #define _WITE_HAS_CONCEPTS 1
 #define _WITE_CONCEPT      concept
