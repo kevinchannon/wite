@@ -8,6 +8,8 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+enable_testing()
+
 add_executable(wite_test
 	"core/resultTests.cpp"
 	"string/splitTests.cpp"
@@ -31,5 +33,3 @@ include(CTest)
 include(Catch)
 
 catch_discover_tests(wite_test)
-
-enable_testing()
