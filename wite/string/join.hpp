@@ -14,24 +14,14 @@ namespace wite::string {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail {
+namespace detail::join {
   template <typename Char_T>
-#if _WITE_HAS_CONCEPTS
-  requires std::is_same_v<char, Char_T>
-  _WITE_NODISCARD _WITE_CONSTEVAL char space_character() noexcept {
-#else
-      _WITE_NODISCARD _WITE_CONSTEVAL std::enable_if_t<std::is_same_v<char, Char_T>, char> space_character() noexcept {
-#endif
+  _WITE_NODISCARD _WITE_CONSTEVAL std::enable_if_t<std::is_same_v<char, Char_T>, char> space_character() noexcept {
       return ' ';
   }
 
   template <typename Char_T>
-#if _WITE_HAS_CONCEPTS
-    requires std::is_same_v<wchar_t, Char_T>
-  _WITE_NODISCARD _WITE_CONSTEVAL wchar_t space_character() noexcept {
-#else
   _WITE_NODISCARD _WITE_CONSTEVAL std::enable_if_t<std::is_same_v<wchar_t, Char_T>, wchar_t> space_character() noexcept {
-#endif
       return L' ';
   }
 }  // namespace detail
@@ -41,7 +31,7 @@ namespace detail {
 template <typename Range_T>
 _WITE_NODISCARD std::basic_string<typename Range_T::value_type::value_type> join(
     const Range_T& strings,
-    typename Range_T::value_type::value_type delimiter = detail::space_character<typename Range_T::value_type::value_type>()) {
+    typename Range_T::value_type::value_type delimiter = detail::join::space_character<typename Range_T::value_type::value_type>()) {
   using Char_t = typename Range_T::value_type::value_type;
 
   switch (strings.size()) {

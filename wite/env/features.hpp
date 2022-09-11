@@ -1,5 +1,7 @@
 #pragma once
 
+#include <bit>
+
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #define _WITE_CPP20
 #elif __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
@@ -80,4 +82,10 @@
 #define _WITE_HAS_RANGES 1
 #else
 #define _WITE_HAS_RANGES 0
+#endif
+
+#if __cpp_lib_endian >= 201907
+#define _WITE_HAS_STD_ENDIAN 1
+#else
+#define _WITE_HAS_STD_ENDIAN 0
 #endif

@@ -1,13 +1,19 @@
 #pragma once
 
+#include <wite/env/environment.hpp>
+
 #include <wite/common/constructor_macros.hpp>
 
 #include <bit>
 #include <type_traits>
 
+#if !_WITE_HAS_CONCEPTS
+#error "C++20 concepts are require, but the compiler doesn't support them"
+#endif
+
 namespace wite::io {
 
-#if __cpp_lib_endian >= 201907
+#if _WITE_HAS_STD_ENDIAN
 using endian = std::endian;
 #else
 enum class endian { little = 0, big = 1, native = little };
@@ -16,15 +22,9 @@ enum class endian { little = 0, big = 1, native = little };
 struct encoding {};
 
 template <typename Value_T, endian ENDIANNESS>
-#if __cpp_concepts >= 201907
 requires std::is_integral_v<Value_T> and(sizeof(Value_T) > 1)
-#endif
 struct endianness : public encoding {
-#if __cpp_concepts >= 201907
   using value_type = Value_T;
-#else
-  using value_type = std::enable_if_t<(std::is_integral_v<Value_T> && (sizeof(Value_T) != 1)), Value_T>;
-#endif
 
   Value_T value;
 

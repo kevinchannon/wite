@@ -19,7 +19,7 @@ enum class split_behaviour : uint8_t { keep_empty, drop_empty };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail {
+namespace detail::split {
 
   template <typename Iter_T, typename Char_T>
   _WITE_NODISCARD Iter_T advance_past_delimiter(Iter_T begin,
@@ -33,16 +33,14 @@ namespace detail {
 
     return out;
   }
+  template <typename Char_T>
+  _WITE_NODISCARD _WITE_CONSTEVAL std::enable_if_t<std::is_same_v<char, Char_T>, char> space_character() noexcept {
+    return ' ';
+  }
 
   template <typename Char_T>
-  _WITE_NODISCARD constexpr auto space_character() noexcept -> Char_T {
-    if constexpr (std::is_same_v<Char_T, char>) {
-      return ' ';
-    } else if constexpr (std::is_same_v<Char_T, wchar_t>) {
-      return L' ';
-    } else {
-      static_assert(std::is_same_v<Char_T, char>, "Invalid character type");
-    }
+  _WITE_NODISCARD _WITE_CONSTEVAL std::enable_if_t<std::is_same_v<wchar_t, Char_T>, wchar_t> space_character() noexcept {
+    return L' ';
   }
 
   template <typename Result_T>
@@ -53,21 +51,7 @@ namespace detail {
     const auto token_end = std::find(str.begin(), str.end(), delimiter);
     const auto start_next      = advance_past_delimiter(token_end, str.end(), delimiter, behaviour);
 
-#if _WITE_HAS_CONCEPTS
     return {{str.begin(), token_end}, {start_next, str.end()}, token_end != str.end()};
-#else
-    // In C++17, string_view doesn't have an iterator-pair constructor, so we need to express things in terms
-    // of a pointer and size.
-    const auto token_end_offset = std::distance(str.begin(), token_end);
-    const auto token            = Result_T(str.data(), token_end_offset);
-
-    const auto start_next_offset = std::distance(str.begin(), start_next);
-    const auto remainder =
-        std::basic_string_view<typename Result_T::value_type>(str.data() + start_next_offset, str.length() - start_next_offset);
-
-    return std::tuple<Result_T, std::basic_string_view<typename Result_T::value_type>, bool>(
-        token, remainder, token_end != str.end());
-#endif
   }
 
 }  // namespace detail
@@ -77,12 +61,12 @@ namespace detail {
 template <typename Result_T>
 _WITE_NODISCARD Result_T split_to(
     std::basic_string_view<typename Result_T::value_type::value_type> str,
-    typename Result_T::value_type::value_type delimiter = detail::space_character<typename Result_T::value_type::value_type>(),
+    typename Result_T::value_type::value_type delimiter = detail::split::space_character<typename Result_T::value_type::value_type>(),
     split_behaviour behaviour                           = split_behaviour::drop_empty) noexcept {
   auto out = Result_T{};
 
   while (true) {
-    auto [token, remainder, performed_a_split] = detail::first_token<typename Result_T::value_type>(str, delimiter, behaviour);
+    auto [token, remainder, performed_a_split] = detail::split::first_token<typename Result_T::value_type>(str, delimiter, behaviour);
 
     if (split_behaviour::keep_empty == behaviour || (split_behaviour::drop_empty == behaviour && (! token.empty()))) {
       out.push_back(std::move(token));
@@ -107,7 +91,7 @@ requires common::is_pod_like<Char_T> _WITE_NODISCARD Result_T split_to(
     _WITE_NODISCARD std::enable_if_t<std::is_pod_v<Char_T> , Result_T> split_to(
 #endif
     const Char_T* str,
-    Char_T delimiter          = detail::space_character<Char_T>(),
+    Char_T delimiter          = detail::split::space_character<Char_T>(),
     split_behaviour behaviour = split_behaviour::drop_empty) noexcept {
   if (nullptr == str) {
     return {};
@@ -120,7 +104,7 @@ requires common::is_pod_like<Char_T> _WITE_NODISCARD Result_T split_to(
 
 template <typename Char_T>
 _WITE_NODISCARD std::vector<std::basic_string<Char_T>> split(std::basic_string_view<Char_T> str,
-                                                           Char_T delimiter          = detail::space_character<Char_T>(),
+                                                           Char_T delimiter          = detail::split::space_character<Char_T>(),
                                                            split_behaviour behaviour = split_behaviour::drop_empty) noexcept {
   return split_to<std::vector<std::basic_string<Char_T>>>(str, delimiter, behaviour);
 }
