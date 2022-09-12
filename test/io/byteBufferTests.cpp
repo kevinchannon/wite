@@ -104,12 +104,12 @@ TEST_CASE("Values from pointers to array", "[buffer_io]") {
 }
 
 TEST_CASE("Write values to byte arrays", "[buffer_io]") {
-  auto array_buffer = std::array<io::byte, 10>{};
+  auto array_buffer = io::static_byte_buffer<10>{};
 
   SECTION("Little-endian") {
     SECTION("Write int at start of buffer") {
       SECTION("Dynamic endianness") {
-        io::write(array_buffer, 0x89ABCDEF, io::endian::little);
+        REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF, io::endian::little));
 
         REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[0]));
         REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[1]));
@@ -120,7 +120,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
       }
 
       SECTION("Static endianness") {
-        io::write(array_buffer, io::little_endian{0x89ABCDEF});
+        REQUIRE(sizeof(uint32_t) == io::write(array_buffer, io::little_endian{0x89ABCDEF}));
 
         REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[0]));
         REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[1]));
@@ -131,7 +131,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
       }
 
       SECTION("Default endianness") {
-        io::write(array_buffer, 0x89ABCDEF);
+        REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF));
 
         REQUIRE((io::endian::native == io::endian::little ? 0xEF : 0x89) == test::to_integer<uint8_t>(array_buffer[0]));
         REQUIRE((io::endian::native == io::endian::little ? 0xCD : 0xAB) == test::to_integer<uint8_t>(array_buffer[1]));
@@ -143,7 +143,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
     }
 
     SECTION("Write int not at start of buffer") {
-      io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::little);
+      REQUIRE(sizeof(uint32_t) == io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::little));
 
       REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[2]));
       REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[3]));
@@ -162,7 +162,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
 
   SECTION("Big-endian") {
     SECTION("Write int at start of buffer") {
-      io::write(array_buffer, 0x89ABCDEF, io::endian::big);
+      REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF, io::endian::big));
 
       REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[0]));
       REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[1]));
@@ -173,7 +173,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
     }
 
     SECTION("Write int not at start of buffer") {
-      io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::big);
+      REQUIRE(sizeof(uint32_t) == io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::big));
 
       REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[2]));
       REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[3]));
@@ -393,22 +393,22 @@ TEST_CASE("Byte buffers write-read tests", "[buffer_io]") {
 
   SECTION("Double value") {
     const auto val = 2.718;
-    io::write(buffer, val);
 
+    REQUIRE(sizeof(double) == io::write(buffer, val));
     REQUIRE(val == io::read<double>(buffer));
   }
 
   SECTION("Uint32 value") {
     const auto val = uint32_t{0xCDCDCDCD};
-    io::write(buffer, val);
 
+    REQUIRE(sizeof(uint32_t) == io::write(buffer, val));
     REQUIRE(val == io::read<uint32_t>(buffer));
   }
 
   SECTION("Bool value") {
     const auto val = GENERATE(true, false);
-    io::write(buffer, val);
 
+    REQUIRE(sizeof(bool) == io::write(buffer, val));
     REQUIRE(val == io::read<bool>(buffer));
   }
 }
@@ -420,7 +420,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
     const auto val = uint64_t{0x0011223344556677};
 
     SECTION("Little-endian") {
-      io::write(buffer, io::little_endian{val});
+      REQUIRE(sizeof(uint64_t) == io::write(buffer, io::little_endian{val}));
       REQUIRE(0x77 == test::to_integer<uint8_t>(buffer[0]));
       REQUIRE(0x66 == test::to_integer<uint8_t>(buffer[1]));
       REQUIRE(0x55 == test::to_integer<uint8_t>(buffer[2]));
@@ -434,7 +434,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
     }
 
     SECTION("Big-endian") {
-      io::write(buffer, io::big_endian{val});
+      REQUIRE(sizeof(uint64_t) == io::write(buffer, io::big_endian{val}));
       REQUIRE(0x00 == test::to_integer<uint8_t>(buffer[0]));
       REQUIRE(0x11 == test::to_integer<uint8_t>(buffer[1]));
       REQUIRE(0x22 == test::to_integer<uint8_t>(buffer[2]));
@@ -452,7 +452,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
     const auto val = uint32_t{0x01234567};
 
     SECTION("Little-endian") {
-      io::write(buffer, io::little_endian{val});
+      REQUIRE(sizeof(uint32_t) == io::write(buffer, io::little_endian{val}));
       REQUIRE(0x67 == test::to_integer<uint8_t>(buffer[0]));
       REQUIRE(0x45 == test::to_integer<uint8_t>(buffer[1]));
       REQUIRE(0x23 == test::to_integer<uint8_t>(buffer[2]));
@@ -462,7 +462,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
     }
 
     SECTION("Big-endian") {
-      io::write(buffer, io::big_endian{val});
+      REQUIRE(sizeof(uint32_t) == io::write(buffer, io::big_endian{val}));
       REQUIRE(0x01 == test::to_integer<uint8_t>(buffer[0]));
       REQUIRE(0x23 == test::to_integer<uint8_t>(buffer[1]));
       REQUIRE(0x45 == test::to_integer<uint8_t>(buffer[2]));
@@ -476,7 +476,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
     const auto val = uint16_t{0xABCD};
 
     SECTION("Little-endian") {
-      io::write(buffer, io::little_endian{val});
+      REQUIRE(sizeof(uint16_t) == io::write(buffer, io::little_endian{val}));
       REQUIRE(0xCD == test::to_integer<uint8_t>(buffer[0]));
       REQUIRE(0xAB == test::to_integer<uint8_t>(buffer[1]));
 
@@ -484,7 +484,7 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
     }
 
     SECTION("Big-endian") {
-      io::write(buffer, io::big_endian{val});
+      REQUIRE(sizeof(uint16_t) == io::write(buffer, io::big_endian{val}));
       REQUIRE(0xAB == test::to_integer<uint8_t>(buffer[0]));
       REQUIRE(0xCD == test::to_integer<uint8_t>(buffer[1]));
 

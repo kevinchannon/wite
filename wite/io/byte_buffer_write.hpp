@@ -27,7 +27,7 @@ namespace wite::io {
 
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
-void unchecked_write(auto buffer, Value_T value) {
+size_t unchecked_write(auto buffer, Value_T value) {
   if constexpr (is_encoded<Value_T>) {
     using RawValue_t = typename Value_T::value_type;
 
@@ -41,18 +41,20 @@ void unchecked_write(auto buffer, Value_T value) {
   } else {
     std::copy_n(reinterpret_cast<io::byte*>(&value), sizeof(value), buffer);
   }
+
+  return sizeof(value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
-void write(std::span<io::byte> buffer, Value_T value) {
+size_t write(std::span<io::byte> buffer, Value_T value) {
   if (buffer.size() < sizeof(Value_T)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  unchecked_write<Value_T>(buffer.begin(), value);
+  return unchecked_write<Value_T>(buffer.begin(), value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,11 +153,11 @@ requires is_buffer_writeable<Value_T> result<Result_T, write_error> try_to_bytes
 
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
-void write(std::span<io::byte> buffer, Value_T value, endian endianness) {
+size_t write(std::span<io::byte> buffer, Value_T value, endian endianness) {
   if (endian::little == endianness) {
-    write(buffer, little_endian{value});
+    return write(buffer, little_endian{value});
   } else {
-    write(buffer, big_endian{value});
+    return write(buffer, big_endian{value});
   }
 }
 
