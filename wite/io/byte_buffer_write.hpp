@@ -82,7 +82,8 @@ requires is_buffer_writeable<Value_T> Result_T to_bytes(Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires is_buffer_writeable<Value_T> write_result_t try_write(std::span<io::byte> buffer, Value_T value) {
+requires is_buffer_writeable<Value_T>
+write_result_t try_write(std::span<io::byte> buffer, Value_T value) {
   if (buffer.size() < sizeof(Value_T)) {
     return write_error::insufficient_buffer;
   }

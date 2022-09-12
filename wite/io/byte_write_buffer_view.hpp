@@ -37,9 +37,11 @@ struct byte_write_buffer_view {
 
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
-void write(byte_write_buffer_view& buffer, Value_T value) {
-  write<Value_T>({buffer.write_position, buffer.data.end()}, value);
-  std::advance(buffer.write_position, sizeof(Value_T));
+size_t write(byte_write_buffer_view& buffer, Value_T value) {
+  const auto bytes_written = write<Value_T>({buffer.write_position, buffer.data.end()}, value);
+  std::advance(buffer.write_position, bytes_written);
+
+  return bytes_written;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,9 +119,11 @@ auto try_write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... 
 
 template <typename Value_T>
 requires is_buffer_writeable<Value_T>
-void write(byte_write_buffer_view& buffer, Value_T value, endian endianness) {
-  write<Value_T>({buffer.write_position, buffer.data.end()}, value, endianness);
-  std::advance(buffer.write_position, sizeof(Value_T));
+size_t write(byte_write_buffer_view& buffer, Value_T value, endian endianness) {
+  const auto bytes_written = write<Value_T>({buffer.write_position, buffer.data.end()}, value, endianness);
+  std::advance(buffer.write_position, bytes_written);
+
+  return bytes_written;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
