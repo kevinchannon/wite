@@ -616,3 +616,19 @@ TEST_CASE("unchecked_add returns value and next read position", "[buffer_io]") {
   REQUIRE(uint32_t{0x01234567} == value);
   REQUIRE(buf + 4 == next);
 }
+
+TEST_CASE("write_at writes at the correct position") {
+  auto data = io::static_byte_buffer<12>{};
+
+  const auto val = double{3.14156e+10};
+  const auto pos = ptrdiff_t{3};
+
+  REQUIRE(sizeof(val) == io::write_at(pos, data, val));
+
+  REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
+
+  REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
+  REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
+  REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
+  REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+}

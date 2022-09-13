@@ -61,6 +61,14 @@ size_t write(std::span<io::byte> buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T>
+  requires is_buffer_writeable<Value_T>
+size_t write_at(ptrdiff_t position, std::span<io::byte> buffer, Value_T value) {
+  return write({std::next(buffer.begin(), position), buffer.end()}, value);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T, typename... Value_Ts>
 size_t write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
   auto out = write(buffer, first_value);
