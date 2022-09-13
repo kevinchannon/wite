@@ -620,7 +620,7 @@ TEST_CASE("unchecked_read returns value and next read position", "[buffer_io]") 
 TEST_CASE("write_at", "[buffer_io]") {
   auto data = io::static_byte_buffer<12>{};
 
-  SECTION("directly to buffer writes at the correct position") {
+  SECTION("directly to data writes at the correct position") {
     const auto val = double{3.14156e+10};
     const auto pos = ptrdiff_t{3};
 
@@ -681,7 +681,7 @@ TEST_CASE("write_at", "[buffer_io]") {
 TEST_CASE("try_write_at", "[buffer_io]") {
   auto data = io::static_byte_buffer<12>{};
 
-  SECTION("writes at the correct position") {
+  SECTION("directly to data writes at the correct position") {
     const auto val = double{3.14156e+10};
     const auto pos = ptrdiff_t{3};
     const auto result = io::try_write_at(pos, data, val);
@@ -710,6 +710,41 @@ TEST_CASE("try_write_at", "[buffer_io]") {
 
   SECTION("handles large and pathological offset") {
     const auto result = io::try_write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, data, double{});
+    REQUIRE(result.is_error());
+    REQUIRE(io::write_error::invalid_position_offset == result.error());
+  }
+
+  auto buffer = io::byte_write_buffer_view{data};
+
+  SECTION("via byte_write_buffer_view writes at the correct position") {
+    const auto val    = double{3.14156e+10};
+    const auto pos    = ptrdiff_t{3};
+    const auto result = io::try_write_at(pos, buffer, val);
+    REQUIRE(result.ok());
+    REQUIRE(pos + sizeof(val) == result.value());
+
+    REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
+
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+  }
+
+  SECTION("returns insufficient buffer error if writing past the end of a buffer") {
+    const auto result = io::try_write_at(5, buffer, double{});
+    REQUIRE(result.is_error());
+    REQUIRE(io::write_error::insufficient_buffer == result.error());
+  }
+
+  SECTION("returns insufficient buffer error if starting past the end of a buffer") {
+    const auto result = io::try_write_at(13, buffer, double{});
+    REQUIRE(result.is_error());
+    REQUIRE(io::write_error::insufficient_buffer == result.error());
+  }
+
+  SECTION("handles large and pathological offset") {
+    const auto result = io::try_write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, buffer, double{});
     REQUIRE(result.is_error());
     REQUIRE(io::write_error::invalid_position_offset == result.error());
   }

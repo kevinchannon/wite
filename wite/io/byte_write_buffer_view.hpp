@@ -81,6 +81,19 @@ write_result_t try_write(byte_write_buffer_view& buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T>
+  requires is_buffer_writeable<Value_T>
+write_result_t try_write_at(size_t position, byte_write_buffer_view& buffer, Value_T value) {
+  const auto result = try_write_at<Value_T>(position, buffer.data, value);
+  if (result.ok()) {
+    buffer.write_position = std::next(buffer.data.begin(), result.value());
+  }
+
+  return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail::buffer_view::write {
 
   template <typename Value_T>
