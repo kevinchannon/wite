@@ -624,7 +624,7 @@ TEST_CASE("write_at", "[buffer_io]") {
     const auto val = double{3.14156e+10};
     const auto pos = ptrdiff_t{3};
 
-    REQUIRE(sizeof(val) == io::write_at(pos, data, val));
+    REQUIRE(pos + sizeof(val) == io::write_at(pos, data, val));
 
     REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
@@ -656,7 +656,7 @@ TEST_CASE("try_write_at", "[buffer_io]") {
     const auto pos = ptrdiff_t{3};
     const auto result = io::try_write_at(pos, data, val);
     REQUIRE(result.ok());
-    REQUIRE(sizeof(val) == result.value());
+    REQUIRE(pos + sizeof(val) == result.value());
 
     REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 

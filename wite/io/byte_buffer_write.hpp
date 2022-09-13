@@ -72,7 +72,7 @@ size_t write_at(size_t position, std::span<io::byte> buffer, Value_T value) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  return write({std::next(buffer.begin(), position), buffer.end()}, value);
+  return position + write({std::next(buffer.begin(), position), buffer.end()}, value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,12 @@ write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T
     return write_error::insufficient_buffer;
   }
 
-  return try_write({std::next(buffer.begin(), position), buffer.end()}, value);
+  const auto result = try_write({std::next(buffer.begin(), position), buffer.end()}, value);
+  if (result.is_error()) {
+    return result;
+  }
+
+  return position + result.value();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
