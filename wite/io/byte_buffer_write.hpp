@@ -63,7 +63,15 @@ size_t write(std::span<io::byte> buffer, Value_T value) {
 
 template <typename Value_T>
   requires is_buffer_writeable<Value_T>
-size_t write_at(ptrdiff_t position, std::span<io::byte> buffer, Value_T value) {
+size_t write_at(size_t position, std::span<io::byte> buffer, Value_T value) {
+  if (position + sizeof(value) < position) {
+    throw std::invalid_argument{"Buffer write position exceeds allowed value"};
+  }
+
+  if (position >= buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for write"};
+  }
+
   return write({std::next(buffer.begin(), position), buffer.end()}, value);
 }
 

@@ -599,7 +599,7 @@ TEST_CASE("try_write returns error on bad write", "[buffer_io]") {
   REQUIRE(io::write_error::insufficient_buffer == result.error());
 }
 
-TEST_CASE("unchecked_add returns value and next read position", "[buffer_io]") {
+TEST_CASE("unchecked_read returns value and next read position", "[buffer_io]") {
   const auto data = io::static_byte_buffer<8>{io::byte{0x67},
                                               io::byte{0x45},
                                               io::byte{0x23},
@@ -617,18 +617,33 @@ TEST_CASE("unchecked_add returns value and next read position", "[buffer_io]") {
   REQUIRE(buf + 4 == next);
 }
 
-TEST_CASE("write_at writes at the correct position") {
+TEST_CASE("write_at", "[buffer_io]") {
   auto data = io::static_byte_buffer<12>{};
 
-  const auto val = double{3.14156e+10};
-  const auto pos = ptrdiff_t{3};
+  SECTION("writes at the correct position") {
+    const auto val = double{3.14156e+10};
+    const auto pos = ptrdiff_t{3};
 
-  REQUIRE(sizeof(val) == io::write_at(pos, data, val));
+    REQUIRE(sizeof(val) == io::write_at(pos, data, val));
 
-  REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
+    REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
-  REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
-  REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
-  REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
-  REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+  }
+
+  SECTION("raises exception if writing past the end of a buffer") {
+    REQUIRE_THROWS_AS(io::write_at(5, data, double{3.14156e+10}), std::out_of_range);
+  }
+
+  SECTION("raises exception if starting past the end of a buffer") {
+    REQUIRE_THROWS_AS(io::write_at(13, data, double{3.14156e+10}), std::out_of_range);
+  }
+
+  SECTION("handles large and pathological offset") {
+    REQUIRE_THROWS_AS(io::write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, data, double{3.14156e+10}),
+                      std::invalid_argument);
+  }
 }
