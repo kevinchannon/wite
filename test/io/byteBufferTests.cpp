@@ -620,7 +620,7 @@ TEST_CASE("unchecked_read returns value and next read position", "[buffer_io]") 
 TEST_CASE("write_at", "[buffer_io]") {
   auto data = io::static_byte_buffer<12>{};
 
-  SECTION("writes at the correct position") {
+  SECTION("directly to buffer writes at the correct position") {
     const auto val = double{3.14156e+10};
     const auto pos = ptrdiff_t{3};
 
@@ -644,6 +644,36 @@ TEST_CASE("write_at", "[buffer_io]") {
 
   SECTION("handles large and pathological offset") {
     REQUIRE_THROWS_AS(io::write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, data, double{}),
+                      std::invalid_argument);
+  }
+
+  auto buffer = io::byte_write_buffer_view{data};
+
+  SECTION("via byte_write_buffer_view writes at the correct position") {
+    const auto val = double{3.14156e+10};
+    const auto pos = ptrdiff_t{3};
+
+    REQUIRE(pos + sizeof(val) == io::write_at(pos, buffer, val));
+    REQUIRE(std::next(buffer.data.begin(), pos + sizeof(val)) == buffer.write_position);
+
+    REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
+
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
+    REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+  }
+
+  SECTION("raises exception if writing past the end of a buffer") {
+    REQUIRE_THROWS_AS(io::write_at(5, buffer, double{}), std::out_of_range);
+  }
+
+  SECTION("raises exception if starting past the end of a buffer") {
+    REQUIRE_THROWS_AS(io::write_at(13, buffer, double{}), std::out_of_range);
+  }
+
+  SECTION("handles large and pathological offset") {
+    REQUIRE_THROWS_AS(io::write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, buffer, double{}),
                       std::invalid_argument);
   }
 }
