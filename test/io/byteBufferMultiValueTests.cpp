@@ -231,16 +231,16 @@ TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
     const auto [rc_a, rc_b, rc_c, rc_d] = write_to_buffer();
 
     REQUIRE(rc_a.ok());
-    REQUIRE(true == rc_a.value());
+    REQUIRE(sizeof(a) == rc_a.value());
 
     REQUIRE(rc_b.ok());
-    REQUIRE(true == rc_b.value());
+    REQUIRE(sizeof(b) == rc_b.value());
 
     REQUIRE(rc_c.ok());
-    REQUIRE(true == rc_c.value());
+    REQUIRE(sizeof(c) == rc_c.value());
 
     REQUIRE(rc_d.ok());
-    REQUIRE(true == rc_d.value());
+    REQUIRE(sizeof(d) == rc_d.value());
 
     REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[0]));
     REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[1]));
@@ -280,10 +280,10 @@ TEST_CASE("Try write multiple values from buffer inserts errors if the buffer is
     const auto [rc_a, rc_b, rc_c, rc_d] = write_to_buffer();
 
     REQUIRE(rc_a.ok());
-    REQUIRE(true == rc_a.value());
+    REQUIRE(sizeof(a) == rc_a.value());
 
     REQUIRE(rc_b.ok());
-    REQUIRE(true == rc_b.value());
+    REQUIRE(sizeof(b) == rc_b.value());
 
     REQUIRE(rc_c.is_error());
     REQUIRE(io::write_error::insufficient_buffer == rc_c.error());

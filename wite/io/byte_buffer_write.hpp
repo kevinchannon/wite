@@ -38,11 +38,13 @@ size_t unchecked_write(auto buffer, Value_T value) {
                   sizeof(value.value),
                   buffer);
     }
+
+    return sizeof(RawValue_t);
   } else {
     std::copy_n(reinterpret_cast<io::byte*>(&value), sizeof(value), buffer);
-  }
 
-  return sizeof(value);
+    return sizeof(Value_T);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,9 +90,7 @@ write_result_t try_write(std::span<io::byte> buffer, Value_T value) {
     return write_error::insufficient_buffer;
   }
 
-  unchecked_write<Value_T>(buffer.begin(), value);
-
-  return true;
+  return unchecked_write<Value_T>(buffer.begin(), value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

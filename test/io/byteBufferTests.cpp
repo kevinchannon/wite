@@ -518,14 +518,14 @@ TEST_CASE("try_read returns value on good read", "[buffer_io]") {
       const auto val = io::try_read<uint32_t>(buffer);
       REQUIRE(val.ok());
       REQUIRE(uint32_t{0xFFAB4567} == val.value());
-      REQUIRE(std::next(buffer.data.begin(), 4) == buffer.read_position);
+      REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
     }
 
     SECTION("with specified endianness adapter") {
       const auto val = io::try_read<io::big_endian<uint32_t>>(buffer);
       REQUIRE(val.ok());
       REQUIRE(uint32_t{0x6745ABFF} == val.value());
-      REQUIRE(std::next(buffer.data.begin(), 4) == buffer.read_position);
+      REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
     }
   }
 }
@@ -544,16 +544,20 @@ TEST_CASE("try_write returns true on good write", "[buffer_io]") {
 
     SECTION("with default endianness") {
       const auto val = uint32_t{0xFE01CD23};
+      const auto result = io::try_write(data, val);
 
-      REQUIRE(io::try_write(data, val).ok());
+      REQUIRE(result.ok());
+      REQUIRE(sizeof(val) == result.value());
       REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte{0x23}, io::byte{0xCD}, io::byte{0x01}, io::byte{0xFE}},
                                  data));
     }
 
     SECTION("with specified endianness") {
       const auto val = uint32_t{0x23CD01FE};
+      const auto result = io::try_write(data, io::big_endian{val});
 
-      REQUIRE(io::try_write(data, io::big_endian{val}).ok());
+      REQUIRE(result.ok());
+      REQUIRE(sizeof(val) == result.value());
       REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte{0x23}, io::byte{0xCD}, io::byte{0x01}, io::byte{0xFE}},
                                  data));
     }
@@ -564,19 +568,23 @@ TEST_CASE("try_write returns true on good write", "[buffer_io]") {
     auto buffer = io::byte_write_buffer_view{data};
 
     SECTION("with default endianness") {
-      const auto val = uint32_t{0xFE01CD23};
+      const auto val    = uint32_t{0xFE01CD23};
+      const auto result = io::try_write(buffer, val);
 
-      REQUIRE(io::try_write(buffer, val).ok());
-      REQUIRE(std::next(buffer.data.begin(), 4) == buffer.write_position);
+      REQUIRE(result.ok());
+      REQUIRE(sizeof(val) == result.value());
+      REQUIRE(4 == std::distance(buffer.data.begin(), buffer.write_position));
       REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte{0x23}, io::byte{0xCD}, io::byte{0x01}, io::byte{0xFE}},
                                  buffer.data));
     }
 
     SECTION("with specified endianness adapter") {
-      const auto val = uint32_t{0x23CD01FE};
+      const auto val    = uint32_t{0x23CD01FE};
+      const auto result = io::try_write(buffer, io::big_endian{val});
 
-      REQUIRE(io::try_write(buffer, io::big_endian{val}).ok());
-      REQUIRE(std::next(buffer.data.begin(), 4) == buffer.write_position);
+      REQUIRE(result.ok());
+      REQUIRE(sizeof(val) == result.value());
+      REQUIRE(4 == std::distance(buffer.data.begin(), buffer.write_position));
       REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte{0x23}, io::byte{0xCD}, io::byte{0x01}, io::byte{0xFE}},
                                  buffer.data));
     }
