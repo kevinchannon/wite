@@ -62,12 +62,14 @@ size_t write(std::span<io::byte> buffer, Value_T value) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename... Value_Ts>
-void write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
-  write(buffer, first_value);
+size_t write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+  auto out = write(buffer, first_value);
 
   if constexpr (sizeof...(other_values) > 0) {
-    write(std::span<io::byte>{std::next(buffer.begin(), sizeof(first_value)), buffer.end()}, other_values...);
+    out += write(std::span<io::byte>{std::next(buffer.begin(), sizeof(first_value)), buffer.end()}, other_values...);
   }
+
+  return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

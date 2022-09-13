@@ -30,31 +30,31 @@ TEST_CASE("Write multiple values to buffer", "[buffer_io]") {
   auto buffer  = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)>{};
 
   const auto [test_name, write_to_buffer] =
-      GENERATE_REF(table<std::string, std::function<void()>>({
-        {"Direct buffer access"s, [&]() { io::write(buffer, a, io::big_endian{b}, c, d); }},
-        {"Via write buffer view"s, [&]() { 
+      GENERATE_REF(table<std::string, std::function<size_t()>>({
+        {"Direct buffer access"s, [&]() -> size_t { return io::write(buffer, a, io::big_endian{b}, c, d); }},
+        {"Via write buffer view"s, [&]() -> size_t { 
           auto write_view = io::byte_write_buffer_view{buffer};
-          io::write(write_view, a, io::big_endian{b}, c, d);
+          return io::write(write_view, a, io::big_endian{b}, c, d);
         }}}));
 
   SECTION(test_name) {
-    write_to_buffer();
+    REQUIRE(11 == write_to_buffer());
+
+    REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[ 0]));
+    REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[ 1]));
+    REQUIRE(uint32_t{0x34} == test::to_integer<uint32_t>(buffer[ 2]));
+    REQUIRE(uint32_t{0x12} == test::to_integer<uint32_t>(buffer[ 3]));
+
+    REQUIRE(uint32_t{0xAB} == test::to_integer<uint32_t>(buffer[ 4]));
+    REQUIRE(uint32_t{0xCD} == test::to_integer<uint32_t>(buffer[ 5]));
+
+    REQUIRE(uint32_t{true} == test::to_integer<uint32_t>(buffer[ 6]));
+
+    REQUIRE(uint32_t{0x98} == test::to_integer<uint32_t>(buffer[ 7]));
+    REQUIRE(uint32_t{0xBA} == test::to_integer<uint32_t>(buffer[ 8]));
+    REQUIRE(uint32_t{0xDC} == test::to_integer<uint32_t>(buffer[ 9]));
+    REQUIRE(uint32_t{0xFE} == test::to_integer<uint32_t>(buffer[10]));
   }
-
-  REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[ 0]));
-  REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[ 1]));
-  REQUIRE(uint32_t{0x34} == test::to_integer<uint32_t>(buffer[ 2]));
-  REQUIRE(uint32_t{0x12} == test::to_integer<uint32_t>(buffer[ 3]));
-
-  REQUIRE(uint32_t{0xAB} == test::to_integer<uint32_t>(buffer[ 4]));
-  REQUIRE(uint32_t{0xCD} == test::to_integer<uint32_t>(buffer[ 5]));
-
-  REQUIRE(uint32_t{true} == test::to_integer<uint32_t>(buffer[ 6]));
-
-  REQUIRE(uint32_t{0x98} == test::to_integer<uint32_t>(buffer[ 7]));
-  REQUIRE(uint32_t{0xBA} == test::to_integer<uint32_t>(buffer[ 8]));
-  REQUIRE(uint32_t{0xDC} == test::to_integer<uint32_t>(buffer[ 9]));
-  REQUIRE(uint32_t{0xFE} == test::to_integer<uint32_t>(buffer[10]));
 }
 
 TEST_CASE("Write multiple values from buffer throws out_of_range if the buffer is too small", "[buffer_io]") {
