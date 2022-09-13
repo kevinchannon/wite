@@ -18,8 +18,6 @@ using namespace std::string_literals;
 
 using namespace wite;
 
-#define COMMA ,
-
 TEST_CASE("Write multiple values to buffer", "[buffer_io]") {
 
   const auto a = uint32_t{0x12345678};
