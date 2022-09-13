@@ -214,46 +214,67 @@ TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
   const auto c = true;
   const auto d = uint32_t{0xFEDCBA98};
 
-  auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)>{};
+  auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d) + 1>{};
 
   using Result_t = std::tuple<io::write_result_t, io::write_result_t, io::write_result_t, io::write_result_t>;
 
-  const auto [test_name, write_to_buffer] = GENERATE_REF(table<std::string, std::function<Result_t()>>(
-      {{"Direct buffer access"s, [&]() -> Result_t { return io::try_write(buffer, a, io::big_endian{b}, c, d); }},
-       {"Via read buffer view"s, [&]() -> Result_t {
-          auto write_view = io::byte_write_buffer_view{buffer};
-          return io::try_write(write_view, a, io::big_endian{b}, c, d);
-        }}}));
+  const auto [test_name, write_to_buffer, offset, expected] = GENERATE_REF(table<std::string, std::function<Result_t(size_t)>, size_t, std::tuple<size_t, size_t, size_t, size_t>>(
+      {
+        {
+          "Direct buffer access"s,
+          [&](size_t) -> Result_t { return io::try_write(buffer, a, io::big_endian{b}, c, d); },
+          0,
+          {sizeof(a), sizeof(b), sizeof(c), sizeof(d)}
+        },
+        {
+          "Via read buffer view"s,
+          [&](size_t) -> Result_t {
+            auto write_view = io::byte_write_buffer_view{buffer};
+            return io::try_write(write_view, a, io::big_endian{b}, c, d);
+          },
+          0,
+          {sizeof(a), sizeof(b), sizeof(c), sizeof(d)}
+        },
+        {
+          "Direct access at offset"s,
+          [&](size_t pos) -> Result_t { return io::try_write_at(pos, buffer, a, io::big_endian{b}, c, d); },
+          1,
+            {1 + sizeof(a),
+             1 + sizeof(a) + sizeof(b),
+             1 + sizeof(a) + sizeof(b) + sizeof(c),
+             1 + sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)}
+        }
+      }));
 
   SECTION(test_name) {
-    const auto [rc_a, rc_b, rc_c, rc_d] = write_to_buffer();
+    const auto [rc_a, rc_b, rc_c, rc_d] = write_to_buffer(offset);
 
     REQUIRE(rc_a.ok());
-    REQUIRE(sizeof(a) == rc_a.value());
+    REQUIRE(std::get<0>(expected) == rc_a.value());
 
     REQUIRE(rc_b.ok());
-    REQUIRE(sizeof(b) == rc_b.value());
+    REQUIRE(std::get<1>(expected) == rc_b.value());
 
     REQUIRE(rc_c.ok());
-    REQUIRE(sizeof(c) == rc_c.value());
+    REQUIRE(std::get<2>(expected) == rc_c.value());
 
     REQUIRE(rc_d.ok());
-    REQUIRE(sizeof(d) == rc_d.value());
+    REQUIRE(std::get<3>(expected) == rc_d.value());
 
-    REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[0]));
-    REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[1]));
-    REQUIRE(uint32_t{0x34} == test::to_integer<uint32_t>(buffer[2]));
-    REQUIRE(uint32_t{0x12} == test::to_integer<uint32_t>(buffer[3]));
+    REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[offset + 0]));
+    REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[offset + 1]));
+    REQUIRE(uint32_t{0x34} == test::to_integer<uint32_t>(buffer[offset + 2]));
+    REQUIRE(uint32_t{0x12} == test::to_integer<uint32_t>(buffer[offset + 3]));
 
-    REQUIRE(uint32_t{0xAB} == test::to_integer<uint32_t>(buffer[4]));
-    REQUIRE(uint32_t{0xCD} == test::to_integer<uint32_t>(buffer[5]));
+    REQUIRE(uint32_t{0xAB} == test::to_integer<uint32_t>(buffer[offset + 4]));
+    REQUIRE(uint32_t{0xCD} == test::to_integer<uint32_t>(buffer[offset + 5]));
 
-    REQUIRE(uint32_t{true} == test::to_integer<uint32_t>(buffer[6]));
+    REQUIRE(uint32_t{true} == test::to_integer<uint32_t>(buffer[offset + 6]));
 
-    REQUIRE(uint32_t{0x98} == test::to_integer<uint32_t>(buffer[7]));
-    REQUIRE(uint32_t{0xBA} == test::to_integer<uint32_t>(buffer[8]));
-    REQUIRE(uint32_t{0xDC} == test::to_integer<uint32_t>(buffer[9]));
-    REQUIRE(uint32_t{0xFE} == test::to_integer<uint32_t>(buffer[10]));
+    REQUIRE(uint32_t{0x98} == test::to_integer<uint32_t>(buffer[offset + 7]));
+    REQUIRE(uint32_t{0xBA} == test::to_integer<uint32_t>(buffer[offset + 8]));
+    REQUIRE(uint32_t{0xDC} == test::to_integer<uint32_t>(buffer[offset + 9]));
+    REQUIRE(uint32_t{0xFE} == test::to_integer<uint32_t>(buffer[offset + 10]));
   }
 }
 

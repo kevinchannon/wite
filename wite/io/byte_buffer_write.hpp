@@ -168,11 +168,32 @@ namespace detail::buffer::write {
     }
   }
 
+  template <typename Value_T, typename... Value_Ts>
+  auto _recursive_try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+    auto first_result = std::make_tuple(try_write_at(position, buffer, first_value));
+
+    if constexpr (sizeof...(other_values) > 0) {
+      auto other_results =
+          _recursive_try_write_at(std::get<0>(first_result).ok() ? std::get<0>(first_result).value() : buffer.size(), buffer, other_values...);
+
+      return std::tuple_cat(first_result, other_results);
+    } else {
+      return first_result;
+    }
+  }
+
 }  // namespace detail::buffer::write
 
 template <typename Value_T, typename... Value_Ts>
 auto try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
   return detail::buffer::write::_recursive_try_write(buffer, first_value, other_values...);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T, typename... Value_Ts>
+auto try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
+  return detail::buffer::write::_recursive_try_write_at(position, buffer, first_value, other_values...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
