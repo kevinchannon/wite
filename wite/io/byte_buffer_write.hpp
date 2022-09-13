@@ -113,6 +113,22 @@ write_result_t try_write(std::span<io::byte> buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T>
+  requires is_buffer_writeable<Value_T>
+write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T value) {
+  if (position + sizeof(value) < position) {
+    return write_error::invalid_position_offset;
+  }
+
+  if (position >= buffer.size()) {
+    return write_error::insufficient_buffer;
+  }
+
+  return try_write({std::next(buffer.begin(), position), buffer.end()}, value);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail::buffer::write {
 
   template <typename Value_T>

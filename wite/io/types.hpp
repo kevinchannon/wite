@@ -32,7 +32,8 @@ using read_result_t = wite::result<Value_T, read_error>;
 ///////////////////////////////////////////////////////////////////////////////
 
 enum class write_error {
-  insufficient_buffer
+  insufficient_buffer,
+  invalid_position_offset
 };
 
 using write_result_t = wite::result<size_t, write_error>;
