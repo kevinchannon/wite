@@ -216,50 +216,44 @@ TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
 
   auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d) + 1>{};
 
-  using Result_t = std::tuple<io::write_result_t, io::write_result_t, io::write_result_t, io::write_result_t>;
+  using Result_t = io::write_result_t;
 
-  const auto [test_name, write_to_buffer, offset, expected] = GENERATE_REF(table<std::string, std::function<Result_t(size_t)>, size_t, std::tuple<size_t, size_t, size_t, size_t>>(
+  const auto [test_name, write_to_buffer, offset, expected] = GENERATE_REF(table<std::string, std::function<Result_t(size_t)>, size_t, size_t>(
       {
         {
           "Direct buffer access"s,
           [&](size_t) -> Result_t { return io::try_write(buffer, a, io::big_endian{b}, c, d); },
           0,
-          {sizeof(a), sizeof(b), sizeof(c), sizeof(d)}
+          sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)
         },
         {
-          "Via read buffer view"s,
+          "Via write buffer view"s,
           [&](size_t) -> Result_t {
             auto write_view = io::byte_write_buffer_view{buffer};
             return io::try_write(write_view, a, io::big_endian{b}, c, d);
           },
           0,
-          {sizeof(a), sizeof(b), sizeof(c), sizeof(d)}
+          sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)
         },
         {
           "Direct access at offset"s,
           [&](size_t pos) -> Result_t { return io::try_write_at(pos, buffer, a, io::big_endian{b}, c, d); },
           1,
-            {1 + sizeof(a),
-             1 + sizeof(a) + sizeof(b),
-             1 + sizeof(a) + sizeof(b) + sizeof(c),
-             1 + sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)}
-        }
+          1 + sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)},
+         {
+           "Via write buffer view at offset"s,
+            [&](size_t pos) -> Result_t {
+              auto write_view = io::byte_write_buffer_view{buffer};
+              return io::try_write_at(pos, write_view, a, io::big_endian{b}, c, d);
+            },
+           1,
+           1 + sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d)}
       }));
 
   SECTION(test_name) {
-    const auto [rc_a, rc_b, rc_c, rc_d] = write_to_buffer(offset);
-
-    REQUIRE(rc_a.ok());
-    REQUIRE(std::get<0>(expected) == rc_a.value());
-
-    REQUIRE(rc_b.ok());
-    REQUIRE(std::get<1>(expected) == rc_b.value());
-
-    REQUIRE(rc_c.ok());
-    REQUIRE(std::get<2>(expected) == rc_c.value());
-
-    REQUIRE(rc_d.ok());
-    REQUIRE(std::get<3>(expected) == rc_d.value());
+    const auto result = write_to_buffer(offset);
+    REQUIRE(result.ok());
+    REQUIRE(expected == result.value());
 
     REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[offset + 0]));
     REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[offset + 1]));
@@ -278,7 +272,51 @@ TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
   }
 }
 
-TEST_CASE("Try write multiple values from buffer inserts errors if the buffer is too small", "[buffer_io]") {
+TEST_CASE("try_write via byte_write_buffer_view increments write position correctly") {
+  const auto a = uint32_t{0x12345678};
+  const auto b = uint16_t{0xABCD};
+  const auto c = true;
+
+  auto data = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c)>{};
+  auto buffer = io::byte_write_buffer_view{data};
+
+  SECTION("when writing succeeds") {
+    const auto result = io::try_write(buffer, a, b, c);
+    REQUIRE(result.ok());
+    REQUIRE(std::next(buffer.data.begin(), sizeof(a) + sizeof(b) + sizeof(c)) == buffer.write_position);
+  }
+
+  SECTION("when writing fails") {
+    const auto result = io::try_write(buffer, a, b, c, int{});
+    REQUIRE(result.is_error());
+    REQUIRE(buffer.data.begin() == buffer.write_position);
+  }
+}
+
+TEST_CASE("try_write_at via byte_write_buffer_view increments write position correctly") {
+  const auto a = uint32_t{0x12345678};
+  const auto b = uint16_t{0xABCD};
+  const auto c = true;
+
+  constexpr auto offset = size_t{3};
+
+  auto data   = io::static_byte_buffer<sizeof(a) + sizeof(b) + sizeof(c) + offset>{};
+  auto buffer = io::byte_write_buffer_view{data};
+
+  SECTION("when writing succeeds") {
+    const auto result = io::try_write_at(offset, buffer, a, b, c);
+    REQUIRE(result.ok());
+    REQUIRE(std::next(buffer.data.begin(), offset + sizeof(a) + sizeof(b) + sizeof(c)) == buffer.write_position);
+  }
+
+  SECTION("when writing fails") {
+    const auto result = io::try_write_at(offset, buffer, a, b, c, int{});
+    REQUIRE(result.is_error());
+    REQUIRE(buffer.data.begin() == buffer.write_position);
+  }
+}
+
+TEST_CASE("Try write multiple values from buffer returns error if the buffer is too small", "[buffer_io]") {
   const auto a = uint32_t{0x12345678};
   const auto b = uint16_t{0xABCD};
   const auto c = true;
@@ -286,36 +324,19 @@ TEST_CASE("Try write multiple values from buffer inserts errors if the buffer is
 
   auto buffer = io::static_byte_buffer<sizeof(a) + sizeof(b)>{};
 
-  using Result_t = std::tuple<io::write_result_t, io::write_result_t, io::write_result_t, io::write_result_t>;
+  using Result_t = io::write_result_t;
 
   const auto [test_name, write_to_buffer] = GENERATE_REF(table<std::string, std::function<Result_t()>>(
       {{"Direct buffer access"s, [&]() -> Result_t { return io::try_write(buffer, a, io::big_endian{b}, c, d); }},
-       {"Via read buffer view"s, [&]() -> Result_t {
+       {"Via write buffer view"s, [&]() -> Result_t {
           auto write_view = io::byte_write_buffer_view{buffer};
           return io::try_write(write_view, a, io::big_endian{b}, c, d);
         }}}));
 
   SECTION(test_name) {
-    const auto [rc_a, rc_b, rc_c, rc_d] = write_to_buffer();
+    const auto result = write_to_buffer();
 
-    REQUIRE(rc_a.ok());
-    REQUIRE(sizeof(a) == rc_a.value());
-
-    REQUIRE(rc_b.ok());
-    REQUIRE(sizeof(b) == rc_b.value());
-
-    REQUIRE(rc_c.is_error());
-    REQUIRE(io::write_error::insufficient_buffer == rc_c.error());
-
-    REQUIRE(rc_d.is_error());
-    REQUIRE(io::write_error::insufficient_buffer == rc_d.error());
-
-    REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[0]));
-    REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[1]));
-    REQUIRE(uint32_t{0x34} == test::to_integer<uint32_t>(buffer[2]));
-    REQUIRE(uint32_t{0x12} == test::to_integer<uint32_t>(buffer[3]));
-
-    REQUIRE(uint32_t{0xAB} == test::to_integer<uint32_t>(buffer[4]));
-    REQUIRE(uint32_t{0xCD} == test::to_integer<uint32_t>(buffer[5]));
+    REQUIRE(result.is_error());
+    REQUIRE(io::write_error::insufficient_buffer == result.error());
   }
 }

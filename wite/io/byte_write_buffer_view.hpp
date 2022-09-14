@@ -94,49 +94,26 @@ write_result_t try_write_at(size_t position, byte_write_buffer_view& buffer, Val
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail::buffer_view::write {
-
-  template <typename Value_T>
-  requires(not common::is_pod_like<Value_T>)
-  _WITE_CONSTEVAL auto value_size() noexcept {
-    // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
-    // In that case, a new overload of this function will need to be added for the new type.
-    return sizeof(typename Value_T::value_type);
+template <typename Value_T, typename... Value_Ts>
+write_result_t try_write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) noexcept {
+  const auto result = try_write(buffer.data, first_value, other_values...);
+  if (result.ok()) {
+    std::advance(buffer.write_position, result.value());
   }
 
-  template <typename Value_T>
-  requires common::is_pod_like<Value_T>
-  _WITE_CONSTEVAL auto value_size() noexcept {
-    return sizeof(Value_T);
-  }
-
-  template <size_t CURRENT, typename T, typename... Ts>
-  constexpr auto _recursive_byte_count() {
-    if constexpr (sizeof...(Ts) == 0) {
-      return CURRENT + value_size<T>();
-    } else {
-      return _recursive_byte_count<CURRENT + value_size<T>(), Ts...>();
-    }
-  }
-
-  template <typename... Ts>
-  constexpr auto byte_count() {
-    return _recursive_byte_count<0, Ts...>();
-  }
-
-}  // namespace detail::buffer_view::write
+  return result;  
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename... Value_Ts>
-auto try_write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) noexcept {
-  const auto out = try_write(buffer.data, first_value, other_values...);
+auto try_write_at(size_t position, byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) noexcept {
+  const auto result = try_write_at(position, buffer.data, first_value, other_values...);
+  if (result.ok()) {
+    buffer.write_position = std::next(buffer.data.begin(), result.value());
+  }
 
-  std::advance(buffer.write_position,
-               std::min<ptrdiff_t>(detail::buffer_view::write::byte_count<Value_Ts...>(),
-                                   std::distance(buffer.write_position, buffer.data.end())));
-
-  return out;  
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

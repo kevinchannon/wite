@@ -151,32 +151,33 @@ namespace detail::buffer::write {
   }
 
   template <typename Value_T, typename... Value_Ts>
-  auto _recursive_try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
-    auto first_result = std::make_tuple(try_write(buffer, first_value));
+  write_result_t _recursive_try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+    const auto first_result = try_write(buffer, first_value);
+    if (first_result.is_error()) {
+      return first_result;
+    }
 
     if constexpr (sizeof...(other_values) > 0) {
-      auto other_results =
-          _recursive_try_write(std::span<io::byte>{std::get<0>(first_result).ok()
-                                             ? std::next(buffer.begin(), value_size<Value_T>())
-                                             : buffer.end(),
-                                         buffer.end()},
-                    other_values...);
+      const auto result = _recursive_try_write({std::next(buffer.begin(), value_size<Value_T>()), buffer.end()}, other_values...);
+      if (result.is_error()) {
+        return result;
+      }
 
-      return std::tuple_cat(first_result, other_results);
+      return first_result.value() + result.value();
     } else {
       return first_result;
     }
   }
 
   template <typename Value_T, typename... Value_Ts>
-  auto _recursive_try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
-    auto first_result = std::make_tuple(try_write_at(position, buffer, first_value));
+  write_result_t _recursive_try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+    const auto first_result = try_write_at(position, buffer, first_value);
+    if (first_result.is_error()) {
+      return first_result;
+    }
 
     if constexpr (sizeof...(other_values) > 0) {
-      auto other_results =
-          _recursive_try_write_at(std::get<0>(first_result).ok() ? std::get<0>(first_result).value() : buffer.size(), buffer, other_values...);
-
-      return std::tuple_cat(first_result, other_results);
+      return _recursive_try_write_at(first_result.value(), buffer, other_values...);
     } else {
       return first_result;
     }
@@ -185,14 +186,14 @@ namespace detail::buffer::write {
 }  // namespace detail::buffer::write
 
 template <typename Value_T, typename... Value_Ts>
-auto try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
+write_result_t try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
   return detail::buffer::write::_recursive_try_write(buffer, first_value, other_values...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename... Value_Ts>
-auto try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
+write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
   return detail::buffer::write::_recursive_try_write_at(position, buffer, first_value, other_values...);
 }
 
