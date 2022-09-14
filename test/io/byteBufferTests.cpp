@@ -750,7 +750,7 @@ TEST_CASE("try_write_at", "[buffer_io]") {
   }
 }
 
-TEST_CASE("read_at reads at the correct offset") {
+TEST_CASE("Direct buffer read_at", "[buffer_io]") {
   const auto data = io::dynamic_byte_buffer{io::byte{0x67},
                                            io::byte{0x45},
                                            io::byte{0x23},
@@ -760,5 +760,19 @@ TEST_CASE("read_at reads at the correct offset") {
                                            io::byte{0xAB},
                                            io::byte{0x89}};
 
-  REQUIRE(uint32_t{0x89ABCDEF} == io::read_at<uint32_t>(4, data));
+  SECTION("reads at the correct offset") {
+    REQUIRE(uint32_t{0x89ABCDEF} == io::read_at<uint32_t>(4, data));
+  }
+
+  SECTION("throws std::out_of_range if the read goes past the end of the buffer") {
+    REQUIRE_THROWS_AS(io::read_at<uint32_t>(5, data), std::out_of_range);
+  }
+
+  SECTION("throws std::out_of_range if the read starts past the end of the buffer") {
+    REQUIRE_THROWS_AS(io::read_at<uint32_t>(9, data), std::out_of_range);
+  }
+
+  SECTION("throws std::invalid_argument for pathological read offset") {
+    REQUIRE_THROWS_AS(io::read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data), std::invalid_argument);
+  }
 }

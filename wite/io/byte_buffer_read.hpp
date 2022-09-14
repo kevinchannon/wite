@@ -70,6 +70,14 @@ auto read(const std::span<const io::byte>& buffer) {
 template <typename Value_T>
   requires is_buffer_readable<Value_T>
 auto read_at(size_t position, const std::span<const io::byte>& buffer) {
+  if (position + sizeof(Value_T) < position) {
+    throw std::invalid_argument{"Buffer read position exceeds allowed value"};
+  }
+
+  if (position >= buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for read"};
+  }
+
   return read<Value_T>({std::next(buffer.begin(), position), buffer.end()});
 }
 
