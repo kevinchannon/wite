@@ -272,7 +272,7 @@ TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
   }
 }
 
-TEST_CASE("try_write via byte_write_buffer_view increments write position correctly") {
+TEST_CASE("try_write via byte_write_buffer_view increments write position correctly", "[buffer_io]") {
   const auto a = uint32_t{0x12345678};
   const auto b = uint16_t{0xABCD};
   const auto c = true;
@@ -293,7 +293,7 @@ TEST_CASE("try_write via byte_write_buffer_view increments write position correc
   }
 }
 
-TEST_CASE("try_write_at via byte_write_buffer_view increments write position correctly") {
+TEST_CASE("try_write_at via byte_write_buffer_view increments write position correctly", "[buffer_io]") {
   const auto a = uint32_t{0x12345678};
   const auto b = uint16_t{0xABCD};
   const auto c = true;

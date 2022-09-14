@@ -749,3 +749,16 @@ TEST_CASE("try_write_at", "[buffer_io]") {
     REQUIRE(io::write_error::invalid_position_offset == result.error());
   }
 }
+
+TEST_CASE("read_at reads at the correct offset") {
+  const auto data = io::dynamic_byte_buffer{io::byte{0x67},
+                                           io::byte{0x45},
+                                           io::byte{0x23},
+                                           io::byte{0x01},
+                                           io::byte{0xEF},
+                                           io::byte{0xCD},
+                                           io::byte{0xAB},
+                                           io::byte{0x89}};
+
+  REQUIRE(uint32_t{0x89ABCDEF} == io::read_at<uint32_t>(4, data));
+}

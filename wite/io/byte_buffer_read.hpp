@@ -67,6 +67,14 @@ auto read(const std::span<const io::byte>& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T>
+  requires is_buffer_readable<Value_T>
+auto read_at(size_t position, const std::span<const io::byte>& buffer) {
+  return read<Value_T>({std::next(buffer.begin(), position), buffer.end()});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail {
 
   template<typename FirstValue_T, typename... OtherValue_Ts>
