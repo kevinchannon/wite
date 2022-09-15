@@ -31,7 +31,7 @@ namespace wite::collections {
 template <typename Value_T, size_t CAPACITY>
 class stack_vector {
   // TODO: This should be an array of std::optional<Value_T>. To do that transparently will require the implementation of a custom
-  // iterator type that does the derefernce of the optional.
+  // iterator type that does the dereference of the optional.
   using data_type = std::array<Value_T, CAPACITY>;
 
  public:
