@@ -153,7 +153,7 @@ namespace detail::buffer::read {
   template<typename Value_T>
   requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
   constexpr auto value_size() noexcept {
-    // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
+    // This will fail to build if the type satisfies the requirements but doesn't have a value_type alias in it.
     // In that case, a new overload of this function will need to be added for the new type.
     return sizeof(typename Value_T::value_type);
   }
