@@ -13,6 +13,15 @@ namespace wite::io {
 
 using byte = WITE_BYTE;
 
+template<typename Result_T>
+_WITE_NODISCARD Result_T to_integer(wite::io::byte b) {
+#if _WITE_FEATURE_USE_STD_BYTE
+  return std::to_integer<Result_T>(b);
+#else
+  return static_cast<Result_T>(b);
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 template <size_t N>

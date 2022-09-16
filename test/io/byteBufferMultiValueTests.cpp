@@ -38,20 +38,20 @@ TEST_CASE("Write multiple values to buffer", "[buffer_io]") {
   SECTION(test_name) {
     REQUIRE(11 == write_to_buffer());
 
-    REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[ 0]));
-    REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[ 1]));
-    REQUIRE(uint32_t{0x34} == test::to_integer<uint32_t>(buffer[ 2]));
-    REQUIRE(uint32_t{0x12} == test::to_integer<uint32_t>(buffer[ 3]));
+    REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[ 0]));
+    REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[ 1]));
+    REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[ 2]));
+    REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[ 3]));
 
-    REQUIRE(uint32_t{0xAB} == test::to_integer<uint32_t>(buffer[ 4]));
-    REQUIRE(uint32_t{0xCD} == test::to_integer<uint32_t>(buffer[ 5]));
+    REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[ 4]));
+    REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[ 5]));
 
-    REQUIRE(uint32_t{true} == test::to_integer<uint32_t>(buffer[ 6]));
+    REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[ 6]));
 
-    REQUIRE(uint32_t{0x98} == test::to_integer<uint32_t>(buffer[ 7]));
-    REQUIRE(uint32_t{0xBA} == test::to_integer<uint32_t>(buffer[ 8]));
-    REQUIRE(uint32_t{0xDC} == test::to_integer<uint32_t>(buffer[ 9]));
-    REQUIRE(uint32_t{0xFE} == test::to_integer<uint32_t>(buffer[10]));
+    REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[ 7]));
+    REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[ 8]));
+    REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[ 9]));
+    REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[10]));
   }
 }
 
@@ -255,20 +255,20 @@ TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
     REQUIRE(result.ok());
     REQUIRE(expected == result.value());
 
-    REQUIRE(uint32_t{0x78} == test::to_integer<uint32_t>(buffer[offset + 0]));
-    REQUIRE(uint32_t{0x56} == test::to_integer<uint32_t>(buffer[offset + 1]));
-    REQUIRE(uint32_t{0x34} == test::to_integer<uint32_t>(buffer[offset + 2]));
-    REQUIRE(uint32_t{0x12} == test::to_integer<uint32_t>(buffer[offset + 3]));
+    REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[offset + 0]));
+    REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[offset + 1]));
+    REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[offset + 2]));
+    REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[offset + 3]));
 
-    REQUIRE(uint32_t{0xAB} == test::to_integer<uint32_t>(buffer[offset + 4]));
-    REQUIRE(uint32_t{0xCD} == test::to_integer<uint32_t>(buffer[offset + 5]));
+    REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[offset + 4]));
+    REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[offset + 5]));
 
-    REQUIRE(uint32_t{true} == test::to_integer<uint32_t>(buffer[offset + 6]));
+    REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[offset + 6]));
 
-    REQUIRE(uint32_t{0x98} == test::to_integer<uint32_t>(buffer[offset + 7]));
-    REQUIRE(uint32_t{0xBA} == test::to_integer<uint32_t>(buffer[offset + 8]));
-    REQUIRE(uint32_t{0xDC} == test::to_integer<uint32_t>(buffer[offset + 9]));
-    REQUIRE(uint32_t{0xFE} == test::to_integer<uint32_t>(buffer[offset + 10]));
+    REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[offset + 7]));
+    REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[offset + 8]));
+    REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[offset + 9]));
+    REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[offset + 10]));
   }
 }
 

@@ -5,6 +5,7 @@ cmake_minimum_required (VERSION 3.8)
 
 project ("wite")
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 
 # The GCC in MinGW requires this, for some reason.

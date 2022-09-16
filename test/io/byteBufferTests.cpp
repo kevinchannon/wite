@@ -111,10 +111,10 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
       SECTION("Dynamic endianness") {
         REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF, io::endian::little));
 
-        REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[0]));
-        REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[1]));
-        REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[2]));
-        REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[3]));
+        REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[0]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[1]));
+        REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[2]));
+        REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[3]));
 
         REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
       }
@@ -122,10 +122,10 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
       SECTION("Static endianness") {
         REQUIRE(sizeof(uint32_t) == io::write(array_buffer, io::little_endian{0x89ABCDEF}));
 
-        REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[0]));
-        REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[1]));
-        REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[2]));
-        REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[3]));
+        REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[0]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[1]));
+        REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[2]));
+        REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[3]));
 
         REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
       }
@@ -133,10 +133,10 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
       SECTION("Default endianness") {
         REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF));
 
-        REQUIRE((io::endian::native == io::endian::little ? 0xEF : 0x89) == test::to_integer<uint8_t>(array_buffer[0]));
-        REQUIRE((io::endian::native == io::endian::little ? 0xCD : 0xAB) == test::to_integer<uint8_t>(array_buffer[1]));
-        REQUIRE((io::endian::native == io::endian::little ? 0xAB : 0xCD) == test::to_integer<uint8_t>(array_buffer[2]));
-        REQUIRE((io::endian::native == io::endian::little ? 0x89 : 0xEF) == test::to_integer<uint8_t>(array_buffer[3]));
+        REQUIRE((io::endian::native == io::endian::little ? 0xEF : 0x89) == io::to_integer<uint8_t>(array_buffer[0]));
+        REQUIRE((io::endian::native == io::endian::little ? 0xCD : 0xAB) == io::to_integer<uint8_t>(array_buffer[1]));
+        REQUIRE((io::endian::native == io::endian::little ? 0xAB : 0xCD) == io::to_integer<uint8_t>(array_buffer[2]));
+        REQUIRE((io::endian::native == io::endian::little ? 0x89 : 0xEF) == io::to_integer<uint8_t>(array_buffer[3]));
 
         REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
       }
@@ -145,10 +145,10 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
     SECTION("Write int not at start of buffer") {
       REQUIRE(sizeof(uint32_t) == io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::little));
 
-      REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[2]));
-      REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[3]));
-      REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[4]));
-      REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[5]));
+      REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[4]));
+      REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[5]));
 
       REQUIRE(std::all_of(array_buffer.begin(), std::next(array_buffer.begin(), 2), [](auto&& x) { return x == io::byte{0}; }));
       REQUIRE(std::all_of(std::next(array_buffer.begin(), 6), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
@@ -164,10 +164,10 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
     SECTION("Write int at start of buffer") {
       REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF, io::endian::big));
 
-      REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[0]));
-      REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[1]));
-      REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[2]));
-      REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[0]));
+      REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[1]));
+      REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[3]));
 
       REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
     }
@@ -175,10 +175,10 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
     SECTION("Write int not at start of buffer") {
       REQUIRE(sizeof(uint32_t) == io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::big));
 
-      REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[2]));
-      REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[3]));
-      REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[4]));
-      REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[5]));
+      REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[4]));
+      REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[5]));
 
       REQUIRE(std::all_of(array_buffer.begin(), std::next(array_buffer.begin(), 2), [](auto&& x) { return x == io::byte{0}; }));
       REQUIRE(std::all_of(std::next(array_buffer.begin(), 6), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
@@ -273,10 +273,10 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
       REQUIRE(sizeof(uint32_t) == io::write(write_buffer, 0x89ABCDEF, io::endian::little));
       REQUIRE(std::next(write_buffer.data.begin(), 4) == write_buffer.write_position);
 
-      REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[0]));
-      REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[1]));
-      REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[2]));
-      REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[0]));
+      REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[1]));
+      REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[3]));
 
       REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
@@ -284,10 +284,10 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
         REQUIRE(sizeof(uint32_t) == io::write(write_buffer, io::little_endian{0x01234567}));
         REQUIRE(std::next(write_buffer.data.begin(), 8) == write_buffer.write_position);
 
-        REQUIRE(0x67 == test::to_integer<uint8_t>(array_buffer[4]));
-        REQUIRE(0x45 == test::to_integer<uint8_t>(array_buffer[5]));
-        REQUIRE(0x23 == test::to_integer<uint8_t>(array_buffer[6]));
-        REQUIRE(0x01 == test::to_integer<uint8_t>(array_buffer[7]));
+        REQUIRE(0x67 == io::to_integer<uint8_t>(array_buffer[4]));
+        REQUIRE(0x45 == io::to_integer<uint8_t>(array_buffer[5]));
+        REQUIRE(0x23 == io::to_integer<uint8_t>(array_buffer[6]));
+        REQUIRE(0x01 == io::to_integer<uint8_t>(array_buffer[7]));
 
         REQUIRE(std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
@@ -295,10 +295,10 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
           REQUIRE(sizeof(uint32_t) == io::write(write_buffer, 0x463235F9));
           REQUIRE(std::next(write_buffer.data.begin(), 12) == write_buffer.write_position);
 
-          REQUIRE((io::endian::native == io::endian::little ? 0xF9 : 0x46) == test::to_integer<uint8_t>(array_buffer[8]));
-          REQUIRE((io::endian::native == io::endian::little ? 0x35 : 0x32) == test::to_integer<uint8_t>(array_buffer[9]));
-          REQUIRE((io::endian::native == io::endian::little ? 0x32 : 0x35) == test::to_integer<uint8_t>(array_buffer[10]));
-          REQUIRE((io::endian::native == io::endian::little ? 0x46 : 0xF9) == test::to_integer<uint8_t>(array_buffer[11]));
+          REQUIRE((io::endian::native == io::endian::little ? 0xF9 : 0x46) == io::to_integer<uint8_t>(array_buffer[8]));
+          REQUIRE((io::endian::native == io::endian::little ? 0x35 : 0x32) == io::to_integer<uint8_t>(array_buffer[9]));
+          REQUIRE((io::endian::native == io::endian::little ? 0x32 : 0x35) == io::to_integer<uint8_t>(array_buffer[10]));
+          REQUIRE((io::endian::native == io::endian::little ? 0x46 : 0xF9) == io::to_integer<uint8_t>(array_buffer[11]));
 
           REQUIRE(
               std::all_of(std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
@@ -325,10 +325,10 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
       REQUIRE(sizeof(uint32_t) == io::write(write_buffer, 0x89ABCDEF, io::endian::big));
       REQUIRE(std::next(write_buffer.data.begin(), 4) == write_buffer.write_position);
 
-      REQUIRE(0x89 == test::to_integer<uint8_t>(array_buffer[0]));
-      REQUIRE(0xAB == test::to_integer<uint8_t>(array_buffer[1]));
-      REQUIRE(0xCD == test::to_integer<uint8_t>(array_buffer[2]));
-      REQUIRE(0xEF == test::to_integer<uint8_t>(array_buffer[3]));
+      REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[0]));
+      REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[1]));
+      REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[2]));
+      REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[3]));
 
       REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
@@ -336,10 +336,10 @@ TEST_CASE("byte_write_buffer_view tests", "[buffer_io]") {
         REQUIRE(sizeof(uint32_t) == io::write(write_buffer, io::big_endian{0x01234567}));
         REQUIRE(std::next(write_buffer.data.begin(), 8) == write_buffer.write_position);
 
-        REQUIRE(0x01 == test::to_integer<uint8_t>(array_buffer[4]));
-        REQUIRE(0x23 == test::to_integer<uint8_t>(array_buffer[5]));
-        REQUIRE(0x45 == test::to_integer<uint8_t>(array_buffer[6]));
-        REQUIRE(0x67 == test::to_integer<uint8_t>(array_buffer[7]));
+        REQUIRE(0x01 == io::to_integer<uint8_t>(array_buffer[4]));
+        REQUIRE(0x23 == io::to_integer<uint8_t>(array_buffer[5]));
+        REQUIRE(0x45 == io::to_integer<uint8_t>(array_buffer[6]));
+        REQUIRE(0x67 == io::to_integer<uint8_t>(array_buffer[7]));
 
         REQUIRE(std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
@@ -421,28 +421,28 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
 
     SECTION("Little-endian") {
       REQUIRE(sizeof(uint64_t) == io::write(buffer, io::little_endian{val}));
-      REQUIRE(0x77 == test::to_integer<uint8_t>(buffer[0]));
-      REQUIRE(0x66 == test::to_integer<uint8_t>(buffer[1]));
-      REQUIRE(0x55 == test::to_integer<uint8_t>(buffer[2]));
-      REQUIRE(0x44 == test::to_integer<uint8_t>(buffer[3]));
-      REQUIRE(0x33 == test::to_integer<uint8_t>(buffer[4]));
-      REQUIRE(0x22 == test::to_integer<uint8_t>(buffer[5]));
-      REQUIRE(0x11 == test::to_integer<uint8_t>(buffer[6]));
-      REQUIRE(0x00 == test::to_integer<uint8_t>(buffer[7]));
+      REQUIRE(0x77 == io::to_integer<uint8_t>(buffer[0]));
+      REQUIRE(0x66 == io::to_integer<uint8_t>(buffer[1]));
+      REQUIRE(0x55 == io::to_integer<uint8_t>(buffer[2]));
+      REQUIRE(0x44 == io::to_integer<uint8_t>(buffer[3]));
+      REQUIRE(0x33 == io::to_integer<uint8_t>(buffer[4]));
+      REQUIRE(0x22 == io::to_integer<uint8_t>(buffer[5]));
+      REQUIRE(0x11 == io::to_integer<uint8_t>(buffer[6]));
+      REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[7]));
 
       REQUIRE(val == io::read<io::little_endian<uint64_t>>(buffer));
     }
 
     SECTION("Big-endian") {
       REQUIRE(sizeof(uint64_t) == io::write(buffer, io::big_endian{val}));
-      REQUIRE(0x00 == test::to_integer<uint8_t>(buffer[0]));
-      REQUIRE(0x11 == test::to_integer<uint8_t>(buffer[1]));
-      REQUIRE(0x22 == test::to_integer<uint8_t>(buffer[2]));
-      REQUIRE(0x33 == test::to_integer<uint8_t>(buffer[3]));
-      REQUIRE(0x44 == test::to_integer<uint8_t>(buffer[4]));
-      REQUIRE(0x55 == test::to_integer<uint8_t>(buffer[5]));
-      REQUIRE(0x66 == test::to_integer<uint8_t>(buffer[6]));
-      REQUIRE(0x77 == test::to_integer<uint8_t>(buffer[7]));
+      REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[0]));
+      REQUIRE(0x11 == io::to_integer<uint8_t>(buffer[1]));
+      REQUIRE(0x22 == io::to_integer<uint8_t>(buffer[2]));
+      REQUIRE(0x33 == io::to_integer<uint8_t>(buffer[3]));
+      REQUIRE(0x44 == io::to_integer<uint8_t>(buffer[4]));
+      REQUIRE(0x55 == io::to_integer<uint8_t>(buffer[5]));
+      REQUIRE(0x66 == io::to_integer<uint8_t>(buffer[6]));
+      REQUIRE(0x77 == io::to_integer<uint8_t>(buffer[7]));
 
       REQUIRE(val == io::read<io::big_endian<uint64_t>>(buffer));
     }
@@ -453,20 +453,20 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
 
     SECTION("Little-endian") {
       REQUIRE(sizeof(uint32_t) == io::write(buffer, io::little_endian{val}));
-      REQUIRE(0x67 == test::to_integer<uint8_t>(buffer[0]));
-      REQUIRE(0x45 == test::to_integer<uint8_t>(buffer[1]));
-      REQUIRE(0x23 == test::to_integer<uint8_t>(buffer[2]));
-      REQUIRE(0x01 == test::to_integer<uint8_t>(buffer[3]));
+      REQUIRE(0x67 == io::to_integer<uint8_t>(buffer[0]));
+      REQUIRE(0x45 == io::to_integer<uint8_t>(buffer[1]));
+      REQUIRE(0x23 == io::to_integer<uint8_t>(buffer[2]));
+      REQUIRE(0x01 == io::to_integer<uint8_t>(buffer[3]));
 
       REQUIRE(val == io::read<io::little_endian<uint32_t>>(buffer));
     }
 
     SECTION("Big-endian") {
       REQUIRE(sizeof(uint32_t) == io::write(buffer, io::big_endian{val}));
-      REQUIRE(0x01 == test::to_integer<uint8_t>(buffer[0]));
-      REQUIRE(0x23 == test::to_integer<uint8_t>(buffer[1]));
-      REQUIRE(0x45 == test::to_integer<uint8_t>(buffer[2]));
-      REQUIRE(0x67 == test::to_integer<uint8_t>(buffer[3]));
+      REQUIRE(0x01 == io::to_integer<uint8_t>(buffer[0]));
+      REQUIRE(0x23 == io::to_integer<uint8_t>(buffer[1]));
+      REQUIRE(0x45 == io::to_integer<uint8_t>(buffer[2]));
+      REQUIRE(0x67 == io::to_integer<uint8_t>(buffer[3]));
 
       REQUIRE(val == io::read<io::big_endian<uint32_t>>(buffer));
     }
@@ -477,16 +477,16 @@ TEST_CASE("Write-read using encodings", "[buffer_io]") {
 
     SECTION("Little-endian") {
       REQUIRE(sizeof(uint16_t) == io::write(buffer, io::little_endian{val}));
-      REQUIRE(0xCD == test::to_integer<uint8_t>(buffer[0]));
-      REQUIRE(0xAB == test::to_integer<uint8_t>(buffer[1]));
+      REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[0]));
+      REQUIRE(0xAB == io::to_integer<uint8_t>(buffer[1]));
 
       REQUIRE(val == io::read<io::little_endian<uint16_t>>(buffer));
     }
 
     SECTION("Big-endian") {
       REQUIRE(sizeof(uint16_t) == io::write(buffer, io::big_endian{val}));
-      REQUIRE(0xAB == test::to_integer<uint8_t>(buffer[0]));
-      REQUIRE(0xCD == test::to_integer<uint8_t>(buffer[1]));
+      REQUIRE(0xAB == io::to_integer<uint8_t>(buffer[0]));
+      REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[1]));
 
       REQUIRE(val == io::read<io::big_endian<uint16_t>>(buffer));
     }
@@ -628,10 +628,10 @@ TEST_CASE("write_at", "[buffer_io]") {
 
     REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[0]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[1]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[2]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[pos + sizeof(val)]));
   }
 
   SECTION("raises exception if writing past the end of a buffer") {
@@ -658,10 +658,10 @@ TEST_CASE("write_at", "[buffer_io]") {
 
     REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[0]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[1]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[2]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[pos + sizeof(val)]));
   }
 
   SECTION("raises exception if writing past the end of a buffer") {
@@ -690,10 +690,10 @@ TEST_CASE("try_write_at", "[buffer_io]") {
 
     REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[0]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[1]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[2]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[pos + sizeof(val)]));
   }
 
   SECTION("returns insufficient buffer error if writing past the end of a buffer") {
@@ -725,10 +725,10 @@ TEST_CASE("try_write_at", "[buffer_io]") {
 
     REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[0]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[1]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[2]));
-    REQUIRE(0x00 == test::to_integer<uint8_t>(data[pos + sizeof(val)]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[0]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[1]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[2]));
+    REQUIRE(0x00 == io::to_integer<uint8_t>(data[pos + sizeof(val)]));
   }
 
   SECTION("returns insufficient buffer error if writing past the end of a buffer") {
