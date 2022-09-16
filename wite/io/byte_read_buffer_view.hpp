@@ -46,6 +46,17 @@ Value_T read(byte_read_buffer_view& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T>
+  requires is_buffer_readable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
+Value_T read_at(size_t position, byte_read_buffer_view& buffer) {
+  const auto out = read_at<Value_T>(position, {buffer.data.begin(), buffer.data.end()});
+  buffer.read_position = std::next(buffer.data.begin(), position + sizeof(Value_T));
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail::buffer_view::read {
 
   template <typename Value_T>
