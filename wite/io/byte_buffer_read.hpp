@@ -100,10 +100,23 @@ namespace detail {
     }
   }
 
+  // TODO: Add _recursive_read_at...
+
 }  // namespace detail
 
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename... Value_Ts>
-requires(sizeof...(Value_Ts) > 1) auto read(const std::span<const io::byte>& buffer) {
+  requires(sizeof...(Value_Ts) > 1)
+auto read(const std::span<const io::byte>& buffer) {
+  return detail::_recursive_read<Value_Ts...>(buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+auto read_at(size_t position, const std::span<const io::byte>& buffer) {
   return detail::_recursive_read<Value_Ts...>(buffer);
 }
 
