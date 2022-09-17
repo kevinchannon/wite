@@ -1,16 +1,19 @@
-#include <wite/string/hexlify.hpp>
+#include "wite/binascii/hexlify.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+
+#include <algorithm>
+#include <string>
 
 using namespace wite;
 using namespace std::string_literals;
 
 #define WITE_MAKE_BYTE_TEST_TUPLE(val) \
-  {io::byte{0x##val}, #val}
+  { io::byte{0x##val}, #val }
 
-TEST_CASE("Hexlify"){
-  SECTION("converts a byte into the correct char pair"){
+TEST_CASE("Hexlify and unhexlify") {
+  SECTION("converts a byte into the correct char pair") {
     // clang-format off
     const auto [byte, byte_str] = GENERATE(table<io::byte, std::string>({
       WITE_MAKE_BYTE_TEST_TUPLE(00), WITE_MAKE_BYTE_TEST_TUPLE(01), WITE_MAKE_BYTE_TEST_TUPLE(02), WITE_MAKE_BYTE_TEST_TUPLE(03),
@@ -80,8 +83,46 @@ TEST_CASE("Hexlify"){
     }));
     // clang-format on
 
-    SECTION(byte_str){
-      REQUIRE(byte_str == string::hexlify(io::dynamic_byte_buffer{byte}));
+    SECTION(byte_str) {
+      SECTION("hexlify") {
+        const auto encoded_str = binascii::hexlify(io::dynamic_byte_buffer{byte});
+        REQUIRE(byte_str == encoded_str);
+
+        SECTION("unhexlify") {
+          REQUIRE(io::dynamic_byte_buffer{byte} == binascii::unhexlify(encoded_str));
+        }
+      }
+    }
+  }
+
+  SECTION("Converts a byte string into bytes") {
+
+    const auto [test_name, str] = GENERATE(table<std::string, std::string>({
+        {"upper-case", "0123456789ABCDEF"},
+        {"lower-case", "0123456789abcdef"}
+    }));
+
+    const auto expected = io::static_byte_buffer<8>{io::byte{0x01},
+                                                    io::byte{0x23},
+                                                    io::byte{0x45},
+                                                    io::byte{0x67},
+                                                    io::byte{0x89},
+                                                    io::byte{0xAB},
+                                                    io::byte{0xCD},
+                                                    io::byte{0xEF}};
+
+    SECTION(test_name) {
+      const auto bytes = binascii::unhexlify(str);
+
+      REQUIRE(expected.size() == bytes.size());
+      REQUIRE(io::to_integer<uint32_t>(expected[0]) == io::to_integer<uint32_t>(bytes[0]));
+      REQUIRE(io::to_integer<uint32_t>(expected[1]) == io::to_integer<uint32_t>(bytes[1]));
+      REQUIRE(io::to_integer<uint32_t>(expected[2]) == io::to_integer<uint32_t>(bytes[2]));
+      REQUIRE(io::to_integer<uint32_t>(expected[3]) == io::to_integer<uint32_t>(bytes[3]));
+      REQUIRE(io::to_integer<uint32_t>(expected[4]) == io::to_integer<uint32_t>(bytes[4]));
+      REQUIRE(io::to_integer<uint32_t>(expected[5]) == io::to_integer<uint32_t>(bytes[5]));
+      REQUIRE(io::to_integer<uint32_t>(expected[6]) == io::to_integer<uint32_t>(bytes[6]));
+      REQUIRE(io::to_integer<uint32_t>(expected[7]) == io::to_integer<uint32_t>(bytes[7]));
     }
   }
 }
