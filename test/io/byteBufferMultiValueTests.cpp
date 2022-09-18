@@ -75,62 +75,6 @@ TEST_CASE("Write multiple values from buffer throws out_of_range if the buffer i
   }
 }
 
-TEST_CASE("Read multiple values from buffer", "[buffer_io]") {
-  // clang-format off
-  const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-    io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-    io::byte{0xAB}, io::byte{0xCD},
-    io::byte{true},
-    io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
-  };
-  // clang-format on
-
-  using Result_t = std::tuple<uint32_t, uint16_t, bool, uint32_t>;
-
-  const auto [test_name, read_from_buffer] =
-      GENERATE_REF(table<std::string, std::function<Result_t()>>(
-      {{"Direct buffer access"s,
-        [&]() -> Result_t {
-              return io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer); }},
-       {"Via read buffer view"s, [&]() -> Result_t {
-              auto read_view = io::byte_read_buffer_view{buffer};
-              return io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
-            }}}));
-
-  SECTION(test_name) {
-    const auto [a, b, c, d] = read_from_buffer();
-
-    REQUIRE( a == uint32_t{0x12345678});
-    REQUIRE( b == uint16_t{0xABCD});
-    REQUIRE( c == true);
-    REQUIRE( d == uint32_t{0xFEDCBA98});
-  }
-}
-
-TEST_CASE("Read multiple values from buffer throws out_of_range if the buffer is too small", "[buffer_io]") {
-  // clang-format off
-  const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool)>{
-    io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-    io::byte{0xAB}, io::byte{0xCD},
-    io::byte{true}
-  };
-  // clang-format on
-
-  using Result_t = std::tuple<uint32_t, uint16_t, bool, uint32_t>;
-
-  const auto [test_name, read_from_buffer] = GENERATE_REF(table<std::string, std::function<Result_t()>>(
-      {{"Direct buffer access"s,
-        [&]() -> Result_t { return io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer); }},
-       {"Via read buffer view"s, [&]() -> Result_t {
-          auto read_view = io::byte_read_buffer_view{buffer};
-          return io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
-        }}}));
-
-  SECTION(test_name) {
-    REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
-  }
-}
-
 TEST_CASE("Try read multiple values from buffer", "[buffer_io]") {
   // clang-format off
   const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
