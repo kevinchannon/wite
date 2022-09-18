@@ -28,7 +28,7 @@ namespace wite::io {
 
 template <typename Value_T>
   requires is_buffer_readable<Value_T>
-auto unchecked_read(auto buffer) noexcept
+auto unchecked_read(auto buffer_iterator) noexcept
 {
   if constexpr (std::is_base_of_v<io::encoding, Value_T>) {
     using OutputValue_t = typename Value_T::value_type;
@@ -36,20 +36,20 @@ auto unchecked_read(auto buffer) noexcept
     auto out = OutputValue_t{};
 
     if constexpr (std::is_same_v<io::little_endian<OutputValue_t>, Value_T>) {
-      std::copy_n(buffer, sizeof(Value_T), reinterpret_cast<io::byte*>(&out));
+      std::copy_n(buffer_iterator, sizeof(Value_T), reinterpret_cast<io::byte*>(&out));
     } else if constexpr (std::is_same_v<io::big_endian<OutputValue_t>, Value_T>) {
         std::copy_n(
-            buffer, sizeof(Value_T), std::make_reverse_iterator(std::next(reinterpret_cast<io::byte*>(&out), sizeof(Value_T))));
+            buffer_iterator, sizeof(Value_T), std::make_reverse_iterator(std::next(reinterpret_cast<io::byte*>(&out), sizeof(Value_T))));
     }
     else {
       static_assert(std::is_same_v<io::little_endian<OutputValue_t>, Value_T>, "Invalid encoding type");
     }
 
-    return std::pair<OutputValue_t, decltype(buffer)>{out, std::next(buffer, sizeof(out))};
+    return std::pair<OutputValue_t, decltype(buffer_iterator)>{out, std::next(buffer_iterator, sizeof(out))};
   } else {
     auto out = Value_T{};
-    std::copy_n(buffer, sizeof(Value_T), reinterpret_cast<io::byte*>(&out));
-    return std::pair<Value_T, decltype(buffer)>{out, std::next(buffer, sizeof(out))};
+    std::copy_n(buffer_iterator, sizeof(Value_T), reinterpret_cast<io::byte*>(&out));
+    return std::pair<Value_T, decltype(buffer_iterator)>{out, std::next(buffer_iterator, sizeof(out))};
   }
 }
 
@@ -85,6 +85,20 @@ auto read_at(size_t position, const std::span<const io::byte>& buffer) {
 
 namespace detail {
 
+  template <typename Value_T>
+    requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
+  constexpr auto value_size() noexcept {
+    // This will fail to build if the type satisfies the requirements but doesn't have a value_type alias in it.
+    // In that case, a new overload of this function will need to be added for the new type.
+    return sizeof(typename Value_T::value_type);
+  }
+
+  template <typename Value_T>
+    requires(std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>)
+  constexpr auto value_size() noexcept {
+    return sizeof(Value_T);
+  }
+
   template<typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_read(const std::span<const io::byte>& buffer) {
     auto first_value = std::make_tuple(read<FirstValue_T>(buffer));
@@ -100,7 +114,18 @@ namespace detail {
     }
   }
 
-  // TODO: Add _recursive_read_at...
+  template <typename FirstValue_T, typename... OtherValue_Ts>
+  auto _recursive_read_at(size_t position, const std::span<const io::byte>& buffer) {
+    auto first_value = std::make_tuple(read_at<FirstValue_T>(position, buffer));
+
+    if constexpr (sizeof...(OtherValue_Ts) > 0) {
+      auto other_values = _recursive_read_at<OtherValue_Ts...>(position + value_size<FirstValue_T>(), buffer);
+
+      return std::tuple_cat(first_value, other_values);
+    } else {
+      return first_value;
+    }
+  }
 
 }  // namespace detail
 
@@ -117,7 +142,7 @@ auto read(const std::span<const io::byte>& buffer) {
 template <typename... Value_Ts>
   requires(sizeof...(Value_Ts) > 1)
 auto read_at(size_t position, const std::span<const io::byte>& buffer) {
-  return detail::_recursive_read<Value_Ts...>(buffer);
+  return detail::_recursive_read_at<Value_Ts...>(position, buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,21 +187,6 @@ read_result_t<Value_T> try_from_bytes(const std::span<const io::byte>& buffer) n
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace detail::buffer::read {
-
-  template<typename Value_T>
-  requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
-  constexpr auto value_size() noexcept {
-    // This will fail to build if the type satisfies the requirements but doesn't have a value_type alias in it.
-    // In that case, a new overload of this function will need to be added for the new type.
-    return sizeof(typename Value_T::value_type);
-  }
-
-  template <typename Value_T>
-  requires(std::is_standard_layout_v<Value_T>and std::is_trivial_v<Value_T>)
-  constexpr auto value_size() noexcept {
-    return sizeof(Value_T);
-  }
-
   template <typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_try_read(const std::span<const io::byte>& buffer) noexcept {
     auto first_value = std::make_tuple(try_read<FirstValue_T>(buffer));
