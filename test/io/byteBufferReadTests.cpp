@@ -181,30 +181,60 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
   }
 
   SECTION("read_at") {
-    const auto data = io::dynamic_byte_buffer{io::byte{0x67},
-                                              io::byte{0x45},
-                                              io::byte{0x23},
-                                              io::byte{0x01},
-                                              io::byte{0xEF},
-                                              io::byte{0xCD},
-                                              io::byte{0xAB},
-                                              io::byte{0x89}};
+    SECTION("single value") {
+      const auto data = io::dynamic_byte_buffer{io::byte{0x67},
+                                                io::byte{0x45},
+                                                io::byte{0x23},
+                                                io::byte{0x01},
+                                                io::byte{0xEF},
+                                                io::byte{0xCD},
+                                                io::byte{0xAB},
+                                                io::byte{0x89}};
 
-    SECTION("reads at the correct offset") {
-      REQUIRE(uint32_t{0x89ABCDEF} == io::read_at<uint32_t>(4, data));
+      SECTION("reads at the correct offset") {
+        REQUIRE(uint32_t{0x89ABCDEF} == io::read_at<uint32_t>(4, data));
+      }
+
+      SECTION("throws std::out_of_range if the read goes past the end of the buffer") {
+        REQUIRE_THROWS_AS(io::read_at<uint32_t>(5, data), std::out_of_range);
+      }
+
+      SECTION("throws std::out_of_range if the read starts past the end of the buffer") {
+        REQUIRE_THROWS_AS(io::read_at<uint32_t>(9, data), std::out_of_range);
+      }
+
+      SECTION("throws std::invalid_argument for pathological read offset") {
+        REQUIRE_THROWS_AS(io::read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data),
+                          std::invalid_argument);
+      }
     }
 
-    SECTION("throws std::out_of_range if the read goes past the end of the buffer") {
-      REQUIRE_THROWS_AS(io::read_at<uint32_t>(5, data), std::out_of_range);
-    }
+    SECTION("multiple values") {
+      // clang-format off
+      const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+        io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
+        io::byte{0xAB}, io::byte{0xCD},
+        io::byte{true},
+        io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+      };
+      // clang-format on
 
-    SECTION("throws std::out_of_range if the read starts past the end of the buffer") {
-      REQUIRE_THROWS_AS(io::read_at<uint32_t>(9, data), std::out_of_range);
-    }
+      SECTION("reads multiple values from buffer at the specified position") {
+        const auto [b, c] = io::read_at<io::big_endian<uint16_t>, bool>(4, buffer);
 
-    SECTION("throws std::invalid_argument for pathological read offset") {
-      REQUIRE_THROWS_AS(io::read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data),
-                        std::invalid_argument);
+        REQUIRE(b == uint16_t{0xABCD});
+        REQUIRE(c == true);
+      }
+
+      SECTION("throws if it tries to read past the end of the buffer") {
+
+        // We need this lambda because Catch doesn't seem to handle commas in the REQUIRE_THROWS_AS macro very well on all platforms.
+        const auto read_from_buffer = [&](){
+          return io::read_at<io::big_endian<uint16_t>, bool>(10, buffer);
+        };
+
+        REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
+      }
     }
   }
-  }
+}

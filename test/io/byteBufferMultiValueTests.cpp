@@ -284,38 +284,3 @@ TEST_CASE("Try write multiple values from buffer returns error if the buffer is 
     REQUIRE(io::write_error::insufficient_buffer == result.error());
   }
 }
-
-TEST_CASE("read_at", "[buffer_io]") {
-  // clang-format off
-  const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-    io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-    io::byte{0xAB}, io::byte{0xCD},
-    io::byte{true},
-    io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
-  };
-  // clang-format on
-
-  using Result_t = std::tuple<uint16_t, bool>;
-
-  // clang-format off
-  const auto [test_name, read_from_buffer] = GENERATE_REF(table<std::string, std::function<Result_t(size_t)>>({
-    {"Direct buffer access"s, [&](size_t position) -> Result_t { return io::read_at<io::big_endian<uint16_t>, bool>(position, buffer); }},
-    {"via byte_read_buffer_view"s, [&](size_t position) -> Result_t {
-      auto buffer_view = io::byte_read_buffer_view{buffer};
-      return io::read_at<io::big_endian<uint16_t>, bool>(position, buffer_view); }},
-  }));
-  // clang-format on
-
-  SECTION(test_name) {
-    SECTION("reads multiple values from buffer at the specified position") {
-      const auto [b, c] = read_from_buffer(4);
-
-      REQUIRE(b == uint16_t{0xABCD});
-      REQUIRE(c == true);
-    }
-
-    SECTION("throws if it tries to read past the end of the buffer") {
-      REQUIRE_THROWS_AS(read_from_buffer(10), std::out_of_range);
-    }
-  }
-}
