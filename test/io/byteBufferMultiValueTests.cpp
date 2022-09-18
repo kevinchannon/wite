@@ -353,8 +353,14 @@ TEST_CASE("read_at", "[buffer_io]") {
 
   using Result_t = std::tuple<uint16_t, bool>;
 
-  const auto [test_name, read_from_buffer] = GENERATE_REF(table<std::string, std::function<Result_t(size_t)>>(
-      {{"Direct buffer access"s, [&](size_t position) -> Result_t { return io::read_at<io::big_endian<uint16_t>, bool>(position, buffer); }}}));
+  // clang-format off
+  const auto [test_name, read_from_buffer] = GENERATE_REF(table<std::string, std::function<Result_t(size_t)>>({
+    {"Direct buffer access"s, [&](size_t position) -> Result_t { return io::read_at<io::big_endian<uint16_t>, bool>(position, buffer); }},
+    {"via byte_read_buffer_view"s, [&](size_t position) -> Result_t {
+      auto buffer_view = io::byte_read_buffer_view{buffer};
+      return io::read_at<io::big_endian<uint16_t>, bool>(position, buffer_view); }},
+  }));
+  // clang-format on
 
   SECTION(test_name) {
     SECTION("reads multiple values from buffer at the specified position") {
