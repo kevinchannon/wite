@@ -20,7 +20,6 @@ add_executable(wite_test
 	"io/byteBufferTests.cpp"
     "io/byteStreamTests.cpp"
 	"io/convertToBytesTests.cpp"
-	"io/byteBufferMultiValueTests.cpp"
 	"string/hexlifyTests.cpp"
 	 "io/byteBufferReadTests.cpp"
 	 "io/byteReadBufferViewTests.cpp"

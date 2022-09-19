@@ -128,22 +128,77 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   }
 
   SECTION("try_read") {
-    SECTION("returns value on good read", "[buffer_io]") {
-      const auto data = io::static_byte_buffer<4>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}, io::byte{0xFF}};
-      auto buffer     = io::byte_read_buffer_view{data};
+    SECTION("single value") {
+      SECTION("returns value on good read", "[buffer_io]") {
+        const auto data = io::static_byte_buffer<4>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}, io::byte{0xFF}};
+        auto buffer     = io::byte_read_buffer_view{data};
 
-      SECTION("with default endianness") {
-        const auto val = io::try_read<uint32_t>(buffer);
-        REQUIRE(val.ok());
-        REQUIRE(uint32_t{0xFFAB4567} == val.value());
-        REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
+        SECTION("with default endianness") {
+          const auto val = io::try_read<uint32_t>(buffer);
+          REQUIRE(val.ok());
+          REQUIRE(uint32_t{0xFFAB4567} == val.value());
+          REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
+        }
+
+        SECTION("with specified endianness adapter") {
+          const auto val = io::try_read<io::big_endian<uint32_t>>(buffer);
+          REQUIRE(val.ok());
+          REQUIRE(uint32_t{0x6745ABFF} == val.value());
+          REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
+        }
+      }
+    }
+
+    SECTION("multiple values") {
+      SECTION("read from bufffer succeeds") {
+        // clang-format off
+        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+          io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
+          io::byte{0xAB}, io::byte{0xCD},
+          io::byte{true},
+          io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+        };
+        // clang-format on
+
+        auto read_view = io::byte_read_buffer_view{buffer};
+
+        const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
+
+        REQUIRE(a.ok());
+        REQUIRE(a.value() == uint32_t{0x12345678});
+
+        REQUIRE(b.ok());
+        REQUIRE(b.value() == uint16_t{0xABCD});
+
+        REQUIRE(c.ok());
+        REQUIRE(c.value() == true);
+
+        REQUIRE(d.ok());
+        REQUIRE(d.value() == uint32_t{0xFEDCBA98});
       }
 
-      SECTION("with specified endianness adapter") {
-        const auto val = io::try_read<io::big_endian<uint32_t>>(buffer);
-        REQUIRE(val.ok());
-        REQUIRE(uint32_t{0x6745ABFF} == val.value());
-        REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
+      SECTION("inserts errors if the buffer is too small") {
+        // clang-format off
+        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t)>{
+          io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
+          io::byte{0xAB}, io::byte{0xCD}
+        };
+        // clang-format on
+
+        auto read_view          = io::byte_read_buffer_view{buffer};
+        const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
+
+        REQUIRE(a.ok());
+        REQUIRE(a.value() == uint32_t{0x12345678});
+
+        REQUIRE(b.ok());
+        REQUIRE(b.value() == uint16_t{0xABCD});
+
+        REQUIRE(c.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == c.error());
+
+        REQUIRE(d.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == d.error());
       }
     }
   }

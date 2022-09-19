@@ -151,6 +151,46 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
         REQUIRE(val_3 == io::read<io::little_endian<int16_t>>(read_buffer));
       }
     }
+
+    SECTION("multiple values") {
+      const auto a = uint32_t{0x12345678};
+      const auto b = uint16_t{0xABCD};
+      const auto c = true;
+      const auto d = uint32_t{0xFEDCBA98};
+
+      constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d);
+
+      auto buffer = io::static_byte_buffer<data_size>{};
+      auto write_view = io::byte_write_buffer_view{buffer};
+
+      SECTION("returns number of bytes written on success") {
+        REQUIRE(data_size == io::write(write_view, a, io::big_endian{b}, c, d));
+        REQUIRE(std::next(write_view.data.begin(), data_size) == write_view.write_position);
+
+        SECTION("and writes the correct values to the buffer") {
+          REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[0]));
+          REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[1]));
+          REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[2]));
+          REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[3]));
+
+          REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[4]));
+          REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[5]));
+
+          REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[6]));
+
+          REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[7]));
+          REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[8]));
+          REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[9]));
+          REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[10]));
+        }
+      }
+
+      SECTION("throws out_of_range if the buffer is too small") {
+        const auto write_to_buffer = [&]() { io::write(write_view, a, io::big_endian{b}, c, d, a); };
+        REQUIRE_THROWS_AS(write_to_buffer(), std::out_of_range);
+        REQUIRE(data_size == std::distance(write_view.data.begin(), write_view.write_position));
+      }
+    }
   }
 
   SECTION("write_at") {
@@ -175,15 +215,18 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
 
       SECTION("raises exception if writing past the end of a buffer") {
         REQUIRE_THROWS_AS(io::write_at(5, buffer, double{}), std::out_of_range);
+        REQUIRE(0 == std::distance(buffer.data.begin(), buffer.write_position));
       }
 
       SECTION("raises exception if starting past the end of a buffer") {
         REQUIRE_THROWS_AS(io::write_at(13, buffer, double{}), std::out_of_range);
+        REQUIRE(0 == std::distance(buffer.data.begin(), buffer.write_position));
       }
 
       SECTION("handles large and pathological offset") {
         REQUIRE_THROWS_AS(io::write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, buffer, double{}), 
           std::invalid_argument);
+        REQUIRE(0 == std::distance(buffer.data.begin(), buffer.write_position));
       }
     }
   }
@@ -225,11 +268,55 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
         REQUIRE(io::write_error::insufficient_buffer == result.error());
       }
     }
+
+    SECTION("multiple values") {
+      const auto a = uint32_t{0x12345678};
+      const auto b = uint16_t{0xABCD};
+      const auto c = true;
+      const auto d = uint32_t{0xFEDCBA98};
+
+      constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d);
+
+      auto buffer = io::static_byte_buffer<data_size>{};
+      auto write_view = io::byte_write_buffer_view{buffer};
+
+      SECTION("returns the number of bytes written on success") {
+        const auto result = io::try_write(write_view, a, io::big_endian{b}, c, d);
+        REQUIRE(result.ok());
+        REQUIRE(data_size == result.value());
+        REQUIRE(data_size == std::distance(write_view.data.begin(), write_view.write_position));
+
+        SECTION("and writes the bytes correctly") {
+          REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[0]));
+          REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[1]));
+          REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[2]));
+          REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[3]));
+
+          REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[4]));
+          REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[5]));
+
+          REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[6]));
+
+          REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[7]));
+          REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[8]));
+          REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[9]));
+          REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[10]));
+        }
+      }
+
+      SECTION("returns error if the buffer is too small") {
+        const auto result = io::try_write(write_view, a, io::big_endian{b}, c, d, int{});
+
+        REQUIRE(result.is_error());
+        REQUIRE(io::write_error::insufficient_buffer == result.error());
+        REQUIRE(0 == std::distance(write_view.data.begin(), write_view.write_position));
+      }
+    }
   }
 
   SECTION("try_write_at") {
     SECTION("single value") {
-      auto data = io::static_byte_buffer<12>{};
+      auto data   = io::static_byte_buffer<12>{};
       auto buffer = io::byte_write_buffer_view{data};
 
       SECTION("via byte_write_buffer_view writes at the correct position") {
@@ -238,6 +325,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
         const auto result = io::try_write_at(pos, buffer, val);
         REQUIRE(result.ok());
         REQUIRE(pos + sizeof(val) == result.value());
+        REQUIRE(pos + sizeof(val) == std::distance(buffer.data.begin(), buffer.write_position));
 
         REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
@@ -251,18 +339,63 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
         const auto result = io::try_write_at(5, buffer, double{});
         REQUIRE(result.is_error());
         REQUIRE(io::write_error::insufficient_buffer == result.error());
+        REQUIRE(0 == std::distance(buffer.data.begin(), buffer.write_position));
       }
 
       SECTION("returns insufficient buffer error if starting past the end of a buffer") {
         const auto result = io::try_write_at(13, buffer, double{});
         REQUIRE(result.is_error());
         REQUIRE(io::write_error::insufficient_buffer == result.error());
+        REQUIRE(0 == std::distance(buffer.data.begin(), buffer.write_position));
       }
 
       SECTION("handles large and pathological offset") {
         const auto result = io::try_write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, buffer, double{});
         REQUIRE(result.is_error());
         REQUIRE(io::write_error::invalid_position_offset == result.error());
+        REQUIRE(0 == std::distance(buffer.data.begin(), buffer.write_position));
+      }
+    }
+
+    SECTION("multiple values") {
+      const auto a = uint32_t{0x12345678};
+      const auto b = uint16_t{0xABCD};
+      const auto c = true;
+      const auto d = uint32_t{0xFEDCBA98};
+
+      constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d);
+
+      auto buffer     = io::static_byte_buffer<1 + data_size>{};
+      auto write_view = io::byte_write_buffer_view{buffer};
+
+      SECTION("returns the number of bytes written on success") {
+        const auto result = io::try_write_at(1, write_view, a, io::big_endian{b}, c, d);
+        REQUIRE(result.ok());
+        REQUIRE(1 + data_size == result.value());
+        REQUIRE(1 + data_size == std::distance(write_view.data.begin(), write_view.write_position));
+
+        SECTION("and writes the bytes correctly") {
+          REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[1]));
+          REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[2]));
+          REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[3]));
+          REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[4]));
+
+          REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[5]));
+          REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[6]));
+
+          REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[7]));
+
+          REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[8]));
+          REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[9]));
+          REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[10]));
+          REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[11]));
+        }
+      }
+
+      SECTION("returns error when writing fails") {
+        const auto result = io::try_write_at(2, write_view, a, b, c, d);
+        REQUIRE(result.is_error());
+        REQUIRE(0 == std::distance(write_view.data.begin(), write_view.write_position));
       }
     }
   }
