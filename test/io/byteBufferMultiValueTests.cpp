@@ -116,42 +116,6 @@ TEST_CASE("Try read multiple values from buffer", "[buffer_io]") {
   }
 }
 
-TEST_CASE("Try read multiple values inserts errors if the buffer is too small", "[buffer_io]") {
-  // clang-format off
-  const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t)>{
-    io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-    io::byte{0xAB}, io::byte{0xCD}
-  };
-  // clang-format on
-
-  using Result_t =
-      std::tuple<io::read_result_t<uint32_t>, io::read_result_t<uint16_t>, io::read_result_t<bool>, io::read_result_t<uint32_t>>;
-
-  const auto [test_name, read_from_buffer] = GENERATE_REF(table<std::string, std::function<Result_t()>>(
-      {{"Direct buffer access"s,
-        [&]() -> Result_t { return io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer); }},
-       {"Via read buffer view"s, [&]() -> Result_t {
-          auto read_view = io::byte_read_buffer_view{buffer};
-          return io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
-        }}}));
-
-  SECTION(test_name) {
-    const auto [a, b, c, d] = read_from_buffer();
-
-    REQUIRE(a.ok());
-    REQUIRE(a.value() == uint32_t{0x12345678});
-
-    REQUIRE(b.ok());
-    REQUIRE(b.value() == uint16_t{0xABCD});
-
-    REQUIRE(c.is_error());
-    REQUIRE(io::read_error::insufficient_buffer == c.error());
-
-    REQUIRE(d.is_error());
-    REQUIRE(io::read_error::insufficient_buffer == d.error());
-  }
-}
-
 TEST_CASE("Try write multiple values to buffer", "[buffer_io]") {
   const auto a = uint32_t{0x12345678};
   const auto b = uint16_t{0xABCD};

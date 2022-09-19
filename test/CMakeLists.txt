@@ -22,7 +22,11 @@ add_executable(wite_test
 	"io/convertToBytesTests.cpp"
 	"io/byteBufferMultiValueTests.cpp"
 	"string/hexlifyTests.cpp"
-	 "io/byteBufferReadTests.cpp" "io/byteReadBufferViewTests.cpp")
+	 "io/byteBufferReadTests.cpp"
+	 "io/byteReadBufferViewTests.cpp"
+	 "io/byteWriteBufferTests.cpp"
+	 "io/byteWriteBufferViewTests.cpp"
+)
 
 target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}

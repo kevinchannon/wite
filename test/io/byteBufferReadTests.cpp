@@ -155,28 +155,79 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
   }
 
   SECTION("try_read") {
-    SECTION("returns value on good read", "[buffer_io]") {
-      const auto data = io::static_byte_buffer<4>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}, io::byte{0xFF}};
+    SECTION("single value") {
+      SECTION("returns value on good read", "[buffer_io]") {
+        const auto data = io::static_byte_buffer<4>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}, io::byte{0xFF}};
 
-      SECTION("with default endianness") {
-        const auto val = io::try_read<uint32_t>(data);
-        REQUIRE(val.ok());
-        REQUIRE(uint32_t{0xFFAB4567} == val.value());
+        SECTION("with default endianness") {
+          const auto val = io::try_read<uint32_t>(data);
+          REQUIRE(val.ok());
+          REQUIRE(uint32_t{0xFFAB4567} == val.value());
+        }
+
+        SECTION("with specified endianness") {
+          const auto val = io::try_read<io::big_endian<uint32_t>>(data);
+          REQUIRE(val.ok());
+          REQUIRE(uint32_t{0x6745ABFF} == val.value());
+        }
       }
 
-      SECTION("with specified endianness") {
-        const auto val = io::try_read<io::big_endian<uint32_t>>(data);
-        REQUIRE(val.ok());
-        REQUIRE(uint32_t{0x6745ABFF} == val.value());
+      SECTION("returns error on bad read", "[buffer_io]") {
+        const auto data = io::static_byte_buffer<3>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}};
+
+        const auto val = io::try_read<uint32_t>(data);
+        REQUIRE(val.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == val.error());
       }
     }
 
-    SECTION("returns error on bad read", "[buffer_io]") {
-      const auto data = io::static_byte_buffer<3>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}};
+    SECTION("multiple values") {
+      SECTION("read from bufffer succeeds") {
+        // clang-format off
+        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+          io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
+          io::byte{0xAB}, io::byte{0xCD},
+          io::byte{true},
+          io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+        };
+        // clang-format on
 
-      const auto val = io::try_read<uint32_t>(data);
-      REQUIRE(val.is_error());
-      REQUIRE(io::read_error::insufficient_buffer == val.error());
+        const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+
+        REQUIRE(a.ok());
+        REQUIRE(a.value() == uint32_t{0x12345678});
+
+        REQUIRE(b.ok());
+        REQUIRE(b.value() == uint16_t{0xABCD});
+
+        REQUIRE(c.ok());
+        REQUIRE(c.value() == true);
+
+        REQUIRE(d.ok());
+        REQUIRE(d.value() == uint32_t{0xFEDCBA98});
+      }
+
+      SECTION("inserts errors if the buffer is too small") {
+        // clang-format off
+        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t)>{
+          io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
+          io::byte{0xAB}, io::byte{0xCD}
+        };
+        // clang-format on
+        const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+
+        REQUIRE(a.ok());
+        REQUIRE(a.value() == uint32_t{0x12345678});
+
+        REQUIRE(b.ok());
+        REQUIRE(b.value() == uint16_t{0xABCD});
+
+        REQUIRE(c.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == c.error());
+
+        REQUIRE(d.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == d.error());
+      }
     }
   }
 

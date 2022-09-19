@@ -179,30 +179,30 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
                           std::invalid_argument);
       }
     }
-  }
 
-  SECTION("multiple values") {
-    // clang-format off
+    SECTION("multiple values") {
+      // clang-format off
     const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
       io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
       io::byte{0xAB}, io::byte{0xCD},
       io::byte{true},
       io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
     };
-    // clang-format on
+      // clang-format on
 
-    auto buffer_view = io::byte_read_buffer_view{buffer};
+      auto buffer_view = io::byte_read_buffer_view{buffer};
 
-    SECTION("reads multiple values from buffer at the specified position") {
-      const auto [b, c] = io::read_at<io::big_endian<uint16_t>, bool>(4, buffer_view);
+      SECTION("reads multiple values from buffer at the specified position") {
+        const auto [b, c] = io::read_at<io::big_endian<uint16_t>, bool>(4, buffer_view);
 
-      REQUIRE(b == uint16_t{0xABCD});
-      REQUIRE(c == true);
-    }
+        REQUIRE(b == uint16_t{0xABCD});
+        REQUIRE(c == true);
+      }
 
-    SECTION("throws if it tries to read past the end of the buffer") {
-      const auto read_from_buffer = [&]() { return io::read_at<io::big_endian<uint16_t>, bool>(10, buffer_view); };
-      REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
+      SECTION("throws if it tries to read past the end of the buffer") {
+        const auto read_from_buffer = [&]() { return io::read_at<io::big_endian<uint16_t>, bool>(10, buffer_view); };
+        REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
+      }
     }
   }
 }
