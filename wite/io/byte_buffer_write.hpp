@@ -90,6 +90,19 @@ size_t write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, typename... Value_Ts>
+size_t write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+  auto out = write_at(position, buffer, first_value);
+
+  if constexpr (sizeof...(other_values) > 0) {
+    out = write_at(out, buffer, other_values...);
+  }
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
 requires is_buffer_writeable<Value_T> Result_T to_bytes(Value_T value) {
   auto out = Result_T{};

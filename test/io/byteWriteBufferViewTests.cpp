@@ -203,7 +203,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
         const auto pos = ptrdiff_t{3};
 
         REQUIRE(pos + sizeof(val) == io::write_at(pos, buffer, val));
-        REQUIRE(std::next(buffer.data.begin(), pos + sizeof(val)) == buffer.write_position);
+        REQUIRE(pos + sizeof(val) == std::distance(buffer.data.begin(), buffer.write_position));
 
         REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
 
