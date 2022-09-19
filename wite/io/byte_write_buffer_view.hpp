@@ -59,6 +59,17 @@ size_t write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... ot
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T>
+  requires is_buffer_writeable<Value_T>
+size_t write_at(size_t position, byte_write_buffer_view& buffer, Value_T value) {
+  const auto new_position = write_at<Value_T>(position, buffer.data, value);
+  buffer.write_position = std::next(buffer.data.begin(), new_position);
+  
+  return new_position;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T, typename... Value_Ts>
 size_t write_at(size_t position, byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) {
   auto out = write_at(position, buffer, first_value);
@@ -68,15 +79,6 @@ size_t write_at(size_t position, byte_write_buffer_view& buffer, Value_T first_v
   }
 
   return out;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-  requires is_buffer_writeable<Value_T>
-size_t write_at(size_t position, byte_write_buffer_view& buffer, Value_T value) {
-  buffer.write_position = std::next(buffer.data.begin(), write_at<Value_T>(position, buffer.data, value));
-  return std::distance(buffer.data.begin(), buffer.write_position);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
