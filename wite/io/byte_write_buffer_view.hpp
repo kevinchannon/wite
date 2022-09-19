@@ -59,6 +59,19 @@ size_t write(byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... ot
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T, typename... Value_Ts>
+size_t write_at(size_t position, byte_write_buffer_view& buffer, Value_T first_value, Value_Ts... other_values) {
+  auto out = write_at(position, buffer, first_value);
+
+  if constexpr (sizeof...(other_values) > 0) {
+    out = write_at(out, buffer, other_values...);
+  }
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
   requires is_buffer_writeable<Value_T>
 size_t write_at(size_t position, byte_write_buffer_view& buffer, Value_T value) {
