@@ -109,7 +109,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       };
       // clang-format on
 
-      auto read_view          = io::byte_read_buffer_view{data};
+      auto read_view = io::byte_read_buffer_view{data};
 
       SECTION("are correctly read") {
         const auto [a, b, c, d] = io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);

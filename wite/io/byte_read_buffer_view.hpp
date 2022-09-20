@@ -117,19 +117,7 @@ auto read_at(size_t position, byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
-read_result_t<Value_T> try_read(byte_read_buffer_view& buffer) {
-  const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
-  std::advance(buffer.read_position, sizeof(Value_T));
-
-  return out;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
-read_result_t<typename Value_T::value_type> try_read(byte_read_buffer_view& buffer) {
+auto try_read(byte_read_buffer_view& buffer) {
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
   std::advance(buffer.read_position, detail::buffer_view::read::value_size<Value_T>());
 
