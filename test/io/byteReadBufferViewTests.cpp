@@ -39,6 +39,21 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
     }
   }
 
+  SECTION("byte_read_buffer_view::try_seek") {
+    const auto data = io::static_byte_buffer<10>{};
+    auto view       = io::byte_read_buffer_view{data};
+
+    SECTION("moves the view to the correct position") {
+      const auto result = view.try_seek(2);
+      REQUIRE(result.ok());
+      REQUIRE(2 == std::distance(view.data.begin(), view.read_position));
+    }
+
+    SECTION("returns read_error::invalid_position_offset if the position is past the end of the buffer") {
+      REQUIRE(io::read_error::invalid_position_offset == view.try_seek(11).error());
+    }
+  }
+
   SECTION("read") {
     SECTION("single value") {
       const auto array_buffer = std::array{io::byte{0x67},

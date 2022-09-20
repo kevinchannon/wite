@@ -38,6 +38,15 @@ struct byte_read_buffer_view {
     return *this;
   }
 
+  result<bool, read_error> try_seek(size_t position) noexcept {
+    if (position > data.size()) {
+      return read_error::invalid_position_offset;
+    }
+
+    read_position = std::next(data.begin(), position);
+    return true;
+  }
+
   std::span<const io::byte> data;
   std::span<const io::byte>::iterator read_position;
 };
