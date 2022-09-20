@@ -29,6 +29,24 @@ struct byte_write_buffer_view {
   byte_write_buffer_view(std::span<io::byte> buf, typename std::span<const io::byte>::size_type offset)
       : data{std::move(buf)}, write_position{std::next(data.begin(), offset)} {}
 
+  byte_write_buffer_view& seek(size_t position) {
+    if (position > data.size()) {
+      throw std::out_of_range{"Cannot seek past end of buffer"};
+    }
+
+    write_position = std::next(data.begin(), position);
+    return *this;
+  }
+
+  result<bool, write_error> try_seek(size_t position) noexcept {
+    if (position > data.size()) {
+      return write_error::invalid_position_offset;
+    }
+
+    write_position = std::next(data.begin(), position);
+    return true;
+  }
+
   std::span<io::byte> data;
   std::span<io::byte>::iterator write_position;
 };

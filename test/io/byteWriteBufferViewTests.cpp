@@ -25,6 +25,35 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 #endif
 
 TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
+  SECTION("byte_write_buffer_view::seek") {
+    auto data = io::static_byte_buffer<10>{};
+    auto view = io::byte_write_buffer_view{data};
+
+    SECTION("moves the view to the correct position") {
+      view.seek(2);
+      REQUIRE(2 == std::distance(view.data.begin(), view.write_position));
+    }
+
+    SECTION("throws std::out_of_range if the position is past the end of the buffer") {
+      REQUIRE_THROWS_AS(view.seek(11), std::out_of_range);
+    }
+  }
+
+  SECTION("byte_write_buffer_view::try_seek") {
+    auto data = io::static_byte_buffer<10>{};
+    auto view = io::byte_write_buffer_view{data};
+
+    SECTION("moves the view to the correct position") {
+      const auto result = view.try_seek(2);
+      REQUIRE(result.ok());
+      REQUIRE(2 == std::distance(view.data.begin(), view.write_position));
+    }
+
+    SECTION("returns write_error::invalid_position_offset if the position is past the end of the buffer") {
+      REQUIRE(io::write_error::invalid_position_offset == view.try_seek(11).error());
+    }
+  }
+
   SECTION("write") {
     SECTION("single value") {
       SECTION("Little-endian") {
