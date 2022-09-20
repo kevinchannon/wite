@@ -25,6 +25,16 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 #endif
 
 TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
+  SECTION("byte_read_buffer_view::seek") {
+    const auto data = io::static_byte_buffer<10>{};
+    auto view       = io::byte_read_buffer_view{data};
+
+    SECTION("moves the view to the correct position") {
+      view.seek(2);
+      REQUIRE(2 == std::distance(view.data.begin(), view.read_position));
+    }
+  }
+
   SECTION("read") {
     SECTION("single value") {
       const auto array_buffer = std::array{io::byte{0x67},

@@ -29,6 +29,11 @@ struct byte_read_buffer_view {
   byte_read_buffer_view(std::span<const io::byte> buf, typename std::span<const io::byte>::size_type offset)
       : data{std::move(buf)}, read_position{std::next(data.begin(), offset)} {}
 
+  byte_read_buffer_view& seek(size_t position) {
+    read_position = std::next(data.begin(), position);
+    return *this;
+  }
+
   std::span<const io::byte> data;
   std::span<const io::byte>::iterator read_position;
 };
