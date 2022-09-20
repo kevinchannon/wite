@@ -289,4 +289,45 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       }
     }
   }
+
+  SECTION("try_read_at") {
+    SECTION("single value") {
+      SECTION("returns value on good read", "[buffer_io]") {
+        const auto data = io::static_byte_buffer<8>{io::byte{0x67},
+                                                  io::byte{0x45},
+                                                  io::byte{0x23},
+                                                  io::byte{0x01},
+                                                  io::byte{0xEF},
+                                                  io::byte{0xCD},
+                                                  io::byte{0xAB},
+                                                  io::byte{0x89}};
+        auto buffer     = io::byte_read_buffer_view{data};
+
+        SECTION("reads at the correct offset") {
+          const auto val = io::try_read_at<uint32_t>(4, buffer);
+          REQUIRE(val.ok());
+          REQUIRE(uint32_t{0x89ABCDEF} == val.value());
+          REQUIRE(8 == std::distance(buffer.data.begin(), buffer.read_position));
+        }
+
+        SECTION("returns read_error::insuficient_buffer if the read goes past the end of the buffer") {
+          const auto result = io::try_read_at<uint32_t>(5, buffer);
+          REQUIRE(result.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == result.error());
+        }
+
+        SECTION("returns read_error::insuficient_buffer if the read starts past the end of the buffer") {
+          const auto result = io::try_read_at<uint32_t>(9, buffer);
+          REQUIRE(result.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == result.error());
+        }
+
+        SECTION("returns read_error::invalid_position_offset for pathological read offset") {
+          const auto result = io::try_read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, buffer);
+          REQUIRE(result.is_error());
+          REQUIRE(io::read_error::invalid_position_offset == result.error());
+        }
+      }
+    }
+  }
 }

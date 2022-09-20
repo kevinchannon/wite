@@ -34,7 +34,7 @@ struct byte_read_buffer_view {
       throw std::out_of_range{"Cannot seek past end of buffer"};
     }
 
-    read_position = std::next(data.begin(), position);
+    unchecked_seek(position);
     return *this;
   }
 
@@ -43,13 +43,52 @@ struct byte_read_buffer_view {
       return read_error::invalid_position_offset;
     }
 
-    read_position = std::next(data.begin(), position);
+    unchecked_seek(position);
     return true;
+  }
+
+  void unchecked_seek(size_t position) {
+    read_position = std::next(data.begin(), position);
   }
 
   std::span<const io::byte> data;
   std::span<const io::byte>::iterator read_position;
+
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace detail::buffer_view::read {
+
+  template <typename Value_T>
+    requires(not common::is_pod_like<Value_T>)
+  constexpr auto value_size() noexcept {
+    // This will fail to build if the type satisfies the requirements but doesn't have a value_type alias in it.
+    // In that case, a new overload of this function will need to be added for the new type.
+    return sizeof(typename Value_T::value_type);
+  }
+
+  template <typename Value_T>
+    requires common::is_pod_like<Value_T>
+  constexpr auto value_size() noexcept {
+    return sizeof(Value_T);
+  }
+
+  template <size_t CURRENT, typename T, typename... Ts>
+  constexpr auto _recursive_byte_count() {
+    if constexpr (sizeof...(Ts) == 0) {
+      return CURRENT + value_size<T>();
+    } else {
+      return _recursive_byte_count<CURRENT + value_size<T>(), Ts...>();
+    }
+  }
+
+  template <typename... Ts>
+  constexpr auto byte_count() {
+    return _recursive_byte_count<0, Ts...>();
+  }
+
+}  // namespace detail::buffer_view::read
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -65,48 +104,34 @@ Value_T read(byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-  requires is_buffer_readable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
-Value_T read_at(size_t position, byte_read_buffer_view& buffer) {
+auto read_at(size_t position, byte_read_buffer_view& buffer) {
   const auto out = read_at<Value_T>(position, {buffer.data.begin(), buffer.data.end()});
-  buffer.read_position = std::next(buffer.data.begin(), position + sizeof(Value_T));
+  buffer.unchecked_seek(position + detail::buffer_view::read::value_size<Value_T>());
 
   return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail::buffer_view::read {
+template <typename Value_T>
+auto try_read(byte_read_buffer_view& buffer) {
+  const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
+  std::advance(buffer.read_position, detail::buffer_view::read::value_size<Value_T>());
 
-  template <typename Value_T>
-  requires (not common::is_pod_like<Value_T>)
-  constexpr auto value_size() noexcept {
-    // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
-    // In that case, a new overload of this function will need to be added for the new type.
-    return sizeof(typename Value_T::value_type);
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+auto try_read_at(size_t position, byte_read_buffer_view& buffer) {
+  const auto out = try_read_at<Value_T>(position, buffer.data);
+  if (out.ok()) {
+    buffer.unchecked_seek(position + detail::buffer_view::read::value_size<Value_T>());
   }
 
-  template <typename Value_T>
-  requires common::is_pod_like<Value_T>
-  constexpr auto value_size() noexcept {
-    return sizeof(Value_T);
-  }
-
-  template <size_t CURRENT, typename T, typename... Ts>
-  constexpr auto _recursive_byte_count() {
-    if constexpr (sizeof...(Ts) == 0) {
-      return CURRENT + value_size<T>();
-    }
-    else {
-      return _recursive_byte_count<CURRENT + value_size<T>(), Ts...>();
-    }
-  }
-
-  template<typename... Ts>
-  constexpr auto byte_count() {
-    return _recursive_byte_count<0, Ts...>();
-  }
-
-}  // namespace detail::buffer_view::read
+  return out;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -130,16 +155,6 @@ auto read_at(size_t position, byte_read_buffer_view& buffer) {
   buffer.read_position = std::next(buffer.data.begin(), detail::buffer_view::read::byte_count<Value_Ts...>());
 
   return values;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-auto try_read(byte_read_buffer_view& buffer) {
-  const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
-  std::advance(buffer.read_position, detail::buffer_view::read::value_size<Value_T>());
-
-  return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
