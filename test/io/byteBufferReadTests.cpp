@@ -291,15 +291,16 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
 
   SECTION("try_read_at") {
     SECTION("single value") {
+      const auto data = io::static_byte_buffer<8>{io::byte{0x67},
+                                                  io::byte{0x45},
+                                                  io::byte{0xAB},
+                                                  io::byte{0xFF},
+                                                  io::byte{0x01},
+                                                  io::byte{0x23},
+                                                  io::byte{0x45},
+                                                  io::byte{0x67}};
+
       SECTION("returns value on good read") {
-        const auto data = io::static_byte_buffer<8>{io::byte{0x67},
-                                                    io::byte{0x45},
-                                                    io::byte{0xAB},
-                                                    io::byte{0xFF},
-                                                    io::byte{0x01},
-                                                    io::byte{0x23},
-                                                    io::byte{0x45},
-                                                    io::byte{0x67}};
 
         SECTION("with default endianness") {
           const auto val = io::try_read_at<uint32_t>(2, data);
@@ -312,6 +313,24 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
           REQUIRE(val.ok());
           REQUIRE(uint32_t{0xFF012345} == val.value());
         }
+      }
+
+      SECTION("returns error if the read goes past the end of the buffer") {
+        const auto val = io::try_read_at<uint32_t>(5, data);
+        REQUIRE(val.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == val.error());
+      }
+
+      SECTION("returns error if the read starts past the end of the buffer") {
+        const auto val = io::try_read_at<uint32_t>(9, data);
+        REQUIRE(val.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == val.error());
+      }
+
+      SECTION("returns error for pathological read offset") {
+        const auto val = io::try_read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data);
+        REQUIRE(val.is_error());
+        REQUIRE(io::read_error::invalid_position_offset == val.error());
       }
     }
   }

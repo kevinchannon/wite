@@ -26,6 +26,25 @@ namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+namespace detail::buffer::read {
+
+  template <typename Value_T>
+    requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
+  constexpr auto value_size() noexcept {
+    // This will fail to build if the type satisfies the requirements but doesn't have a value_type alias in it.
+    // In that case, a new overload of this function will need to be added for the new type.
+    return sizeof(typename Value_T::value_type);
+  }
+
+  template <typename Value_T>
+    requires(std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>)
+  constexpr auto value_size() noexcept {
+    return sizeof(Value_T);
+  }
+}  // namespace detail::buffer::read
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
   requires is_buffer_readable<Value_T>
 auto unchecked_read(auto buffer_iterator) noexcept
@@ -83,25 +102,67 @@ auto read_at(size_t position, const std::span<const io::byte>& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail {
-
-  template <typename Value_T>
-    requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
-  constexpr auto value_size() noexcept {
-    // This will fail to build if the type satisfies the requirements but doesn't have a value_type alias in it.
-    // In that case, a new overload of this function will need to be added for the new type.
-    return sizeof(typename Value_T::value_type);
+template<typename Value_T>
+requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
+read_result_t<Value_T> try_read(const std::span<const io::byte>& buffer) noexcept {
+  if (buffer.size() < detail::buffer::read::value_size<Value_T>()) {
+    return read_error::insufficient_buffer;
   }
 
-  template <typename Value_T>
-    requires(std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>)
-  constexpr auto value_size() noexcept {
-    return sizeof(Value_T);
+  return unchecked_read<Value_T>(buffer.begin()).first;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+  requires is_buffer_readable<Value_T> and is_encoded<Value_T>
+read_result_t<typename Value_T::value_type> try_read(const std::span<const io::byte>& buffer) noexcept {
+  if (buffer.size() < detail::buffer::read::value_size<Value_T>()) {
+    return read_error::insufficient_buffer;
   }
+
+  return unchecked_read<Value_T>(buffer.begin()).first;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+  requires is_buffer_readable<Value_T> and is_encoded<Value_T>
+read_result_t<typename Value_T::value_type> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+  if (position + sizeof(Value_T) < position) {
+    return read_error::invalid_position_offset;
+  }
+
+  if (position >= buffer.size()) {
+    return read_error::insufficient_buffer;
+  }
+
+  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+  requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
+read_result_t<Value_T> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+  if (position + sizeof(Value_T) < position) {
+    return read_error::invalid_position_offset;
+  }
+
+  if (position >= buffer.size()) {
+    return read_error::insufficient_buffer;
+  }
+
+  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace detail::buffer::read {
 
   template<typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_read(const std::span<const io::byte>& buffer) {
-    auto first_value = std::make_tuple(read<FirstValue_T>(buffer));
+    auto first_value = std::make_tuple(io::read<FirstValue_T>(buffer));
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
       auto other_values = _recursive_read<OtherValue_Ts...>(
@@ -116,7 +177,7 @@ namespace detail {
 
   template <typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_read_at(size_t position, const std::span<const io::byte>& buffer) {
-    auto first_value = std::make_tuple(read_at<FirstValue_T>(position, buffer));
+    auto first_value = std::make_tuple(io::read_at<FirstValue_T>(position, buffer));
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
       auto other_values = _recursive_read_at<OtherValue_Ts...>(position + value_size<FirstValue_T>(), buffer);
@@ -127,94 +188,15 @@ namespace detail {
     }
   }
 
-}  // namespace detail
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename... Value_Ts>
-  requires(sizeof...(Value_Ts) > 1)
-auto read(const std::span<const io::byte>& buffer) {
-  return detail::_recursive_read<Value_Ts...>(buffer);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename... Value_Ts>
-  requires(sizeof...(Value_Ts) > 1)
-auto read_at(size_t position, const std::span<const io::byte>& buffer) {
-  return detail::_recursive_read_at<Value_Ts...>(position, buffer);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-requires is_buffer_readable<Value_T> auto from_bytes(const std::span<const io::byte>& buffer) {
-  return read<Value_T>(buffer);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>) 
-read_result_t<Value_T> try_read(const std::span<const io::byte>& buffer) noexcept {
-  if (buffer.size() < sizeof(Value_T)) {
-    return read_error::insufficient_buffer;
-  }
-
-  return unchecked_read<Value_T>(buffer.begin()).first;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-requires is_buffer_readable<Value_T> and is_encoded<Value_T> 
-read_result_t<typename Value_T::value_type> try_read(const std::span<const io::byte>& buffer) noexcept {
-  if (buffer.size() < sizeof(typename Value_T::value_type)) {
-    return read_error::insufficient_buffer;
-  }
-
-  return unchecked_read<Value_T>(buffer.begin()).first;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-read_result_t<Value_T> try_from_bytes(const std::span<const io::byte>& buffer) noexcept {
-  return try_read<Value_T>(buffer);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-  requires is_buffer_readable<Value_T> and is_encoded<Value_T>
-read_result_t<typename Value_T::value_type> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
-  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-  requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-read_result_t<Value_T> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
-  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-namespace detail::buffer::read {
   template <typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_try_read(const std::span<const io::byte>& buffer) noexcept {
-    auto first_value = std::make_tuple(try_read<FirstValue_T>(buffer));
+    auto first_value = std::make_tuple(io::try_read<FirstValue_T>(buffer));
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
-
       constexpr auto increment = value_size<typename std::tuple_element_t<0, decltype(first_value)>>();
 
       auto other_values = _recursive_try_read<OtherValue_Ts...>(std::span<const io::byte>{
-        std::get<0>(first_value).ok() ? std::next(buffer.begin(), increment) : buffer.end(),
-          buffer.end()}
-      );
+          std::get<0>(first_value).ok() ? std::next(buffer.begin(), increment) : buffer.end(), buffer.end()});
 
       return std::tuple_cat(first_value, other_values);
     } else {
@@ -222,7 +204,25 @@ namespace detail::buffer::read {
     }
   }
 
-}  // namespace detail
+}  // namespace detail::buffer::read
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+auto read(const std::span<const io::byte>& buffer) {
+  return detail::buffer::read::_recursive_read<Value_Ts...>(buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+auto read_at(size_t position, const std::span<const io::byte>& buffer) {
+  return detail::buffer::read::_recursive_read_at<Value_Ts...>(position, buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Value_Ts>
 requires(sizeof...(Value_Ts) > 1)
@@ -240,6 +240,22 @@ Value_T read(const std::span<const io::byte>& buffer, endian endianness) {
   } else {
     return read<io::big_endian<Value_T>>(buffer);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+  requires is_buffer_readable<Value_T>
+auto from_bytes(const std::span<const io::byte>& buffer) {
+  return read<Value_T>(buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+  requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
+read_result_t<Value_T> try_from_bytes(const std::span<const io::byte>& buffer) noexcept {
+  return try_read<Value_T>(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
