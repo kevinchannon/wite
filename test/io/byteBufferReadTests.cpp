@@ -156,7 +156,7 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
 
   SECTION("try_read") {
     SECTION("single value") {
-      SECTION("returns value on good read", "[buffer_io]") {
+      SECTION("returns value on good read") {
         const auto data = io::static_byte_buffer<4>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}, io::byte{0xFF}};
 
         SECTION("with default endianness") {
@@ -172,7 +172,7 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
         }
       }
 
-      SECTION("returns error on bad read", "[buffer_io]") {
+      SECTION("returns error on bad read") {
         const auto data = io::static_byte_buffer<3>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}};
 
         const auto val = io::try_read<uint32_t>(data);
@@ -285,6 +285,33 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
         };
 
         REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
+      }
+    }
+  }
+
+  SECTION("try_read_at") {
+    SECTION("single value") {
+      SECTION("returns value on good read") {
+        const auto data = io::static_byte_buffer<8>{io::byte{0x67},
+                                                    io::byte{0x45},
+                                                    io::byte{0xAB},
+                                                    io::byte{0xFF},
+                                                    io::byte{0x01},
+                                                    io::byte{0x23},
+                                                    io::byte{0x45},
+                                                    io::byte{0x67}};
+
+        SECTION("with default endianness") {
+          const auto val = io::try_read_at<uint32_t>(2, data);
+          REQUIRE(val.ok());
+          REQUIRE(uint32_t{0x2301FFAB} == val.value());
+        }
+
+        SECTION("with specified endianness") {
+          const auto val = io::try_read_at<io::big_endian<uint32_t>>(3, data);
+          REQUIRE(val.ok());
+          REQUIRE(uint32_t{0xFF012345} == val.value());
+        }
       }
     }
   }

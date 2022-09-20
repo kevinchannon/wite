@@ -186,6 +186,22 @@ read_result_t<Value_T> try_from_bytes(const std::span<const io::byte>& buffer) n
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Value_T>
+  requires is_buffer_readable<Value_T> and is_encoded<Value_T>
+read_result_t<typename Value_T::value_type> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
+  requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
+read_result_t<Value_T> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail::buffer::read {
   template <typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_try_read(const std::span<const io::byte>& buffer) noexcept {
