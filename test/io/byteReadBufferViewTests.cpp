@@ -33,6 +33,10 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       view.seek(2);
       REQUIRE(2 == std::distance(view.data.begin(), view.read_position));
     }
+
+    SECTION("throws std::out_of_range if the position is past the end of the buffer") {
+      REQUIRE_THROWS_AS(view.seek(11), std::out_of_range);
+    }
   }
 
   SECTION("read") {

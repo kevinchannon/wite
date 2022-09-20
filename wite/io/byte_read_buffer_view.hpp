@@ -30,6 +30,10 @@ struct byte_read_buffer_view {
       : data{std::move(buf)}, read_position{std::next(data.begin(), offset)} {}
 
   byte_read_buffer_view& seek(size_t position) {
+    if (position > data.size()) {
+      throw std::out_of_range{"Cannot seek past end of buffer"};
+    }
+
     read_position = std::next(data.begin(), position);
     return *this;
   }
