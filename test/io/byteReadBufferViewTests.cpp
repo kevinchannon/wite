@@ -329,5 +329,38 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
         }
       }
     }
+
+    SECTION("multiple values") {
+      // clang-format off
+      const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+        io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
+        io::byte{0xAB}, io::byte{0xCD},
+        io::byte{true},
+        io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+      };
+      // clang-format on
+
+      auto buffer_view = io::byte_read_buffer_view{buffer};
+
+      SECTION("reads multiple values from buffer at the specified position") {
+        const auto [b, c] = io::try_read_at<io::big_endian<uint16_t>, bool>(4, buffer_view);
+
+        REQUIRE(b.ok());
+        REQUIRE(uint16_t{0xABCD} == b.value());
+
+        REQUIRE(c.ok());
+        REQUIRE(true == c.value());
+      }
+
+      SECTION("returns read_error::insufficient_buffer if it tries to read past the end of the buffer") {
+        const auto [b, c] = io::try_read_at<io::big_endian<uint16_t>, bool>(9, buffer_view);
+
+        REQUIRE(b.ok());
+        REQUIRE(uint16_t{0xDCFE} == b.value());
+
+        REQUIRE(c.is_error());
+        REQUIRE(io::read_error::insufficient_buffer == c.error());
+      }
+    }
   }
 }

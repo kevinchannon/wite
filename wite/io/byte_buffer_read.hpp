@@ -204,6 +204,21 @@ namespace detail::buffer::read {
     }
   }
 
+  template <typename FirstValue_T, typename... OtherValue_Ts>
+  auto _recursive_try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+    auto first_value = std::make_tuple(io::try_read_at<FirstValue_T>(position, buffer));
+
+    if constexpr (sizeof...(OtherValue_Ts) > 0) {
+      constexpr auto increment = value_size<typename std::tuple_element_t<0, decltype(first_value)>>();
+
+      auto other_values = _recursive_try_read_at<OtherValue_Ts...>(position + increment, buffer);
+
+      return std::tuple_cat(first_value, other_values);
+    } else {
+      return first_value;
+    }
+  }
+
 }  // namespace detail::buffer::read
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -228,6 +243,14 @@ template <typename... Value_Ts>
 requires(sizeof...(Value_Ts) > 1)
 auto try_read(const std::span<const io::byte>& buffer) noexcept {
   return detail::buffer::read::_recursive_try_read<Value_Ts...>(buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+auto try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+  return detail::buffer::read::_recursive_try_read_at<Value_Ts...>(position, buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

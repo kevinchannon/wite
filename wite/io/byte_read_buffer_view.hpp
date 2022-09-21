@@ -104,6 +104,17 @@ Value_T read(byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
+  requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
+typename Value_T::value_type read(byte_read_buffer_view& buffer) {
+  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
+  std::advance(buffer.read_position, sizeof(out));
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T>
 auto read_at(size_t position, byte_read_buffer_view& buffer) {
   const auto out = read_at<Value_T>(position, {buffer.data.begin(), buffer.data.end()});
   buffer.unchecked_seek(position + detail::buffer_view::read::value_size<Value_T>());
@@ -114,8 +125,10 @@ auto read_at(size_t position, byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-auto try_read(byte_read_buffer_view& buffer) {
+auto try_read(byte_read_buffer_view& buffer) noexcept {
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
+
+  // TODO: this should check for success before advancing the read pointer.
   std::advance(buffer.read_position, detail::buffer_view::read::value_size<Value_T>());
 
   return out;
@@ -124,7 +137,7 @@ auto try_read(byte_read_buffer_view& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-auto try_read_at(size_t position, byte_read_buffer_view& buffer) {
+auto try_read_at(size_t position, byte_read_buffer_view& buffer) noexcept {
   const auto out = try_read_at<Value_T>(position, buffer.data);
   if (out.ok()) {
     buffer.unchecked_seek(position + detail::buffer_view::read::value_size<Value_T>());
@@ -163,7 +176,6 @@ template <typename... Value_Ts>
 requires(sizeof...(Value_Ts) > 1)
 auto try_read(byte_read_buffer_view& buffer) noexcept {
   const auto out = try_read<Value_Ts...>(buffer.data);
-
   std::advance(
     buffer.read_position,
     std::min<ptrdiff_t>(
@@ -177,11 +189,12 @@ auto try_read(byte_read_buffer_view& buffer) noexcept {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
-requires is_buffer_writeable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
-Value_T read(byte_read_buffer_view& buffer, std::endian endianness) {
-  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endianness);
-  std::advance(buffer.read_position, sizeof(out));
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+auto try_read_at(size_t position, byte_read_buffer_view& buffer) noexcept {
+  const auto out = try_read_at<Value_Ts...>(position, buffer.data);
+  
+  buffer.seek(std::min(position + detail::buffer_view::read::byte_count<Value_Ts...>(), buffer.data.size()));
 
   return out;
 }
@@ -189,10 +202,9 @@ Value_T read(byte_read_buffer_view& buffer, std::endian endianness) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
-typename Value_T::value_type read(byte_read_buffer_view& buffer) {
-  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
-  std::advance(buffer.read_position, sizeof(out));
+auto read(byte_read_buffer_view& buffer, std::endian endianness) {
+  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()}, endianness);
+  std::advance(buffer.read_position, detail::buffer_view::read::value_size<Value_T>());
 
   return out;
 }
