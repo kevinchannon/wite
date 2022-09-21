@@ -73,8 +73,33 @@ class byte_read_buffer_view {
     return out;
   }
 
+  template <typename Value_T>
+  auto try_read() noexcept {
+    const auto out = io::try_read<Value_T>({read_position, data.end()});
+
+    // TODO: this should check for success before advancing the read pointer.
+    std::advance(read_position, _value_size<Value_T>());
+
+    return out;
+  }
+
   std::span<const io::byte> data;
   std::span<const io::byte>::iterator read_position;
+
+private:
+  template <typename Value_T>
+    requires(not common::is_pod_like<Value_T>)
+  static constexpr auto _value_size() noexcept {
+    // This will fail to build if the type satisfies the requirements but doesn't have a value_type alias in it.
+    // In that case, a new overload of this function will need to be added for the new type.
+    return sizeof(typename Value_T::value_type);
+  }
+
+  template <typename Value_T>
+    requires common::is_pod_like<Value_T>
+  static constexpr auto _value_size() noexcept {
+    return sizeof(Value_T);
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -110,18 +135,6 @@ namespace detail::buffer_view::read {
   }
 
 }  // namespace detail::buffer_view::read
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-auto try_read(byte_read_buffer_view& buffer) noexcept {
-  const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
-
-  // TODO: this should check for success before advancing the read pointer.
-  std::advance(buffer.read_position, detail::buffer_view::read::value_size<Value_T>());
-
-  return out;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

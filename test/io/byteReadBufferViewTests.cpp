@@ -167,14 +167,14 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
         auto buffer     = io::byte_read_buffer_view{data};
 
         SECTION("with default endianness") {
-          const auto val = io::try_read<uint32_t>(buffer);
+          const auto val = buffer.try_read<uint32_t>();
           REQUIRE(val.ok());
           REQUIRE(uint32_t{0xFFAB4567} == val.value());
           REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
         }
 
         SECTION("with specified endianness adapter") {
-          const auto val = io::try_read<io::big_endian<uint32_t>>(buffer);
+          const auto val = buffer.try_read<io::big_endian<uint32_t>>();
           REQUIRE(val.ok());
           REQUIRE(uint32_t{0x6745ABFF} == val.value());
           REQUIRE(4 == std::distance(buffer.data.begin(), buffer.read_position));
