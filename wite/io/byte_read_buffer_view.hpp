@@ -114,16 +114,6 @@ namespace detail::buffer_view::read {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T>
-auto read_at(size_t position, byte_read_buffer_view& buffer) {
-  const auto out = read_at<Value_T>(position, {buffer.data.begin(), buffer.data.end()});
-  buffer.unchecked_seek(position + detail::buffer_view::read::value_size<Value_T>());
-
-  return out;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
 auto try_read(byte_read_buffer_view& buffer) noexcept {
   const auto out = try_read<Value_T>({buffer.read_position, buffer.data.end()});
 
@@ -153,18 +143,6 @@ auto read(byte_read_buffer_view& buffer) {
   const auto values = read<Value_Ts...>(buffer.data);
   
   std::advance(buffer.read_position, detail::buffer_view::read::byte_count<Value_Ts...>());
-
-  return values;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename... Value_Ts>
-  requires(sizeof...(Value_Ts) > 1)
-auto read_at(size_t position, byte_read_buffer_view& buffer) {
-  const auto values = read_at<Value_Ts...>(position, buffer.data);
-
-  buffer.read_position = std::next(buffer.data.begin(), detail::buffer_view::read::byte_count<Value_Ts...>());
 
   return values;
 }
