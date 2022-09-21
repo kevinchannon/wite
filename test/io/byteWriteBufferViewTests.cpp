@@ -174,10 +174,6 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
                                                               io::byte{0x04},
                                                               io::byte{0x7D}},
                                    raw_buffer));
-
-        REQUIRE(val_1 == io::read<uint32_t>(read_buffer));
-        REQUIRE(val_2 == io::read<io::big_endian<uint32_t>>(read_buffer));
-        REQUIRE(val_3 == io::read<io::little_endian<int16_t>>(read_buffer));
       }
     }
 

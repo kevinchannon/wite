@@ -211,15 +211,15 @@ void simple_buffer_write_read_operations() {
   auto read_buf = io::byte_read_buffer_view{global_buffer};
 
   std::cout << "Reading from buffer:" << std::endl;
-  std::cout << "uint16 value = " << io::read<uint16_t>(read_buf) << std::endl;
-  std::cout << "uint32 value = " << io::read<uint32_t>(read_buf) << std::endl;
-  std::cout << "uint32 value = " << io::read<uint64_t>(read_buf) << std::endl;
-  std::cout << "bool value = "   << std::boolalpha << io::read<bool>(read_buf) << std::endl;
-  std::cout << "char value = "   << io::read<char>(read_buf) << std::endl;
-  std::cout << "double value = " << io::read<double>(read_buf) << std::endl;
-  std::cout << "float value = "  << io::read<float>(read_buf) << std::endl;
+  std::cout << "uint16 value = " << read_buf.read<uint16_t>() << std::endl;
+  std::cout << "uint32 value = " << read_buf.read<uint32_t>() << std::endl;
+  std::cout << "uint32 value = " << read_buf.read<uint64_t>() << std::endl;
+  std::cout << "bool value = " << std::boolalpha << read_buf.read<bool>() << std::endl;
+  std::cout << "char value = "   << read_buf.read<char>() << std::endl;
+  std::cout << "double value = " << read_buf.read<double>() << std::endl;
+  std::cout << "float value = "  << read_buf.read<float>() << std::endl;
 
-  std::cout << "Big endian uint32 value = " << std::hex << "0x" << io::read<io::big_endian<uint32_t>>(read_buf) << std::endl;
+  std::cout << "Big endian uint32 value = " << std::hex << "0x" << read_buf.read<io::big_endian<uint32_t>>() << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

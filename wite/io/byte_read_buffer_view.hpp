@@ -23,7 +23,9 @@ namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct byte_read_buffer_view {
+class byte_read_buffer_view {
+ public:
+
   explicit byte_read_buffer_view(std::span<const io::byte> buf) : data{std::move(buf)}, read_position{data.begin()} {}
 
   byte_read_buffer_view(std::span<const io::byte> buf, typename std::span<const io::byte>::size_type offset)
@@ -51,9 +53,28 @@ struct byte_read_buffer_view {
     read_position = std::next(data.begin(), position);
   }
 
+  _WITE_NODISCARD std::ptrdiff_t read_pos() const noexcept { return std::distance(data.begin(), read_position); }
+  
+  template <typename Value_T>
+    requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
+  Value_T read() {
+    const auto out = io::read<Value_T>({read_position, data.end()});
+    std::advance(read_position, sizeof(Value_T));
+
+    return out;
+  }
+
+  template <typename Value_T>
+    requires is_buffer_writeable<Value_T> and is_encoded<Value_T>
+  typename Value_T::value_type read() {
+    const auto out = io::read<Value_T>({read_position, data.end()});
+    std::advance(read_position, sizeof(out));
+
+    return out;
+  }
+
   std::span<const io::byte> data;
   std::span<const io::byte>::iterator read_position;
-
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,28 +110,6 @@ namespace detail::buffer_view::read {
   }
 
 }  // namespace detail::buffer_view::read
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-requires is_buffer_readable<Value_T> and (not std::is_base_of_v<io::encoding, Value_T>)
-Value_T read(byte_read_buffer_view& buffer) {
-  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
-  std::advance(buffer.read_position, sizeof(Value_T));
-
-  return out;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T>
-  requires is_buffer_writeable<Value_T> and std::is_base_of_v<io::encoding, Value_T>
-typename Value_T::value_type read(byte_read_buffer_view& buffer) {
-  const auto out = read<Value_T>({buffer.read_position, buffer.data.end()});
-  std::advance(buffer.read_position, sizeof(out));
-
-  return out;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
