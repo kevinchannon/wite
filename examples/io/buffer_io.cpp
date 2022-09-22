@@ -191,16 +191,16 @@ void simple_buffer_write_read_operations() {
   // Write some things to the buffer.
   auto write_buf = io::byte_write_buffer_view{global_buffer};
 
-  io::write(write_buf, uint16_t{10});
-  io::write(write_buf, uint32_t{100});
-  io::write(write_buf, uint64_t{100});
-  io::write(write_buf, true);
-  io::write(write_buf, 'x');
-  io::write(write_buf, 3.1415);
-  io::write(write_buf, 2.718f);
+  write_buf.write(uint16_t{10});
+  write_buf.write(uint32_t{100});
+  write_buf.write(uint64_t{100});
+  write_buf.write(true);
+  write_buf.write('x');
+  write_buf.write(3.1415);
+  write_buf.write(2.718f);
 
   // Write something with a given endianness
-  io::write(write_buf, io::big_endian{0xDEADBEEF});
+  write_buf.write(io::big_endian{0xDEADBEEF});
 
   std::cout << "Wrote " << std::distance(write_buf.data.begin(), write_buf.write_position)
             << " bytes to the buffer" << std::endl;
