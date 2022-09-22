@@ -41,6 +41,20 @@ namespace detail::buffer::read {
   constexpr auto value_size() noexcept {
     return sizeof(Value_T);
   }
+
+  template <size_t CURRENT, typename T, typename... Ts>
+  static constexpr auto _recursive_byte_count() {
+    if constexpr (sizeof...(Ts) == 0) {
+      return CURRENT + value_size<T>();
+    } else {
+      return _recursive_byte_count<CURRENT + value_size<T>(), Ts...>();
+    }
+  }
+
+  template <typename... Ts>
+  static constexpr auto byte_count() {
+    return _recursive_byte_count<0, Ts...>();
+  }
 }  // namespace detail::buffer::read
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,7 +63,7 @@ template <typename Value_T>
   requires is_buffer_readable<Value_T>
 auto unchecked_read(auto buffer_iterator) noexcept
 {
-  if constexpr (std::is_base_of_v<io::encoding, Value_T>) {
+  if constexpr (io::is_encoded<Value_T>) {
     using OutputValue_t = typename Value_T::value_type;
 
     auto out = OutputValue_t{};
@@ -162,16 +176,16 @@ namespace detail::buffer::read {
 
   template<typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_read(const std::span<const io::byte>& buffer) {
-    auto first_value = std::make_tuple(io::read<FirstValue_T>(buffer));
+    auto [first_value, next_pos] = io::unchecked_read<FirstValue_T>(buffer.begin());
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
       auto other_values = _recursive_read<OtherValue_Ts...>(
-          std::span<const io::byte>{std::next(buffer.begin(), sizeof(std::tuple_element_t<0, decltype(first_value)>)), buffer.end()});
+          std::span<const io::byte>{next_pos, buffer.end()});
 
-      return std::tuple_cat(first_value, other_values);
+      return std::tuple_cat(std::tuple{first_value}, other_values);
     }
     else {
-      return first_value;
+      return std::tuple{first_value};
     }
   }
 
@@ -226,6 +240,10 @@ namespace detail::buffer::read {
 template <typename... Value_Ts>
   requires(sizeof...(Value_Ts) > 1)
 auto read(const std::span<const io::byte>& buffer) {
+  if (detail::buffer::read::byte_count<Value_Ts...>() > buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for read"};
+  }
+
   return detail::buffer::read::_recursive_read<Value_Ts...>(buffer);
 }
 
