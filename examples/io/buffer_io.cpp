@@ -186,7 +186,7 @@ void direct_read_write_without_exceptions() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void simple_buffer_write_read_operations() {
-  title("Simple buffer read operations");
+  title("Simple buffer write-read operations");
 
   // Write some things to the buffer.
   auto write_buf = io::byte_write_buffer_view{global_buffer};
@@ -202,8 +202,7 @@ void simple_buffer_write_read_operations() {
   // Write something with a given endianness
   write_buf.write(io::big_endian{0xDEADBEEF});
 
-  std::cout << "Wrote " << write_buf.write_position()
-            << " bytes to the buffer" << std::endl;
+  std::cout << "Wrote " << write_buf.write_position() << " bytes to the buffer" << std::endl;
 
   std::cout << "===============================" << std::endl;
 
@@ -215,11 +214,44 @@ void simple_buffer_write_read_operations() {
   std::cout << "uint32 value = " << read_buf.read<uint32_t>() << std::endl;
   std::cout << "uint32 value = " << read_buf.read<uint64_t>() << std::endl;
   std::cout << "bool value = " << std::boolalpha << read_buf.read<bool>() << std::endl;
-  std::cout << "char value = "   << read_buf.read<char>() << std::endl;
+  std::cout << "char value = " << read_buf.read<char>() << std::endl;
   std::cout << "double value = " << read_buf.read<double>() << std::endl;
-  std::cout << "float value = "  << read_buf.read<float>() << std::endl;
+  std::cout << "float value = " << read_buf.read<float>() << std::endl;
 
-  std::cout << "Big endian uint32 value = " << std::hex << "0x" << read_buf.read<io::big_endian<uint32_t>>() << std::endl;
+  std::cout << "Big endian uint32 value = " << std::hex << "0x" << read_buf.read<io::big_endian<uint32_t>>() << std::dec << std::endl;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void buffer_multiple_write_read_operations() {
+  title("Buffer multiple write-read operations");
+
+  auto write_buf = io::byte_write_buffer_view{global_buffer};
+
+  // Write some things to the buffer.
+  write_buf.write(uint16_t{10}, uint32_t{100}, uint64_t{1000}, true, 'x', 3.1415, 2.718f, io::big_endian{0xDEADBEEF});
+
+  std::cout << "Wrote " << write_buf.write_position()
+            << " bytes to the buffer" << std::endl;
+
+  std::cout << "===============================" << std::endl;
+
+  auto read_buf = io::byte_read_buffer_view{global_buffer};
+
+  // Read all the things we wrote to the buffer out in one go.
+  const auto [a, b, c, d, e, f, g, h] =
+      read_buf.read<uint16_t, uint32_t, uint64_t, bool, char, double, float, io::big_endian<uint32_t>>();
+
+  std::cout << "Reading from buffer:" << std::endl;
+  std::cout << "uint16 value = " << a << std::endl;
+  std::cout << "uint32 value = " << b << std::endl;
+  std::cout << "uint64 value = " << c << std::endl;
+  std::cout << "bool value = " << std::boolalpha << d << std::endl;
+  std::cout << "char value = "   << e << std::endl;
+  std::cout << "double value = " << f << std::endl;
+  std::cout << "float value = "  << g << std::endl;
+
+  std::cout << "Big endian uint32 value = " << std::hex << "0x" << h << std::dec << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -250,6 +282,9 @@ void direct_buffer_access_examples() {
 
 void buffer_view_examples() {
   simple_buffer_write_read_operations();
+  std::cout << std::endl;
+
+  buffer_multiple_write_read_operations();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
