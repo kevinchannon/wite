@@ -70,7 +70,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
           auto read_buf = io::byte_read_buffer_view(array_buffer);
 
           SECTION("Dynamic endianness") {
-            REQUIRE(uint32_t(0x01234567) == io::read<uint32_t>(read_buf, io::endian::little));
+            REQUIRE(uint32_t(0x01234567) == read_buf.read<uint32_t>(io::endian::little));
             REQUIRE(4 == read_buf.read_pos());
           }
 
@@ -92,8 +92,8 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
         SECTION("Read 2 shorts") {
           auto read_buf = io::byte_read_buffer_view(array_buffer);
 
-          REQUIRE(uint32_t(0x4567) == io::read<uint16_t>(read_buf, io::endian::little));
-          REQUIRE(uint32_t(0x0123) == io::read<uint16_t>(read_buf, io::endian::little));
+          REQUIRE(uint32_t(0x4567) == read_buf.read<uint16_t>(io::endian::little));
+          REQUIRE(uint32_t(0x0123) == read_buf.read<uint16_t>(io::endian::little));
         }
 
         SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
@@ -107,7 +107,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
         auto buffer = io::byte_read_buffer_view(array_buffer);
         SECTION("Read int") {
           SECTION("Dynmic endianness") {
-            REQUIRE(uint32_t(0x67452301) == io::read<uint32_t>(buffer, io::endian::big));
+            REQUIRE(uint32_t(0x67452301) == buffer.read<uint32_t>(io::endian::big));
             REQUIRE(4 == buffer.read_pos());
           }
 
@@ -145,7 +145,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       auto read_view = io::byte_read_buffer_view{data};
 
       SECTION("are correctly read") {
-        const auto [a, b, c, d] = io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
+        const auto [a, b, c, d] = read_view.read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
 
         REQUIRE(a == uint32_t{0x12345678});
         REQUIRE(b == uint16_t{0xABCD});
@@ -154,7 +154,9 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       }
 
       SECTION("throws out_of_range if the buffer is too small") {
-        const auto read_from_buffer = [&]() { io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t, bool>(read_view); };
+        const auto read_from_buffer = [&]() {
+          read_view.read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t, bool>();
+        };
         REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
       }
     }
@@ -195,7 +197,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
 
         auto read_view = io::byte_read_buffer_view{buffer};
 
-        const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
+        const auto [a, b, c, d] = read_view.try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
 
         REQUIRE(a.ok());
         REQUIRE(a.value() == uint32_t{0x12345678});
@@ -219,7 +221,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
         // clang-format on
 
         auto read_view          = io::byte_read_buffer_view{buffer};
-        const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(read_view);
+        const auto [a, b, c, d] = read_view.try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
 
         REQUIRE(a.ok());
         REQUIRE(a.value() == uint32_t{0x12345678});
@@ -232,80 +234,6 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
 
         REQUIRE(d.is_error());
         REQUIRE(io::read_error::insufficient_buffer == d.error());
-      }
-    }
-  }
-
-  SECTION("try_read_at") {
-    SECTION("single value") {
-      SECTION("returns value on good read", "[buffer_io]") {
-        const auto data = io::static_byte_buffer<8>{io::byte{0x67},
-                                                  io::byte{0x45},
-                                                  io::byte{0x23},
-                                                  io::byte{0x01},
-                                                  io::byte{0xEF},
-                                                  io::byte{0xCD},
-                                                  io::byte{0xAB},
-                                                  io::byte{0x89}};
-        auto buffer     = io::byte_read_buffer_view{data};
-
-        SECTION("reads at the correct offset") {
-          const auto val = io::try_read_at<uint32_t>(4, buffer);
-          REQUIRE(val.ok());
-          REQUIRE(uint32_t{0x89ABCDEF} == val.value());
-          REQUIRE(8 == std::distance(buffer.data.begin(), buffer.read_position));
-        }
-
-        SECTION("returns read_error::insuficient_buffer if the read goes past the end of the buffer") {
-          const auto result = io::try_read_at<uint32_t>(5, buffer);
-          REQUIRE(result.is_error());
-          REQUIRE(io::read_error::insufficient_buffer == result.error());
-        }
-
-        SECTION("returns read_error::insuficient_buffer if the read starts past the end of the buffer") {
-          const auto result = io::try_read_at<uint32_t>(9, buffer);
-          REQUIRE(result.is_error());
-          REQUIRE(io::read_error::insufficient_buffer == result.error());
-        }
-
-        SECTION("returns read_error::invalid_position_offset for pathological read offset") {
-          const auto result = io::try_read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, buffer);
-          REQUIRE(result.is_error());
-          REQUIRE(io::read_error::invalid_position_offset == result.error());
-        }
-      }
-    }
-
-    SECTION("multiple values") {
-      // clang-format off
-      const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-        io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-        io::byte{0xAB}, io::byte{0xCD},
-        io::byte{true},
-        io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
-      };
-      // clang-format on
-
-      auto buffer_view = io::byte_read_buffer_view{buffer};
-
-      SECTION("reads multiple values from buffer at the specified position") {
-        const auto [b, c] = io::try_read_at<io::big_endian<uint16_t>, bool>(4, buffer_view);
-
-        REQUIRE(b.ok());
-        REQUIRE(uint16_t{0xABCD} == b.value());
-
-        REQUIRE(c.ok());
-        REQUIRE(true == c.value());
-      }
-
-      SECTION("returns read_error::insufficient_buffer if it tries to read past the end of the buffer") {
-        const auto [b, c] = io::try_read_at<io::big_endian<uint16_t>, bool>(9, buffer_view);
-
-        REQUIRE(b.ok());
-        REQUIRE(uint16_t{0xDCFE} == b.value());
-
-        REQUIRE(c.is_error());
-        REQUIRE(io::read_error::insufficient_buffer == c.error());
       }
     }
   }
