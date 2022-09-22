@@ -202,7 +202,7 @@ void simple_buffer_write_read_operations() {
   // Write something with a given endianness
   write_buf.write(io::big_endian{0xDEADBEEF});
 
-  std::cout << "Wrote " << std::distance(write_buf.data.begin(), write_buf.write_position)
+  std::cout << "Wrote " << write_buf.write_position()
             << " bytes to the buffer" << std::endl;
 
   std::cout << "===============================" << std::endl;

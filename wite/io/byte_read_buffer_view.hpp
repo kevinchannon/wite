@@ -26,13 +26,13 @@ namespace wite::io {
 class byte_read_buffer_view {
  public:
 
-  explicit byte_read_buffer_view(std::span<const io::byte> buf) : data{std::move(buf)}, read_position{data.begin()} {}
+  explicit byte_read_buffer_view(std::span<const io::byte> buf) : _data{std::move(buf)}, _get_pos{_data.begin()} {}
 
   byte_read_buffer_view(std::span<const io::byte> buf, typename std::span<const io::byte>::size_type offset)
-      : data{std::move(buf)}, read_position{std::next(data.begin(), offset)} {}
+      : _data{std::move(buf)}, _get_pos{std::next(_data.begin(), offset)} {}
 
   byte_read_buffer_view& seek(size_t position) {
-    if (position > data.size()) {
+    if (position > _data.size()) {
       throw std::out_of_range{"Cannot seek past end of buffer"};
     }
 
@@ -41,7 +41,7 @@ class byte_read_buffer_view {
   }
 
   result<bool, read_error> try_seek(size_t position) noexcept {
-    if (position > data.size()) {
+    if (position > _data.size()) {
       return read_error::invalid_position_offset;
     }
 
@@ -50,16 +50,16 @@ class byte_read_buffer_view {
   }
 
   void unchecked_seek(size_t position) {
-    read_position = std::next(data.begin(), position);
+    _get_pos = std::next(_data.begin(), position);
   }
 
-  _WITE_NODISCARD std::ptrdiff_t read_pos() const noexcept { return std::distance(data.begin(), read_position); }
+  _WITE_NODISCARD std::ptrdiff_t read_position() const noexcept { return std::distance(_data.begin(), _get_pos); }
   
   template <typename Value_T>
     requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
   Value_T read() {
-    const auto out = io::read<Value_T>({read_position, data.end()});
-    std::advance(read_position, sizeof(Value_T));
+    const auto out = io::read<Value_T>({_get_pos, _data.end()});
+    std::advance(_get_pos, sizeof(Value_T));
 
     return out;
   }
@@ -67,18 +67,18 @@ class byte_read_buffer_view {
   template <typename Value_T>
     requires is_buffer_writeable<Value_T> and is_encoded<Value_T>
   typename Value_T::value_type read() {
-    const auto out = io::read<Value_T>({read_position, data.end()});
-    std::advance(read_position, sizeof(out));
+    const auto out = io::read<Value_T>({_get_pos, _data.end()});
+    std::advance(_get_pos , sizeof(out));
 
     return out;
   }
 
   template <typename Value_T>
   auto try_read() noexcept {
-    const auto out = io::try_read<Value_T>({read_position, data.end()});
+    const auto out = io::try_read<Value_T>({_get_pos , _data.end()});
 
     // TODO: this should check for success before advancing the read pointer.
-    std::advance(read_position, _value_size<Value_T>());
+    std::advance(_get_pos , _value_size<Value_T>());
 
     return out;
   }
@@ -86,9 +86,9 @@ class byte_read_buffer_view {
   template <typename... Value_Ts>
     requires(sizeof...(Value_Ts) > 1)
   auto read() {
-    const auto values = io::read<Value_Ts...>(data);
+    const auto values = io::read<Value_Ts...>(_data);
 
-    std::advance(read_position, _byte_count<Value_Ts...>());
+    std::advance(_get_pos , _byte_count<Value_Ts...>());
 
     return values;
   }
@@ -96,24 +96,21 @@ class byte_read_buffer_view {
   template <typename... Value_Ts>
     requires(sizeof...(Value_Ts) > 1)
   auto try_read() noexcept {
-    const auto out = io::try_read<Value_Ts...>(data);
-    std::advance(read_position,
+    const auto out = io::try_read<Value_Ts...>(_data);
+    std::advance(_get_pos ,
                  std::min<ptrdiff_t>(_byte_count<Value_Ts...>(),
-                                     std::distance(read_position, data.end())));
+                                     std::distance(_get_pos , _data.end())));
 
     return out;
   }
 
   template <typename Value_T>
   auto read(std::endian endianness) {
-    const auto out = io::read<Value_T>({read_position, data.end()}, endianness);
-    std::advance(read_position, _value_size<Value_T>());
+    const auto out = io::read<Value_T>({_get_pos , _data.end()}, endianness);
+    std::advance(_get_pos , _value_size<Value_T>());
 
     return out;
   }
-
-  std::span<const io::byte> data;
-  std::span<const io::byte>::iterator read_position;
 
 private:
   template <typename Value_T>
@@ -143,6 +140,9 @@ private:
   static constexpr auto _byte_count() {
     return _recursive_byte_count<0, Ts...>();
   }
+
+  std::span<const io::byte> _data;
+  std::span<const io::byte>::iterator _get_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -24,13 +24,13 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 struct byte_write_buffer_view {
-  explicit byte_write_buffer_view(std::span<io::byte> buf) : data{std::move(buf)}, write_position{data.begin()} {}
+  explicit byte_write_buffer_view(std::span<io::byte> buf) : _data{std::move(buf)}, _put_pos{_data.begin()} {}
 
   byte_write_buffer_view(std::span<io::byte> buf, typename std::span<const io::byte>::size_type offset)
-      : data{std::move(buf)}, write_position{std::next(data.begin(), offset)} {}
+      : _data{std::move(buf)}, _put_pos{std::next(_data.begin(), offset)} {}
 
   byte_write_buffer_view& seek(size_t position) {
-    if (position > data.size()) {
+    if (position > _data.size()) {
       throw std::out_of_range{"Cannot seek past end of buffer"};
     }
 
@@ -39,7 +39,7 @@ struct byte_write_buffer_view {
   }
 
   result<bool, write_error> try_seek(size_t position) noexcept {
-    if (position > data.size()) {
+    if (position > _data.size()) {
       return write_error::invalid_position_offset;
     }
 
@@ -47,15 +47,15 @@ struct byte_write_buffer_view {
     return true;
   }
 
-  void unchecked_seek(size_t position) { write_position = std::next(data.begin(), position); }
+  void unchecked_seek(size_t position) { _put_pos = std::next(_data.begin(), position); }
 
-  _WITE_NODISCARD std::ptrdiff_t write_pos() const noexcept { return std::distance(data.begin(), write_position); }
+  _WITE_NODISCARD std::ptrdiff_t write_position() const noexcept { return std::distance(_data.begin(), _put_pos); }
 
   template <typename Value_T>
     requires is_buffer_writeable<Value_T>
   size_t write(Value_T value) {
-    const auto bytes_written = io::write<Value_T>({write_position, data.end()}, value);
-    std::advance(write_position, bytes_written);
+    const auto bytes_written = io::write<Value_T>({_put_pos, _data.end()}, value);
+    std::advance(_put_pos, bytes_written);
 
     return bytes_written;
   }
@@ -74,9 +74,9 @@ struct byte_write_buffer_view {
   template <typename Value_T>
     requires is_buffer_writeable<Value_T>
   write_result_t try_write(Value_T value) {
-    const auto result = io::try_write<Value_T>({write_position, data.end()}, value);
+    const auto result = io::try_write<Value_T>({_put_pos, _data.end()}, value);
     if (result.ok()) {
-      std::advance(write_position, sizeof(Value_T));
+      std::advance(_put_pos, sizeof(Value_T));
     }
 
     return result;
@@ -84,9 +84,9 @@ struct byte_write_buffer_view {
 
   template <typename Value_T, typename... Value_Ts>
   write_result_t try_write(Value_T first_value, Value_Ts... other_values) noexcept {
-    const auto result = io::try_write(data, first_value, other_values...);
+    const auto result = io::try_write(_data, first_value, other_values...);
     if (result.ok()) {
-      std::advance(write_position, result.value());
+      std::advance(_put_pos, result.value());
     }
 
     return result;
@@ -95,14 +95,16 @@ struct byte_write_buffer_view {
   template <typename Value_T>
     requires is_buffer_writeable<Value_T>
   size_t write(Value_T value, endian endianness) {
-    const auto bytes_written = io::write<Value_T>({write_position, data.end()}, value, endianness);
-    std::advance(write_position, bytes_written);
+    const auto bytes_written = io::write<Value_T>({_put_pos, _data.end()}, value, endianness);
+    std::advance(_put_pos, bytes_written);
 
     return bytes_written;
   }
 
-  std::span<io::byte> data;
-  std::span<io::byte>::iterator write_position;
+
+private:
+  std::span<io::byte> _data;
+  std::span<io::byte>::iterator _put_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
