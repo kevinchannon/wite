@@ -190,19 +190,6 @@ namespace detail::buffer::read {
   }
 
   template <typename FirstValue_T, typename... OtherValue_Ts>
-  auto _recursive_read_at(size_t position, const std::span<const io::byte>& buffer) {
-    auto first_value = std::make_tuple(io::read_at<FirstValue_T>(position, buffer));
-
-    if constexpr (sizeof...(OtherValue_Ts) > 0) {
-      auto other_values = _recursive_read_at<OtherValue_Ts...>(position + value_size<FirstValue_T>(), buffer);
-
-      return std::tuple_cat(first_value, other_values);
-    } else {
-      return first_value;
-    }
-  }
-
-  template <typename FirstValue_T, typename... OtherValue_Ts>
   auto _recursive_try_read(const std::span<const io::byte>& buffer) noexcept {
     auto first_value = std::make_tuple(io::try_read<FirstValue_T>(buffer));
 
@@ -252,7 +239,15 @@ auto read(const std::span<const io::byte>& buffer) {
 template <typename... Value_Ts>
   requires(sizeof...(Value_Ts) > 1)
 auto read_at(size_t position, const std::span<const io::byte>& buffer) {
-  return detail::buffer::read::_recursive_read_at<Value_Ts...>(position, buffer);
+  if (position + detail::buffer::read::byte_count<Value_Ts...>() < position) {
+    throw std::invalid_argument{"Buffer read position exceeds allowed value"};
+  }
+
+  if (position + detail::buffer::read::byte_count<Value_Ts...>() > buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for read"};
+  }
+
+  return detail::buffer::read::_recursive_read<Value_Ts...>({std::next(buffer.begin(), position), buffer.end()});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
