@@ -77,32 +77,6 @@ size_t write_at(size_t position, std::span<io::byte> buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T, typename... Value_Ts>
-size_t write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
-  auto out = write(buffer, first_value);
-
-  if constexpr (sizeof...(other_values) > 0) {
-    out += write(std::span<io::byte>{std::next(buffer.begin(), sizeof(first_value)), buffer.end()}, other_values...);
-  }
-
-  return out;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename Value_T, typename... Value_Ts>
-size_t write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
-  auto out = write_at(position, buffer, first_value);
-
-  if constexpr (sizeof...(other_values) > 0) {
-    out = write_at(out, buffer, other_values...);
-  }
-
-  return out;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
 requires is_buffer_writeable<Value_T> Result_T to_bytes(Value_T value) {
   auto out = Result_T{};
@@ -163,6 +137,20 @@ namespace detail::buffer::write {
     return sizeof(Value_T);
   }
 
+  template <size_t CURRENT, typename T, typename... Ts>
+  static constexpr auto _recursive_byte_count() {
+    if constexpr (sizeof...(Ts) == 0) {
+      return CURRENT + value_size<T>();
+    } else {
+      return _recursive_byte_count<CURRENT + value_size<T>(), Ts...>();
+    }
+  }
+
+  template <typename... Ts>
+  static constexpr auto byte_count() {
+    return _recursive_byte_count<0, Ts...>();
+  }
+
   template <typename Value_T, typename... Value_Ts>
   write_result_t _recursive_try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
     const auto first_result = try_write(buffer, first_value);
@@ -196,24 +184,70 @@ namespace detail::buffer::write {
     }
   }
 
+  template <typename Value_T, typename... Value_Ts>
+  size_t _recursive_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+    auto out = io::unchecked_write(buffer.begin(), first_value);
+
+    if constexpr (sizeof...(other_values) > 0) {
+      out +=
+          _recursive_write(std::span<io::byte>{std::next(buffer.begin(), value_size<Value_T>()), buffer.end()}, other_values...);
+    }
+
+    return out;
+  }
+
 }  // namespace detail::buffer::write
 
-template <typename Value_T, typename... Value_Ts>
-write_result_t try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
-  return detail::buffer::write::_recursive_try_write(buffer, first_value, other_values...);
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+size_t write(std::span<io::byte> buffer, Value_Ts... values) {
+  if (detail::buffer::write::byte_count<Value_Ts...>() > buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for write"};
+  }
+
+  return detail::buffer::write::_recursive_write(buffer, values...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T, typename... Value_Ts>
-write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) noexcept {
-  return detail::buffer::write::_recursive_try_write_at(position, buffer, first_value, other_values...);
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts... values) {
+  const auto write_end_pos = position + detail::buffer::write::byte_count<Value_Ts...>();
+  if (write_end_pos < position) {
+    throw std::invalid_argument{"Buffer read position exceeds allowed value"};
+  }
+
+  if (write_end_pos > buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for write"};
+  }
+
+  return position + detail::buffer::write::_recursive_write({std::next(buffer.begin(), position), buffer.end()}, values...);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+write_result_t try_write(std::span<io::byte> buffer, Value_Ts... values) noexcept {
+  return detail::buffer::write::_recursive_try_write(buffer, values...);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_Ts... values) noexcept {
+  return detail::buffer::write::_recursive_try_write_at(position, buffer, values...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
-requires is_buffer_writeable<Value_T> result<Result_T, write_error> try_to_bytes(Value_T value) {
+  requires is_buffer_writeable<Value_T>
+result<Result_T, write_error> try_to_bytes(Value_T value) {
   auto out = Result_T{};
 
   const auto result = try_write(out, value);
