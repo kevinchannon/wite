@@ -53,6 +53,23 @@ namespace detail::buffer::write {
   static constexpr auto byte_count() {
     return _recursive_byte_count<0, Ts...>();
   }
+
+  template<typename T, typename... Ts>
+  static constexpr auto byte_count(T first_value, Ts... other_values) {
+    auto out = size_t{0};
+    if constexpr (common::is_sized_range_v<T>) {
+      out = first_value.size() * value_size<typename T::value_type>();
+    }
+    else {
+      out = value_size<T>();
+    }
+
+    if constexpr (sizeof...(Ts) > 0 ) {
+      out += byte_count(other_values...);
+    }
+
+    return out;
+  }
 }  // namespace detail::buffer::write
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,18 +98,6 @@ size_t unchecked_write(auto buffer, Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
-requires is_buffer_writeable<Value_T>
-size_t write(std::span<io::byte> buffer, Value_T value) {
-  if (buffer.size() < sizeof(Value_T)) {
-    throw std::out_of_range{"Insufficient buffer space for write"};
-  }
-
-  return unchecked_write<Value_T>(buffer.begin(), value);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 
 template <typename Range_T>
  requires common::is_sized_range_v<std::decay_t<Range_T>>
@@ -108,44 +113,51 @@ size_t write(std::span<io::byte> buffer, Range_T&& values) {
     std::span<io::byte>::iterator next_write_position{};
   };
 
-  return std::accumulate(
-             values.begin(),
-             values.end(),
-             _write_info{0, buffer.begin()},
-             [](auto&& current, const auto& value) -> _write_info{
-               return {
-                   current.bytes_written + unchecked_write(current.next_write_position, value),
+  return std::accumulate(values.begin(),
+                         values.end(),
+                         _write_info{0, buffer.begin()},
+                         [](auto&& current, const auto& value) -> _write_info {
+                           const auto byte_written_for_this_value = unchecked_write(current.next_write_position, value);
+                           return {current.bytes_written + byte_written_for_this_value,
                                    std::next(current.next_write_position,
                                              detail::buffer::write::template value_size<std::decay_t<decltype(value)>>())};
-             })
+                         })
       .bytes_written;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
-  requires is_buffer_writeable<Value_T>
-size_t write_at(size_t position, std::span<io::byte> buffer, Value_T value) {
-  if (position + sizeof(value) < position) {
-    throw std::invalid_argument{"Buffer write position exceeds allowed value"};
+namespace detail::buffer::write {
+  template <typename Value_T, typename... Value_Ts>
+  size_t _recursive_write(std::span<io::byte> buffer,
+                          Value_T&& first_value,
+                          Value_Ts&&... other_values) {  // TODO: should be Value_T&&, etc....
+    auto out = size_t{0};
+    if constexpr (common::is_sized_range_v<std::decay_t<Value_T>>) {
+      out = io::write(buffer, std::forward<Value_T>(first_value));
+    } else {
+      out = io::unchecked_write(buffer.begin(), first_value);
+    }
+
+    if constexpr (sizeof...(other_values) > 0) {
+      out += _recursive_write(std::span<io::byte>{std::next(buffer.begin(), byte_count(first_value)), buffer.end()},
+                              std::forward<Value_Ts>(other_values)...);
+    }
+
+    return out;
   }
 
-  if (position >= buffer.size()) {
-    throw std::out_of_range{"Insufficient buffer space for write"};
-  }
-
-  return position + write({std::next(buffer.begin(), position), buffer.end()}, value);
-}
+}  // namespace detail::buffer::write
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
-requires is_buffer_writeable<Value_T> Result_T to_bytes(Value_T value) {
-  auto out = Result_T{};
+template <typename... Value_Ts>
+size_t write(std::span<io::byte> buffer, Value_Ts... values) {
+  if (detail::buffer::write::byte_count(values...) > buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for write"};
+  }
 
-  write(out, value);
-
-  return out;
+  return detail::buffer::write::_recursive_write(buffer, values...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,7 +217,10 @@ namespace detail::buffer::write {
   }
 
   template <typename Value_T, typename... Value_Ts>
-  write_result_t _recursive_try_write_at(size_t position, std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
+  write_result_t _recursive_try_write_at(size_t position,
+                                         std::span<io::byte> buffer,
+                                         Value_T first_value,
+                                         Value_Ts... other_values) {
     const auto first_result = try_write_at(position, buffer, first_value);
     if (first_result.is_error()) {
       return first_result;
@@ -217,39 +232,13 @@ namespace detail::buffer::write {
       return first_result;
     }
   }
-
-  template <typename Value_T, typename... Value_Ts>
-  size_t _recursive_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
-    auto out = io::unchecked_write(buffer.begin(), first_value);
-
-    if constexpr (sizeof...(other_values) > 0) {
-      out +=
-          _recursive_write(std::span<io::byte>{std::next(buffer.begin(), value_size<Value_T>()), buffer.end()}, other_values...);
-    }
-
-    return out;
-  }
-
 }  // namespace detail::buffer::write
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Value_Ts>
-  requires(sizeof...(Value_Ts) > 1)
-size_t write(std::span<io::byte> buffer, Value_Ts... values) {
-  if (detail::buffer::write::byte_count<Value_Ts...>() > buffer.size()) {
-    throw std::out_of_range{"Insufficient buffer space for write"};
-  }
-
-  return detail::buffer::write::_recursive_write(buffer, values...);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename... Value_Ts>
-  requires(sizeof...(Value_Ts) > 1)
 size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts... values) {
-  const auto write_end_pos = position + detail::buffer::write::byte_count<Value_Ts...>();
+  const auto write_end_pos = position + detail::buffer::write::byte_count(values...);
   if (write_end_pos < position) {
     throw std::invalid_argument{"Buffer read position exceeds allowed value"};
   }
@@ -290,6 +279,18 @@ result<Result_T, write_error> try_to_bytes(Value_T value) {
   } else {
     return {result.error()};
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
+  requires is_buffer_writeable<Value_T>
+Result_T to_bytes(Value_T value) {
+  auto out = Result_T{};
+
+  write(out, value);
+
+  return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

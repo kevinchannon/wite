@@ -189,6 +189,28 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
         const auto too_many_values = {1, 2, 3, 4, 5};
         REQUIRE_THROWS_AS(io::write(buffer, too_many_values), std::out_of_range);
       }
+
+      SECTION("can be used with multiple value overloads") {
+        const auto a = int32_t{3};
+        const auto b = std::vector<uint16_t> {1, 2, 3};
+        const auto c = '9';
+
+        REQUIRE(11 == io::write(buffer, a, b, c));
+
+        REQUIRE(0x03 == io::to_integer<uint8_t>(buffer[0]));
+        REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[1]));
+        REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[2]));
+        REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[3]));
+
+        REQUIRE(0x01 == io::to_integer<uint8_t>(buffer[4]));
+        REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[5]));
+        REQUIRE(0x02 == io::to_integer<uint8_t>(buffer[6]));
+        REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[7]));
+        REQUIRE(0x03 == io::to_integer<uint8_t>(buffer[8]));
+        REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[9]));
+
+        REQUIRE(0x39 == io::to_integer<uint8_t>(buffer[10]));
+      }
     }
   }
 
