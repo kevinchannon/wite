@@ -131,7 +131,7 @@ namespace detail::buffer::write {
   template <typename Value_T, typename... Value_Ts>
   size_t _recursive_write(std::span<io::byte> buffer,
                           Value_T&& first_value,
-                          Value_Ts&&... other_values) {  // TODO: should be Value_T&&, etc....
+                          Value_Ts&&... other_values) {
     auto out = size_t{0};
     if constexpr (common::is_sized_range_v<std::decay_t<Value_T>>) {
       out = io::write(buffer, std::forward<Value_T>(first_value));
