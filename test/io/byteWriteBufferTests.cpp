@@ -184,6 +184,11 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
           REQUIRE(0x17 == io::to_integer<uint8_t>(buffer[15]));
         }
       }
+
+      SECTION("throws std::out_of_range if the buffer is too small") {
+        const auto too_many_values = {1, 2, 3, 4, 5};
+        REQUIRE_THROWS_AS(io::write(buffer, too_many_values), std::out_of_range);
+      }
     }
   }
 
