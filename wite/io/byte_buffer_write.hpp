@@ -95,6 +95,7 @@ size_t write(std::span<io::byte> buffer, Value_T value) {
 
 
 template <typename Range_T>
+ requires common::is_sized_range_v<std::decay_t<Range_T>>
 size_t write(std::span<io::byte> buffer, Range_T&& values) {
   using range_t = std::decay_t<Range_T>;
   
