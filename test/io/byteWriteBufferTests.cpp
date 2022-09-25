@@ -14,6 +14,8 @@
 #include <iterator>
 #include <sstream>
 #include <vector>
+#include <list>
+#include <numbers>
 
 using namespace wite;
 
@@ -216,7 +218,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
 
   SECTION("write_at") {
     SECTION("single value") {
-      auto data = io::static_byte_buffer<12>{};
+      auto data = io::static_byte_buffer<18>{};
 
       SECTION("directly to data writes at the correct position") {
         const auto val = double{3.14156e+10};
@@ -233,47 +235,105 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
       }
 
       SECTION("raises exception if writing past the end of a buffer") {
-        REQUIRE_THROWS_AS(io::write_at(5, data, double{}), std::out_of_range);
+        const auto pos = 1 + data.size() - sizeof(double);
+        REQUIRE_THROWS_AS(io::write_at(pos, data, double{}), std::out_of_range);
       }
 
       SECTION("raises exception if starting past the end of a buffer") {
-        REQUIRE_THROWS_AS(io::write_at(13, data, double{}), std::out_of_range);
+        const auto pos = 1 + data.size();
+        REQUIRE_THROWS_AS(io::write_at(pos, data, double{}), std::out_of_range);
       }
 
       SECTION("handles large and pathological offset") {
         REQUIRE_THROWS_AS(io::write_at(std::numeric_limits<size_t>::max() - sizeof(double) + 1, data, double{}),
                           std::invalid_argument);
       }
+
+      SECTION("range values are written correctly") {
+        const auto values         = {uint32_t{0x12345678}, uint32_t{0xABCDEF77}, uint32_t{0xCDCDCDCD}, uint32_t{0x17456434}};
+        constexpr auto value_size = sizeof(decltype(values)::value_type);
+
+        const auto pos = size_t{2};
+
+        REQUIRE(pos + value_size * values.size() == io::write_at(pos, data, values));
+
+        REQUIRE(0x78 == io::to_integer<uint8_t>(data[2]));
+        REQUIRE(0x56 == io::to_integer<uint8_t>(data[3]));
+        REQUIRE(0x34 == io::to_integer<uint8_t>(data[4]));
+        REQUIRE(0x12 == io::to_integer<uint8_t>(data[5]));
+
+        REQUIRE(0x77 == io::to_integer<uint8_t>(data[6]));
+        REQUIRE(0xEF == io::to_integer<uint8_t>(data[7]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[8]));
+        REQUIRE(0xAB == io::to_integer<uint8_t>(data[9]));
+
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[10]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[11]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[12]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[13]));
+
+        REQUIRE(0x34 == io::to_integer<uint8_t>(data[14]));
+        REQUIRE(0x64 == io::to_integer<uint8_t>(data[15]));
+        REQUIRE(0x45 == io::to_integer<uint8_t>(data[16]));
+        REQUIRE(0x17 == io::to_integer<uint8_t>(data[17]));
+      }
     }
 
     SECTION("multiple values") {
       const auto a = uint32_t{0x12345678};
       const auto b = uint16_t{0xABCD};
-      const auto c = true;
-      const auto d = uint32_t{0xFEDCBA98};
+      const auto c = std::list<double>{std::numbers::pi, std::numbers::e, };
+      const auto d = true;
+      const auto e = uint32_t{0xFEDCBA98};
 
-      constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d);
+      constexpr auto data_size = sizeof(a) + sizeof(b) + 2 * sizeof(double) + sizeof(d) + sizeof(e);
 
       auto buffer = io::static_byte_buffer<1 + data_size>{};
 
       SECTION("returns number of bytes written on success") {
-        REQUIRE(1 + data_size == io::write_at(1, buffer, a, io::big_endian{b}, c, d));
+        REQUIRE(1 + data_size == io::write_at(1, buffer, a, io::big_endian{b}, c, d, e));
+
+        const auto extract_byte = [](auto val, size_t n) -> uint32_t { return *(reinterpret_cast<const uint8_t*>(&val) + n); };
 
         SECTION("and writes the correct data") {
-          REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[ 1]));
-          REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[ 2]));
-          REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[ 3]));
-          REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[ 4]));
-                                                                     
-          REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[ 5]));
-          REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[ 6]));
-                                                                     
-          REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[ 7]));
-                                                                     
-          REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[ 8]));
-          REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[ 9]));
-          REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[10]));
-          REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[11]));
+          // a
+          REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[1]));
+          REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[2]));
+          REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[3]));
+          REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[4]));
+              
+          // b
+          REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[5]));
+          REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[6]));
+              
+          // c.0
+          REQUIRE(extract_byte(std::numbers::pi, 0) == io::to_integer<uint32_t>(buffer[7]));
+          REQUIRE(extract_byte(std::numbers::pi, 1) == io::to_integer<uint32_t>(buffer[8]));
+          REQUIRE(extract_byte(std::numbers::pi, 2) == io::to_integer<uint32_t>(buffer[9]));
+          REQUIRE(extract_byte(std::numbers::pi, 3) == io::to_integer<uint32_t>(buffer[10]));
+          REQUIRE(extract_byte(std::numbers::pi, 4) == io::to_integer<uint32_t>(buffer[11]));
+          REQUIRE(extract_byte(std::numbers::pi, 5) == io::to_integer<uint32_t>(buffer[12]));
+          REQUIRE(extract_byte(std::numbers::pi, 6) == io::to_integer<uint32_t>(buffer[13]));
+          REQUIRE(extract_byte(std::numbers::pi, 7) == io::to_integer<uint32_t>(buffer[14]));
+
+          // c.1
+          REQUIRE(extract_byte(std::numbers::e, 0) == io::to_integer<uint32_t>(buffer[15]));
+          REQUIRE(extract_byte(std::numbers::e, 1) == io::to_integer<uint32_t>(buffer[16]));
+          REQUIRE(extract_byte(std::numbers::e, 2) == io::to_integer<uint32_t>(buffer[17]));
+          REQUIRE(extract_byte(std::numbers::e, 3) == io::to_integer<uint32_t>(buffer[18]));
+          REQUIRE(extract_byte(std::numbers::e, 4) == io::to_integer<uint32_t>(buffer[19]));
+          REQUIRE(extract_byte(std::numbers::e, 5) == io::to_integer<uint32_t>(buffer[20]));
+          REQUIRE(extract_byte(std::numbers::e, 6) == io::to_integer<uint32_t>(buffer[21]));
+          REQUIRE(extract_byte(std::numbers::e, 7) == io::to_integer<uint32_t>(buffer[22]));
+
+          // d
+          REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[23]));
+              
+          // e
+          REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[24]));
+          REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[25]));
+          REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[26]));
+          REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[27]));
         }
       }
 
