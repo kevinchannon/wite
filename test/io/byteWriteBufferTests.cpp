@@ -163,33 +163,68 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
     }
 
     SECTION("range values") {
-      const auto values         = {uint32_t{0x12345678}, uint32_t{0xABCDEF77}, uint32_t{0xCDCDCDCD}, uint32_t{0x17456434}};
-      constexpr auto value_size = sizeof(decltype(values)::value_type);
-      auto buffer       = io::static_byte_buffer<4 * value_size>{};
+      auto buffer = io::static_byte_buffer<16>{};
 
-      SECTION("writes the correct number of bytes") {
-        REQUIRE(value_size * values.size() == io::write(buffer, values));
+      SECTION("dynamic ranges") {
+        const auto values         = {uint32_t{0x12345678}, uint32_t{0xABCDEF77}, uint32_t{0xCDCDCDCD}, uint32_t{0x17456434}};
+        constexpr auto value_size = sizeof(decltype(values)::value_type);
 
-        SECTION("and the bytes have the right values") {
-          REQUIRE(0x78 == io::to_integer<uint8_t>(buffer[0]));
-          REQUIRE(0x56 == io::to_integer<uint8_t>(buffer[1]));
-          REQUIRE(0x34 == io::to_integer<uint8_t>(buffer[2]));
-          REQUIRE(0x12 == io::to_integer<uint8_t>(buffer[3]));
+        SECTION("writes the correct number of bytes") {
+          REQUIRE(value_size * values.size() == io::write(buffer, values));
 
-          REQUIRE(0x77 == io::to_integer<uint8_t>(buffer[4]));
-          REQUIRE(0xEF == io::to_integer<uint8_t>(buffer[5]));
-          REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[6]));
-          REQUIRE(0xAB == io::to_integer<uint8_t>(buffer[7]));
+          SECTION("and the bytes have the right values") {
+            REQUIRE(0x78 == io::to_integer<uint8_t>(buffer[0]));
+            REQUIRE(0x56 == io::to_integer<uint8_t>(buffer[1]));
+            REQUIRE(0x34 == io::to_integer<uint8_t>(buffer[2]));
+            REQUIRE(0x12 == io::to_integer<uint8_t>(buffer[3]));
 
-          REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[8]));
-          REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[9]));
-          REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[10]));
-          REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[11]));
+            REQUIRE(0x77 == io::to_integer<uint8_t>(buffer[4]));
+            REQUIRE(0xEF == io::to_integer<uint8_t>(buffer[5]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[6]));
+            REQUIRE(0xAB == io::to_integer<uint8_t>(buffer[7]));
 
-          REQUIRE(0x34 == io::to_integer<uint8_t>(buffer[12]));
-          REQUIRE(0x64 == io::to_integer<uint8_t>(buffer[13]));
-          REQUIRE(0x45 == io::to_integer<uint8_t>(buffer[14]));
-          REQUIRE(0x17 == io::to_integer<uint8_t>(buffer[15]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[8]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[9]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[10]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[11]));
+
+            REQUIRE(0x34 == io::to_integer<uint8_t>(buffer[12]));
+            REQUIRE(0x64 == io::to_integer<uint8_t>(buffer[13]));
+            REQUIRE(0x45 == io::to_integer<uint8_t>(buffer[14]));
+            REQUIRE(0x17 == io::to_integer<uint8_t>(buffer[15]));
+          }
+        }
+      }
+
+      SECTION("static ranges") {
+        const auto values         = std::array{uint32_t{0x12345678}, uint32_t{0xABCDEF77}, uint32_t{0xCDCDCDCD}, uint32_t{0x17456434}};
+        constexpr auto value_size = sizeof(decltype(values)::value_type);
+        auto buffer               = io::static_byte_buffer<4 * value_size>{};
+
+        SECTION("writes the correct number of bytes") {
+          REQUIRE(value_size * values.size() == io::write(buffer, values));
+
+          SECTION("and the bytes have the right values") {
+            REQUIRE(0x78 == io::to_integer<uint8_t>(buffer[0]));
+            REQUIRE(0x56 == io::to_integer<uint8_t>(buffer[1]));
+            REQUIRE(0x34 == io::to_integer<uint8_t>(buffer[2]));
+            REQUIRE(0x12 == io::to_integer<uint8_t>(buffer[3]));
+
+            REQUIRE(0x77 == io::to_integer<uint8_t>(buffer[4]));
+            REQUIRE(0xEF == io::to_integer<uint8_t>(buffer[5]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[6]));
+            REQUIRE(0xAB == io::to_integer<uint8_t>(buffer[7]));
+
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[8]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[9]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[10]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(buffer[11]));
+
+            REQUIRE(0x34 == io::to_integer<uint8_t>(buffer[12]));
+            REQUIRE(0x64 == io::to_integer<uint8_t>(buffer[13]));
+            REQUIRE(0x45 == io::to_integer<uint8_t>(buffer[14]));
+            REQUIRE(0x17 == io::to_integer<uint8_t>(buffer[15]));
+          }
         }
       }
 
