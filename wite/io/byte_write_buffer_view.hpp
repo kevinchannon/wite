@@ -74,7 +74,7 @@ struct byte_write_buffer_view {
   template <typename Value_T>
     requires is_buffer_writeable<Value_T>
   write_result_t try_write(Value_T value) {
-    const auto result = io::try_write<Value_T>({_put_pos, _data.end()}, value);
+    const auto result = io::try_write({_put_pos, _data.end()}, value);
     if (result.ok()) {
       std::advance(_put_pos, sizeof(Value_T));
     }
