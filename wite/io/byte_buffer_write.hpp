@@ -91,7 +91,7 @@ namespace detail::buffer::write {
                            values.end(),
                            _write_info{0, buffer},
                            [](auto&& current, const auto& v) -> _write_info {
-                             const auto byte_written_for_this_value = unchecked_write(current.next_write_position, v);
+                             const auto byte_written_for_this_value = _write_single_value(current.next_write_position, v);
                              return {current.bytes_written + byte_written_for_this_value,
                                      std::next(current.next_write_position,
                                                detail::buffer::write::value_size(v))};
