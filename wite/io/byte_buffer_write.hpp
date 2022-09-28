@@ -27,41 +27,26 @@ namespace wite::io {
 namespace detail::buffer::write {
 
   template <typename Value_T>
-    requires((not std::is_standard_layout_v<Value_T>) or (not std::is_trivial_v<Value_T>))
-  constexpr auto value_size() noexcept {
-    // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
-    // In that case, a new overload of this function will need to be added for the new type.
-    return sizeof(typename Value_T::value_type);
-  }
+    requires (not std::is_pointer_v<std::remove_reference_t<Value_T>>)
+  constexpr auto value_size(Value_T&& value) noexcept {
+    using DecayedValue_t = std::decay_t<Value_T>;
 
-  template <typename Value_T>
-    requires(std::is_standard_layout_v<Value_T> and std::is_trivial_v<Value_T>)
-  constexpr auto value_size() noexcept {
-    return sizeof(Value_T);
-  }
-
-  template <size_t CURRENT, typename T, typename... Ts>
-  static constexpr auto _recursive_byte_count() {
-    if constexpr (sizeof...(Ts) == 0) {
-      return CURRENT + value_size<T>();
-    } else {
-      return _recursive_byte_count<CURRENT + value_size<T>(), Ts...>();
+    if constexpr (is_encoded<DecayedValue_t>) {
+      // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
+      // In that case, a new overload of this function will need to be added for the new type.
+      return sizeof(typename DecayedValue_t::value_type);
     }
-  }
-
-  template <typename... Ts>
-  static constexpr auto byte_count() {
-    return _recursive_byte_count<0, Ts...>();
+    else if constexpr (common::is_sized_range_v<DecayedValue_t>) {
+      return value.size() * sizeof(typename DecayedValue_t::value_type);
+    }
+    else {
+      return sizeof(DecayedValue_t);
+    }
   }
 
   template <typename T, typename... Ts>
   static constexpr auto byte_count(T first_value, Ts... other_values) {
-    auto out = size_t{0};
-    if constexpr (common::is_sized_range_v<T>) {
-      out = first_value.size() * value_size<typename T::value_type>();
-    } else {
-      out = value_size<T>();
-    }
+    size_t out = value_size(first_value);
 
     if constexpr (sizeof...(Ts) > 0) {
       out += byte_count(other_values...);
@@ -69,74 +54,83 @@ namespace detail::buffer::write {
 
     return out;
   }
-}  // namespace detail::buffer::write
 
-///////////////////////////////////////////////////////////////////////////////
+  template<typename Encoded_T>
+    requires is_encoded<std::decay_t<Encoded_T>>
+  size_t _write_single_encoded_value(auto buffer, Encoded_T&& value) {
+    using RawValue_t = typename std::decay_t<Encoded_T>::value_type;
 
-template <typename Value_T>
-  requires is_buffer_writeable<Value_T>
-size_t unchecked_write(auto buffer, Value_T value) {
-  if constexpr (is_encoded<Value_T>) {
-    using RawValue_t = typename Value_T::value_type;
-
-    if constexpr (std::is_same_v<little_endian<RawValue_t>, Value_T>) {
-      std::copy_n(reinterpret_cast<io::byte*>(&value.value), sizeof(value.value), buffer);
-    } else if constexpr (std::is_same_v<big_endian<RawValue_t>, Value_T>) {
-      std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<io::byte*>(&value.value), sizeof(value.value))),
+    if constexpr (std::is_same_v<little_endian<RawValue_t>, std::decay_t<Encoded_T>>) {
+      std::copy_n(reinterpret_cast<const io::byte*>(&value.value), sizeof(value.value), buffer);
+    } else if constexpr (std::is_same_v<big_endian<RawValue_t>, std::decay_t<Encoded_T>>) {
+      std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<const io::byte*>(&value.value), sizeof(value.value))),
                   sizeof(value.value),
                   buffer);
     }
 
     return sizeof(RawValue_t);
-  } else {
-    std::copy_n(reinterpret_cast<io::byte*>(&value), sizeof(value), buffer);
-
-    return sizeof(Value_T);
   }
-}
+
+  template<typename Value_T>
+    requires((not common::is_sized_range_v<std::decay_t<Value_T>>) and (not is_encoded<std::decay_t<Value_T>>))
+  size_t _write_single_value(auto buffer, Value_T&& value) {
+    std::copy_n(reinterpret_cast<const io::byte*>(&value), sizeof(value), buffer);
+
+    return sizeof(std::decay_t<Value_T>);
+  }
+
+  template <typename Range_T>
+    requires common::is_sized_range_v<std::decay_t<Range_T>>
+  size_t _write_single_range_value(auto buffer, Range_T&& values) {
+    struct _write_info {
+      size_t bytes_written{};
+      std::span<io::byte>::iterator next_write_position{};
+    };
+
+    return std::accumulate(values.begin(),
+                           values.end(),
+                           _write_info{0, buffer},
+                           [](auto&& current, const auto& v) -> _write_info {
+                             const auto byte_written_for_this_value = unchecked_write(current.next_write_position, v);
+                             return {current.bytes_written + byte_written_for_this_value,
+                                     std::next(current.next_write_position,
+                                               detail::buffer::write::value_size(v))};
+                           })
+        .bytes_written;
+  }
+
+}  // namespace detail::buffer::write
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Range_T>
-  requires common::is_sized_range_v<std::decay_t<Range_T>>
-size_t write(std::span<io::byte> buffer, Range_T&& values) {
-  using range_t = std::decay_t<Range_T>;
+template <typename Value_T>
+size_t unchecked_write(auto buffer, Value_T&& value) {
 
-  if (buffer.size() < values.size() * sizeof(typename range_t::value_type)) {
-    throw std::out_of_range{"Insufficient buffer space for write"};
+  using DecayedValue_t = std::decay_t<Value_T>;
+
+  if constexpr (is_encoded<DecayedValue_t>) {
+    return detail::buffer::write::_write_single_encoded_value(buffer, std::forward<Value_T>(value));
   }
-
-  struct _write_info {
-    size_t bytes_written{};
-    std::span<io::byte>::iterator next_write_position{};
-  };
-
-  return std::accumulate(values.begin(),
-                         values.end(),
-                         _write_info{0, buffer.begin()},
-                         [](auto&& current, const auto& value) -> _write_info {
-                           const auto byte_written_for_this_value = unchecked_write(current.next_write_position, value);
-                           return {current.bytes_written + byte_written_for_this_value,
-                                   std::next(current.next_write_position,
-                                             detail::buffer::write::template value_size<std::decay_t<decltype(value)>>())};
-                         })
-      .bytes_written;
+  else if constexpr (common::is_sized_range_v<DecayedValue_t>) {
+    return detail::buffer::write::_write_single_range_value(buffer, std::forward<Value_T>(value));
+  }
+  else if constexpr (is_buffer_writeable<DecayedValue_t>) {
+    return detail::buffer::write::_write_single_value(buffer, std::forward<Value_T>(value));
+  }
+  else {
+    static_assert(is_buffer_writeable<DecayedValue_t>, "Type is not valid for writing to a buffer");
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace detail::buffer::write {
   template <typename Value_T, typename... Value_Ts>
-  size_t _recursive_write(std::span<io::byte> buffer, Value_T&& first_value, Value_Ts&&... other_values) {
-    auto out = size_t{0};
-    if constexpr (common::is_sized_range_v<std::decay_t<Value_T>>) {
-      out = io::write(buffer, std::forward<Value_T>(first_value));
-    } else {
-      out = io::unchecked_write(buffer.begin(), first_value);
-    }
+  size_t _recursive_unsafe_write(std::span<io::byte> buffer, Value_T&& first_value, Value_Ts&&... other_values) {
+    auto out = io::unchecked_write(buffer.begin(), std::forward<Value_T>(first_value));
 
     if constexpr (sizeof...(other_values) > 0) {
-      out += _recursive_write(std::span<io::byte>{std::next(buffer.begin(), byte_count(first_value)), buffer.end()},
+      out += _recursive_unsafe_write(std::span<io::byte>{std::next(buffer.begin(), byte_count(first_value)), buffer.end()},
                               std::forward<Value_Ts>(other_values)...);
     }
 
@@ -148,12 +142,12 @@ namespace detail::buffer::write {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Value_Ts>
-size_t write(std::span<io::byte> buffer, Value_Ts... values) {
-  if (detail::buffer::write::byte_count(values...) > buffer.size()) {
+size_t write(std::span<io::byte> buffer, Value_Ts&&... values) {
+  if (buffer.size() < detail::buffer::write::byte_count(std::forward<Value_Ts>(values)...)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  return detail::buffer::write::_recursive_write(buffer, values...);
+  return detail::buffer::write::_recursive_unsafe_write(buffer, std::forward<Value_Ts>(values)...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,34 +156,20 @@ namespace detail::buffer::write {
 
   template <typename Value_T>
   write_result_t _try_write_single_value(std::span<io::byte> buffer, Value_T&& to_write) noexcept {
-    if (buffer.size() < sizeof(Value_T)) {
+    if (buffer.size() < detail::buffer::write::byte_count(std::forward<Value_T>(to_write))) {
       return write_error::insufficient_buffer;
     }
 
-    return unchecked_write(buffer.begin(), to_write);
+    return unchecked_write(buffer.begin(), std::forward<Value_T>(to_write));
   }
 
   template <typename Range_T>
   write_result_t _try_write_range_value(std::span<io::byte> buffer, Range_T&& to_write) noexcept {
-    if (buffer.size() < to_write.size() * sizeof(typename std::decay_t<Range_T>::value_type)) {
+    if (buffer.size() < detail::buffer::write::byte_count(std::forward<Range_T>(to_write))) {
       return write_error::insufficient_buffer;
     }
 
-    struct _write_info {
-      size_t bytes_written{};
-      std::span<io::byte>::iterator next_write_position{};
-    };
-
-    return std::accumulate(to_write.begin(),
-                           to_write.end(),
-                           _write_info{0, buffer.begin()},
-                           [](auto&& current, const auto& value) -> _write_info {
-                             const auto byte_written_for_this_value = unchecked_write(current.next_write_position, value);
-                             return {current.bytes_written + byte_written_for_this_value,
-                                     std::next(current.next_write_position,
-                                               detail::buffer::write::template value_size<std::decay_t<decltype(value)>>())};
-                           })
-        .bytes_written;
+    return unchecked_write(buffer.begin(), std::forward<Range_T>(to_write));
   }
 
 }  // namespace detail::buffer::write
@@ -270,8 +250,8 @@ namespace detail::buffer::write {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Value_Ts>
-size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts... values) {
-  const auto write_end_pos = position + detail::buffer::write::byte_count(values...);
+size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... values) {
+  const auto write_end_pos = position + detail::buffer::write::byte_count(std::forward<Value_Ts>(values)...);
   if (write_end_pos < position) {
     throw std::invalid_argument{"Buffer read position exceeds allowed value"};
   }
@@ -280,33 +260,34 @@ size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts... values)
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
-  return position + detail::buffer::write::_recursive_write({std::next(buffer.begin(), position), buffer.end()}, values...);
+  return position + detail::buffer::write::_recursive_unsafe_write({std::next(buffer.begin(), position), buffer.end()},
+                                                                   std::forward<Value_Ts>(values)...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Value_Ts>
   requires(sizeof...(Value_Ts) > 1)
-write_result_t try_write(std::span<io::byte> buffer, Value_Ts... values) noexcept {
-  return detail::buffer::write::_recursive_try_write(buffer, values...);
+write_result_t try_write(std::span<io::byte> buffer, Value_Ts&&... values) noexcept {
+  return detail::buffer::write::_recursive_try_write(buffer, std::forward<Value_Ts>(values)...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Value_Ts>
   requires(sizeof...(Value_Ts) > 1)
-write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_Ts... values) noexcept {
-  return detail::buffer::write::_recursive_try_write_at(position, buffer, values...);
+write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... values) noexcept {
+  return detail::buffer::write::_recursive_try_write_at(position, buffer, std::forward<Value_Ts>(values)...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
   requires is_buffer_writeable<Value_T>
-result<Result_T, write_error> try_to_bytes(Value_T value) {
+result<Result_T, write_error> try_to_bytes(Value_T&& value) {
   auto out = Result_T{};
 
-  const auto result = try_write(out, value);
+  const auto result = try_write(out, std::forward<Value_T>(value));
   if (result.ok()) {
     return {out};
   } else {
@@ -316,12 +297,12 @@ result<Result_T, write_error> try_to_bytes(Value_T value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
-  requires is_buffer_writeable<Value_T>
-Result_T to_bytes(Value_T value) {
+template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(std::decay_t<Value_T>)>>
+  requires is_buffer_writeable<std::decay_t<Value_T>>
+Result_T to_bytes(Value_T&& value) {
   auto out = Result_T{};
 
-  write(out, value);
+  write(out, std::forward<Value_T>(value));
 
   return out;
 }
