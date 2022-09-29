@@ -88,7 +88,7 @@ auto read(const std::span<const io::byte>& buffer) {
 
 template <typename Range_T>
   requires common::is_sized_range_v<Range_T>
-auto read(const std::span<const io::byte>& buffer, Range_T&& range) {
+auto read_range(const std::span<const io::byte>& buffer, Range_T&& range) {
   if (range.size() * byte_count<typename Range_T::value_type>() > buffer.size()) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }

@@ -99,7 +99,7 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
 
         SECTION("Range value") {
           SECTION("Buffer size is OK") {
-            const auto v = io::read(vec_buffer, std::vector<uint32_t>(2, 0));
+            const auto v = io::read_range(vec_buffer, std::vector<uint32_t>(2, 0));
 
             REQUIRE(v.size() == 2);
             REQUIRE(uint32_t{0x01234567} == v[0]);
@@ -107,7 +107,7 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
           }
           
           SECTION("Buffer too small"){
-            REQUIRE_THROWS_AS(io::read(vec_buffer, std::vector<uint32_t>(3, 0)), std::out_of_range);
+            REQUIRE_THROWS_AS(io::read_range(vec_buffer, std::vector<uint32_t>(3, 0)), std::out_of_range);
           }
         }
       }
