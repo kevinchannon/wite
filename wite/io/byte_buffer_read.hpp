@@ -86,6 +86,29 @@ auto read(const std::span<const io::byte>& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Range_T>
+  requires common::is_sized_range_v<Range_T>
+auto read(const std::span<const io::byte>& buffer, Range_T&& range) {
+  if (range.size() * byte_count<typename Range_T::value_type>() > buffer.size()) {
+    throw std::out_of_range{"Insufficient buffer space for read"};
+  }
+
+  auto read_pos = buffer.begin();
+  std::ranges::generate(range, [&read_pos]() {
+    using Value_t = typename std::decay_t<Range_T>::value_type;
+
+    auto value                = Value_t{};
+    std::tie(value, read_pos) = unchecked_read<Value_t>(read_pos);
+
+    return value;
+  });
+
+  return std::move(range);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename... Value_Ts>
 auto read_at(size_t position, const std::span<const io::byte>& buffer) {
   if (position + byte_count<Value_Ts...>() < position) {
