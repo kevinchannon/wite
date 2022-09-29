@@ -144,25 +144,29 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
 
     SECTION("multiple-values") {
       // clang-format off
-      const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+      const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(std::array<uint8_t, 4>) + sizeof(bool) + sizeof(uint32_t)>{
         io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
         io::byte{0xAB}, io::byte{0xCD},
+        io::byte{0x00}, io::byte{0x01}, io::byte{0x02}, io::byte{0x03},
         io::byte{true},
         io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
       };
       // clang-format on
 
       SECTION("are correctly read") {
-        const auto [a, b, c, d] = io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
+        const auto [a, b, c, d, e] = io::read<uint32_t, io::big_endian<uint16_t>, std::array<uint8_t, 4>, bool, uint32_t>(buffer);
 
         REQUIRE(a == uint32_t{0x12345678});
         REQUIRE(b == uint16_t{0xABCD});
-        REQUIRE(c == true);
-        REQUIRE(d == uint32_t{0xFEDCBA98});
+        REQUIRE(c == std::array<uint8_t, 4>{0x00, 0x01, 0x02, 0x03});
+        REQUIRE(d == true);
+        REQUIRE(e == uint32_t{0xFEDCBA98});
       }
 
       SECTION("throws out_of_range if the buffer is too small") {
-        const auto read_from_buffer = [&]() { io::read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t, bool>(buffer); };
+        const auto read_from_buffer = [&]() {
+          io::read<uint32_t, io::big_endian<uint16_t>, std::array<uint8_t, 5>, bool, uint32_t>(buffer);
+        };
         REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
       }
     }
