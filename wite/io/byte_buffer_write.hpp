@@ -112,6 +112,7 @@ size_t unchecked_write(auto buffer, Value_T&& value) {
     return detail::buffer::write::_write_single_encoded_value(buffer, std::forward<Value_T>(value));
   }
   else if constexpr (common::is_sized_range_v<DecayedValue_t>) {
+    static_assert(is_buffer_writeable<typename DecayedValue_t::value_type>, "Only ranges of POD values can be directly written to a buffer");
     return detail::buffer::write::_write_single_range_value(buffer, std::forward<Value_T>(value));
   }
   else if constexpr (is_buffer_writeable<DecayedValue_t>) {
