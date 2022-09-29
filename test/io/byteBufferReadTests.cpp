@@ -96,6 +96,15 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
             REQUIRE_THROWS_AS(io::read<io::big_endian<uint32_t>>(read_buf), std::out_of_range);
           }
         }
+
+        SECTION("Range value")
+        {
+         // const auto v = io::read<std::vector<uint32_t>>(2, vec_buffer);
+         //
+         // REQUIRE(v.size() == 2);
+         // REQUIRE(uint32_t{0x01234567} == v[0]);
+         // REQUIRE(uint32_t{0x89ABCDEF} == v[1]);
+        }
       }
 
       SECTION("pointers to array", "[buffer_io]") {

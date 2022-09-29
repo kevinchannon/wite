@@ -78,7 +78,7 @@ class byte_read_buffer_view {
     const auto out = io::try_read<Value_T>({_get_pos , _data.end()});
 
     // TODO: this should check for success before advancing the read pointer.
-    std::advance(_get_pos , detail::buffer::read::value_size<Value_T>());
+    std::advance(_get_pos , value_size<Value_T>());
 
     return out;
   }
@@ -88,7 +88,7 @@ class byte_read_buffer_view {
   auto read() {
     const auto values = io::read<Value_Ts...>(_data);
 
-    std::advance(_get_pos, detail::buffer::read::byte_count<Value_Ts...>());
+    std::advance(_get_pos, byte_count<Value_Ts...>());
 
     return values;
   }
@@ -98,7 +98,7 @@ class byte_read_buffer_view {
   auto try_read() noexcept {
     const auto out = io::try_read<Value_Ts...>(_data);
     std::advance(_get_pos ,
-                 std::min<ptrdiff_t>(detail::buffer::read::byte_count<Value_Ts...>(),
+                 std::min<ptrdiff_t>(byte_count<Value_Ts...>(),
                                      std::distance(_get_pos , _data.end())));
 
     return out;
@@ -107,7 +107,7 @@ class byte_read_buffer_view {
   template <typename Value_T>
   auto read(std::endian endianness) {
     const auto out = io::read<Value_T>({_get_pos , _data.end()}, endianness);
-    std::advance(_get_pos, detail::buffer::read::value_size<Value_T>());
+    std::advance(_get_pos, value_size<Value_T>());
 
     return out;
   }

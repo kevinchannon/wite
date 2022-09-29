@@ -5,6 +5,7 @@
 #include <wite/io/concepts.hpp>
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
+#include <wite/io/byte_utilities.hpp>
 
 #include <algorithm>
 #include <bit>
@@ -25,35 +26,6 @@
 namespace wite::io {
 
 namespace detail::buffer::write {
-
-  template <typename Value_T>
-    requires (not std::is_pointer_v<std::remove_reference_t<Value_T>>)
-  constexpr auto value_size(Value_T&& value) noexcept {
-    using DecayedValue_t = std::decay_t<Value_T>;
-
-    if constexpr (is_encoded<DecayedValue_t>) {
-      // This will fail to build if the type satisfies the reuirements but doesn't have a value_type alias in it.
-      // In that case, a new overload of this function will need to be added for the new type.
-      return sizeof(typename DecayedValue_t::value_type);
-    }
-    else if constexpr (common::is_sized_range_v<DecayedValue_t>) {
-      return value.size() * sizeof(typename DecayedValue_t::value_type);
-    }
-    else {
-      return sizeof(DecayedValue_t);
-    }
-  }
-
-  template <typename T, typename... Ts>
-  static constexpr auto byte_count(T first_value, Ts... other_values) {
-    size_t out = value_size(first_value);
-
-    if constexpr (sizeof...(Ts) > 0) {
-      out += byte_count(other_values...);
-    }
-
-    return out;
-  }
 
   template<typename Encoded_T>
     requires is_encoded<std::decay_t<Encoded_T>>
@@ -93,8 +65,7 @@ namespace detail::buffer::write {
                            [](auto&& current, const auto& v) -> _write_info {
                              const auto byte_written_for_this_value = _write_single_value(current.next_write_position, v);
                              return {current.bytes_written + byte_written_for_this_value,
-                                     std::next(current.next_write_position,
-                                               detail::buffer::write::value_size(v))};
+                                     std::next(current.next_write_position, value_size(v))};
                            })
         .bytes_written;
   }
@@ -144,7 +115,7 @@ namespace detail::buffer::write {
 
 template <typename... Value_Ts>
 size_t write(std::span<io::byte> buffer, Value_Ts&&... values) {
-  if (buffer.size() < detail::buffer::write::byte_count(std::forward<Value_Ts>(values)...)) {
+  if (buffer.size() < byte_count(std::forward<Value_Ts>(values)...)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
@@ -157,7 +128,7 @@ namespace detail::buffer::write {
 
   template <typename Value_T>
   write_result_t _try_write_single_value(std::span<io::byte> buffer, Value_T&& to_write) noexcept {
-    if (buffer.size() < detail::buffer::write::byte_count(std::forward<Value_T>(to_write))) {
+    if (buffer.size() < byte_count(std::forward<Value_T>(to_write))) {
       return write_error::insufficient_buffer;
     }
 
@@ -166,7 +137,7 @@ namespace detail::buffer::write {
 
   template <typename Range_T>
   write_result_t _try_write_range_value(std::span<io::byte> buffer, Range_T&& to_write) noexcept {
-    if (buffer.size() < detail::buffer::write::byte_count(std::forward<Range_T>(to_write))) {
+    if (buffer.size() < byte_count(std::forward<Range_T>(to_write))) {
       return write_error::insufficient_buffer;
     }
 
@@ -252,7 +223,7 @@ namespace detail::buffer::write {
 
 template <typename... Value_Ts>
 size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... values) {
-  const auto write_end_pos = position + detail::buffer::write::byte_count(std::forward<Value_Ts>(values)...);
+  const auto write_end_pos = position + byte_count(std::forward<Value_Ts>(values)...);
   if (write_end_pos < position) {
     throw std::invalid_argument{"Buffer read position exceeds allowed value"};
   }
