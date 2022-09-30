@@ -136,6 +136,28 @@ read_result_t<Value_T> try_read(const std::span<const io::byte>& buffer) noexcep
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Range_T>
+  requires common::is_sized_range_v<Range_T>
+read_result_t<std::decay_t<Range_T>> try_read_range(const std::span<const io::byte>& buffer, Range_T&& range) noexcept {
+  if (buffer.size() < range.size() * byte_count<typename Range_T::value_type>()) {
+    return read_error::insufficient_buffer;
+  }
+
+  auto read_pos = buffer.begin();
+  std::ranges::generate(range, [&read_pos]() {
+    using Value_t = typename std::decay_t<Range_T>::value_type;
+
+    auto value                = Value_t{};
+    std::tie(value, read_pos) = unchecked_read<Value_t>(read_pos);
+
+    return value;
+  });
+
+  return {std::move(range)};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Value_T>
   requires is_buffer_readable<Value_T> and is_encoded<Value_T>
 read_result_t<typename Value_T::value_type> try_read(const std::span<const io::byte>& buffer) noexcept {

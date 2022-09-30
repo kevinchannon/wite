@@ -188,14 +188,28 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
           REQUIRE(val.ok());
           REQUIRE(uint32_t{0x6745ABFF} == val.value());
         }
+
+        SECTION("range value") {
+          const auto val = io::try_read_range(data, std::vector<uint16_t>(2, uint16_t{}));
+          REQUIRE(val.ok());
+          REQUIRE(std::vector<uint16_t>{0x4567, 0xFFAB} == val.value());
+        }
       }
 
       SECTION("returns error on bad read") {
         const auto data = io::static_byte_buffer<3>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}};
 
-        const auto val = io::try_read<uint32_t>(data);
-        REQUIRE(val.is_error());
-        REQUIRE(io::read_error::insufficient_buffer == val.error());
+        SECTION("for scalar values") {
+          const auto val = io::try_read<uint32_t>(data);
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == val.error());
+        }
+
+        SECTION("for range values") {
+          const auto val = io::try_read_range(data, std::vector<uint16_t>(2, uint16_t{}));
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == val.error());
+        }
       }
     }
 
