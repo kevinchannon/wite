@@ -274,21 +274,42 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
                                                 io::byte{0xAB},
                                                 io::byte{0x89}};
 
-      SECTION("reads at the correct offset") {
-        REQUIRE(uint32_t{0x89ABCDEF} == io::read_at<uint32_t>(4, data));
+      SECTION("scalar value"){
+        SECTION("reads at the correct offset") {
+          REQUIRE(uint32_t{0x89ABCDEF} == io::read_at<uint32_t>(4, data));
+        }
+        
+        SECTION("throws std::out_of_range if the read goes past the end of the buffer") {
+          REQUIRE_THROWS_AS(io::read_at<uint32_t>(5, data), std::out_of_range);
+        }
+        
+        SECTION("throws std::out_of_range if the read starts past the end of the buffer") {
+          REQUIRE_THROWS_AS(io::read_at<uint32_t>(9, data), std::out_of_range);
+        }
+        
+        SECTION("throws std::invalid_argument for pathological read offset") {
+          REQUIRE_THROWS_AS(io::read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data),
+                            std::invalid_argument);
+        }
       }
 
-      SECTION("throws std::out_of_range if the read goes past the end of the buffer") {
-        REQUIRE_THROWS_AS(io::read_at<uint32_t>(5, data), std::out_of_range);
-      }
-
-      SECTION("throws std::out_of_range if the read starts past the end of the buffer") {
-        REQUIRE_THROWS_AS(io::read_at<uint32_t>(9, data), std::out_of_range);
-      }
-
-      SECTION("throws std::invalid_argument for pathological read offset") {
-        REQUIRE_THROWS_AS(io::read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data),
-                          std::invalid_argument);
+      SECTION("range value"){
+        SECTION("reads at the correct offset") {
+            REQUIRE(std::vector<uint16_t>{0xEF01, 0xABCD} == io::read_range_at(3, data, std::vector<uint16_t>(2, 0)));
+        }
+        
+        SECTION("throws std::out_of_range if the read goes past the end of the buffer") {
+          REQUIRE_THROWS_AS(io::read_range_at(5, data, std::vector<uint16_t>(2, 0)), std::out_of_range);
+        }
+        
+        SECTION("throws std::out_of_range if the read starts past the end of the buffer") {
+          REQUIRE_THROWS_AS(io::read_range_at(9, data, std::vector<uint16_t>(2, 0)), std::out_of_range);
+        }
+        
+        SECTION("throws std::invalid_argument for pathological read offset") {
+          REQUIRE_THROWS_AS(io::read_range_at(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data, std::vector<uint16_t>(2, 0)),
+                            std::invalid_argument);
+        }
       }
     }
 
