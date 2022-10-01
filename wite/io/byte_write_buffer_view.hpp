@@ -52,7 +52,7 @@ struct byte_write_buffer_view {
   _WITE_NODISCARD std::ptrdiff_t write_position() const noexcept { return std::distance(_data.begin(), _put_pos); }
 
   template <typename... Value_Ts>
-  size_t write(Value_Ts... values) {
+  size_t write(Value_Ts&&... values) {
     const auto bytes_written = io::write({_put_pos, _data.end()}, std::forward<Value_Ts>(values)...);
     std::advance(_put_pos, bytes_written);
 
