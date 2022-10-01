@@ -27,14 +27,16 @@ namespace wite::io {
 class byte_read_buffer_view {
  public:
 
+  using size_type = typename std::span<const io::byte>::size_type;
+
   explicit byte_read_buffer_view(std::span<const io::byte> buf) : _data{std::move(buf)}, _get_pos{_data.begin()} {}
 
-  byte_read_buffer_view(std::span<const io::byte> buf, typename std::span<const io::byte>::size_type offset)
-      : _data{std::move(buf)}, _get_pos{_data.begin()} {
+  byte_read_buffer_view(std::span<const io::byte> buf, size_type offset)
+      : byte_read_buffer_view{std::move(buf)} {
     seek(offset);
   }
 
-  byte_read_buffer_view& seek(size_t position) {
+  byte_read_buffer_view& seek(size_type position) {
     if (position > _data.size()) {
       throw std::out_of_range{"Cannot seek past end of buffer"};
     }
@@ -43,7 +45,7 @@ class byte_read_buffer_view {
     return *this;
   }
 
-  result<bool, read_error> try_seek(size_t position) noexcept {
+  result<bool, read_error> try_seek(size_type position) noexcept {
     if (position > _data.size()) {
       return read_error::invalid_position_offset;
     }
@@ -56,7 +58,7 @@ class byte_read_buffer_view {
     _get_pos = std::next(_data.begin(), position);
   }
 
-  _WITE_NODISCARD std::ptrdiff_t read_position() const noexcept { return std::distance(_data.begin(), _get_pos); }
+  _WITE_NODISCARD size_type read_position() const noexcept { return std::distance(_data.begin(), _get_pos); }
   
   template <typename... Value_Ts>
   auto read() {
@@ -91,6 +93,16 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
+inline result<byte_read_buffer_view, read_error> try_make_byte_read_buffer_view(std::span<const io::byte> buffer, byte_read_buffer_view::size_type offset)noexcept {
+  auto out = byte_read_buffer_view {std::move(buffer)};
+  if (auto result = out.try_seek(offset); result.is_error()) {
+    return result.error();
+  }
+
+  return out;
+}
+
 
 }  // namespace wite::io
 

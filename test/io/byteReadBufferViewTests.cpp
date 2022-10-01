@@ -26,9 +26,35 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 
 TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   SECTION("construction"){
+    const auto data = io::static_byte_buffer<12>{io::byte{0xCD},
+                                                 io::byte{0x53},
+                                                 io::byte{0x72},
+                                                 io::byte{0xF3},
+                                                 io::byte{0x0E},
+                                                 io::byte{0x52},
+                                                 io::byte{0x06},
+                                                 io::byte{0xB3},
+                                                 io::byte{0x6A},
+                                                 io::byte{0xEE},
+                                                 io::byte{0x27},
+                                                 io::byte{0xFF}};
+
+    SECTION("initialises to the start of the buffer") {
+      REQUIRE(0 == io::byte_read_buffer_view(data).read_position());
+    }
+
+    SECTION("has the correct read position when offset is specified") {
+      REQUIRE(5 == io::byte_read_buffer_view(data, 5).read_position());
+    }
+
     SECTION("throws std::out_of_range if offset is bigger than buffer range") {
-      const auto data = io::static_byte_buffer<2>{io::byte{0x00}, io::byte{0x00}};
-      REQUIRE_THROWS_AS(io::byte_read_buffer_view(data, 3), std::out_of_range);
+      REQUIRE_THROWS_AS(io::byte_read_buffer_view(data, 13), std::out_of_range);
+    }
+
+    SECTION("try_make returns buffer with correct position") {
+      const auto buf_result = io::try_make_byte_read_buffer_view(data, 8);
+      REQUIRE(buf_result.ok());
+      REQUIRE(8 == buf_result.value().read_position());
     }
   }
 
