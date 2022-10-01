@@ -6,6 +6,7 @@
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
 #include <wite/io/concepts.hpp>
+#include <wite/io/byte_utilities.hpp>
 
 #include <bit>
 #include <cstddef>
@@ -55,48 +56,17 @@ class byte_read_buffer_view {
 
   _WITE_NODISCARD std::ptrdiff_t read_position() const noexcept { return std::distance(_data.begin(), _get_pos); }
   
-  template <typename Value_T>
-    requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-  Value_T read() {
-    const auto out = io::read<Value_T>({_get_pos, _data.end()});
-    std::advance(_get_pos, sizeof(Value_T));
-
-    return out;
-  }
-
-  template <typename Value_T>
-    requires is_buffer_writeable<Value_T> and is_encoded<Value_T>
-  typename Value_T::value_type read() {
-    const auto out = io::read<Value_T>({_get_pos, _data.end()});
-    std::advance(_get_pos , sizeof(out));
-
-    return out;
-  }
-
-  template <typename Value_T>
-  auto try_read() noexcept {
-    const auto out = io::try_read<Value_T>({_get_pos , _data.end()});
-
-    // TODO: this should check for success before advancing the read pointer.
-    std::advance(_get_pos , value_size<Value_T>());
-
-    return out;
-  }
-
   template <typename... Value_Ts>
-    requires(sizeof...(Value_Ts) > 1)
   auto read() {
-    const auto values = io::read<Value_Ts...>(_data);
-
+    const auto out = io::read<Value_Ts...>({_get_pos, _data.end()});
     std::advance(_get_pos, byte_count<Value_Ts...>());
 
-    return values;
+    return out;
   }
 
   template <typename... Value_Ts>
-    requires(sizeof...(Value_Ts) > 1)
   auto try_read() noexcept {
-    const auto out = io::try_read<Value_Ts...>(_data);
+    const auto out = io::try_read<Value_Ts...>({_get_pos, _data.end()});
     std::advance(_get_pos ,
                  std::min<ptrdiff_t>(byte_count<Value_Ts...>(),
                                      std::distance(_get_pos , _data.end())));
