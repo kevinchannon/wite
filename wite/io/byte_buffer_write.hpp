@@ -161,7 +161,7 @@ write_result_t try_write(std::span<io::byte> buffer, Value_T&& to_write) noexcep
 
 template <typename Value_T>
   requires is_buffer_writeable<Value_T>
-write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T value) {
+write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T value) noexcept {
   if (position + sizeof(value) < position) {
     return write_error::invalid_position_offset;
   }
@@ -256,7 +256,7 @@ write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T
 
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(Value_T)>>
   requires is_buffer_writeable<Value_T>
-result<Result_T, write_error> try_to_bytes(Value_T&& value) {
+result<Result_T, write_error> try_to_bytes(Value_T&& value) noexcept {
   auto out = Result_T{};
 
   const auto result = try_write(out, std::forward<Value_T>(value));

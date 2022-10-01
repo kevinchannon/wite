@@ -87,7 +87,7 @@ class byte_read_buffer_view {
   }
 
   template <typename Range_T>
-  auto try_read_range(Range_T&& range) {
+  auto try_read_range(Range_T&& range) noexcept {
     const auto anticipated_bytes_read = std::min<ptrdiff_t>(byte_count(range), std::distance(_get_pos, _data.end()));
     auto out = io::try_read_range({_get_pos, _data.end()}, std::forward<Range_T>(range));
     if (out.ok()) {

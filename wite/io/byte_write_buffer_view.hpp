@@ -66,7 +66,7 @@ class byte_write_buffer_view {
   }
 
   template <typename... Value_Ts>
-  write_result_t try_write(Value_Ts&&... values) {
+  write_result_t try_write(Value_Ts&&... values) noexcept {
     const auto result = io::try_write({_put_pos, _data.end()}, std::forward<Value_Ts>(values)...);
     if (result.ok()) {
       std::advance(_put_pos, result.value());
