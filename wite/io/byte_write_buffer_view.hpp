@@ -59,20 +59,9 @@ struct byte_write_buffer_view {
     return bytes_written;
   }
 
-  template <typename Value_T>
-    requires is_buffer_writeable<Value_T>
-  write_result_t try_write(Value_T value) {
-    const auto result = io::try_write({_put_pos, _data.end()}, value);
-    if (result.ok()) {
-      std::advance(_put_pos, sizeof(Value_T));
-    }
-
-    return result;
-  }
-
-  template <typename Value_T, typename... Value_Ts>
-  write_result_t try_write(Value_T first_value, Value_Ts... other_values) noexcept {
-    const auto result = io::try_write(_data, first_value, other_values...);
+  template <typename... Value_Ts>
+  write_result_t try_write(Value_Ts&&... values) {
+    const auto result = io::try_write({_put_pos, _data.end()}, std::forward<Value_Ts>(values)...);
     if (result.ok()) {
       std::advance(_put_pos, result.value());
     }
