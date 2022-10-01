@@ -25,6 +25,23 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 #endif
 
 TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
+  SECTION("construction") {
+    SECTION("initialises the write position to the start of the buffer") {
+      auto data = io::static_byte_buffer<5>{};
+      REQUIRE(0 == io::byte_write_buffer_view(data).write_position());
+    }
+
+    SECTION("intialises the write position to the correct position if an offset is specified") {
+      auto data = io::static_byte_buffer<5>{};
+      REQUIRE(2 == io::byte_write_buffer_view(data, 2).write_position());
+    }
+
+    SECTION("throws std::out_of_range if the offset is past the end of the buffer") {
+      auto data = io::static_byte_buffer<10>{};
+      REQUIRE_THROWS_AS(io::byte_write_buffer_view(data, 11), std::out_of_range);
+    }
+  }
+
   SECTION("byte_write_buffer_view::seek") {
     auto data = io::static_byte_buffer<10>{};
     auto view = io::byte_write_buffer_view{data};

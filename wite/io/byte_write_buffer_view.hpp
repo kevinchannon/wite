@@ -27,7 +27,9 @@ struct byte_write_buffer_view {
   explicit byte_write_buffer_view(std::span<io::byte> buf) : _data{std::move(buf)}, _put_pos{_data.begin()} {}
 
   byte_write_buffer_view(std::span<io::byte> buf, typename std::span<const io::byte>::size_type offset)
-      : _data{std::move(buf)}, _put_pos{std::next(_data.begin(), offset)} {}
+      : byte_write_buffer_view{std::move(buf)} {
+    seek(offset);
+  }
 
   byte_write_buffer_view& seek(size_t position) {
     if (position > _data.size()) {
