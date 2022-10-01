@@ -211,42 +211,60 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
 
   SECTION("try_read") {
     SECTION("single value") {
-      SECTION("returns value on good read", "[buffer_io]") {
+      SECTION("returns value on good read") {
         const auto data = io::static_byte_buffer<4>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}, io::byte{0xFF}};
         auto buffer     = io::byte_read_buffer_view{data};
 
-        SECTION("with default endianness") {
-          const auto val = buffer.try_read<uint32_t>();
-          REQUIRE(val.ok());
-          REQUIRE(uint32_t{0xFFAB4567} == val.value());
-          REQUIRE(4 == buffer.read_position());
+        SECTION("scalar value") {
+          SECTION("with default endianness") {
+            const auto val = buffer.try_read<uint32_t>();
+            REQUIRE(val.ok());
+            REQUIRE(uint32_t{0xFFAB4567} == val.value());
+            REQUIRE(4 == buffer.read_position());
+          }
+
+          SECTION("with specified endianness adapter") {
+            const auto val = buffer.try_read<io::big_endian<uint32_t>>();
+            REQUIRE(val.ok());
+            REQUIRE(uint32_t{0x6745ABFF} == val.value());
+            REQUIRE(4 == buffer.read_position());
+          }
+
+          SECTION("read 2 shorts") {
+            const auto first_value = buffer.try_read<uint16_t>();
+            REQUIRE(first_value.ok());
+            REQUIRE(uint32_t{0x4567} == first_value.value());
+            REQUIRE(2 == buffer.read_position());
+
+            const auto second_value = buffer.try_read<uint16_t>();
+            REQUIRE(second_value.ok());
+            REQUIRE(uint32_t{0xFFAB} == second_value.value());
+            REQUIRE(4 == buffer.read_position());
+          }
+
+          SECTION("Read past the end of the buffer returns error value") {
+            auto read_buf = io::byte_read_buffer_view(data, 2);
+
+            const auto val = read_buf.try_read<uint32_t>();
+            REQUIRE(val.is_error());
+            REQUIRE(io::read_error::insufficient_buffer == val.error());
+          }
         }
 
-        SECTION("with specified endianness adapter") {
-          const auto val = buffer.try_read<io::big_endian<uint32_t>>();
-          REQUIRE(val.ok());
-          REQUIRE(uint32_t{0x6745ABFF} == val.value());
-          REQUIRE(4 == buffer.read_position());
-        }
+        SECTION("range value") {
+          SECTION("returns OK value on good read") {
+            const auto val = buffer.try_read_range(std::vector<uint8_t>(3, 0));
+            REQUIRE(val.ok());
+            REQUIRE(std::vector<uint8_t>{0x67, 0x45, 0xAB} == val.value());
+            REQUIRE(3 == buffer.read_position());
+          }
 
-        SECTION("read 2 shorts") {
-          const auto first_value = buffer.try_read<uint16_t>();
-          REQUIRE(first_value.ok());
-          REQUIRE(uint32_t{0x4567} == first_value.value());
-          REQUIRE(2 == buffer.read_position());
-
-          const auto second_value = buffer.try_read<uint16_t>();
-          REQUIRE(second_value.ok());
-          REQUIRE(uint32_t{0xFFAB} == second_value.value());
-          REQUIRE(4 == buffer.read_position());
-        }
-
-        SECTION("Read past the end of the buffer returns error value") {
-          auto read_buf = io::byte_read_buffer_view(data, 2);
-
-          const auto val = read_buf.try_read<uint32_t>();
-          REQUIRE(val.is_error());
-          REQUIRE(io::read_error::insufficient_buffer == val.error());
+          SECTION("returns error if the read goes past the end of the buffer") {
+            const auto val = buffer.try_read_range(std::vector<uint8_t>(5, 0));
+            REQUIRE(val.is_error());
+            REQUIRE(io::read_error::insufficient_buffer == val.error());
+            REQUIRE(4 == buffer.read_position());
+          }
         }
       }
     }
