@@ -26,12 +26,12 @@ namespace wite::io {
 
 class byte_read_buffer_view {
  public:
-
+  using buffer_type = std::span<const io::byte>;
   using size_type = typename std::span<const io::byte>::size_type;
 
-  explicit byte_read_buffer_view(std::span<const io::byte> buf) : _data{std::move(buf)}, _get_pos{_data.begin()} {}
+  explicit byte_read_buffer_view(buffer_type buf) : _data{std::move(buf)}, _get_pos{_data.begin()} {}
 
-  byte_read_buffer_view(std::span<const io::byte> buf, size_type offset)
+  byte_read_buffer_view(buffer_type buf, size_type offset)
       : byte_read_buffer_view{std::move(buf)} {
     seek(offset);
   }
@@ -88,13 +88,15 @@ class byte_read_buffer_view {
 
 private:
 
-  std::span<const io::byte> _data;
-  std::span<const io::byte>::iterator _get_pos;
+  buffer_type _data;
+  buffer_type::iterator _get_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline result<byte_read_buffer_view, read_error> try_make_byte_read_buffer_view(std::span<const io::byte> buffer, byte_read_buffer_view::size_type offset)noexcept {
+inline result<byte_read_buffer_view, read_error> try_make_byte_read_buffer_view(
+    byte_read_buffer_view::buffer_type buffer,
+    byte_read_buffer_view::size_type offset) noexcept {
   auto out = byte_read_buffer_view {std::move(buffer)};
   if (auto result = out.try_seek(offset); result.is_error()) {
     return result.error();
