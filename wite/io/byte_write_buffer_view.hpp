@@ -23,10 +23,14 @@ namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct byte_write_buffer_view {
-  explicit byte_write_buffer_view(std::span<io::byte> buf) : _data{std::move(buf)}, _put_pos{_data.begin()} {}
+class byte_write_buffer_view {
+ public:
+  using buffer_type = std::span<io::byte>;
+  using size_type   = typename std::span<const io::byte>::size_type;
 
-  byte_write_buffer_view(std::span<io::byte> buf, typename std::span<const io::byte>::size_type offset)
+  explicit byte_write_buffer_view(buffer_type buf) : _data{std::move(buf)}, _put_pos{_data.begin()} {}
+
+  byte_write_buffer_view(buffer_type buf, size_type offset)
       : byte_write_buffer_view{std::move(buf)} {
     seek(offset);
   }
@@ -81,8 +85,8 @@ struct byte_write_buffer_view {
 
 
 private:
-  std::span<io::byte> _data;
-  std::span<io::byte>::iterator _put_pos;
+  buffer_type _data;
+  buffer_type::iterator _put_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
