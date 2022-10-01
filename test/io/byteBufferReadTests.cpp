@@ -353,37 +353,65 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
                                                   io::byte{0x45},
                                                   io::byte{0x67}};
 
-      SECTION("returns value on good read") {
+      SECTION("scalar value") {
+        SECTION("returns value on good read") {
+          SECTION("with default endianness") {
+            const auto val = io::try_read_at<uint32_t>(2, data);
+            REQUIRE(val.ok());
+            REQUIRE(uint32_t{0x2301FFAB} == val.value());
+          }
 
-        SECTION("with default endianness") {
-          const auto val = io::try_read_at<uint32_t>(2, data);
-          REQUIRE(val.ok());
-          REQUIRE(uint32_t{0x2301FFAB} == val.value());
+          SECTION("with specified endianness") {
+            const auto val = io::try_read_at<io::big_endian<uint32_t>>(3, data);
+            REQUIRE(val.ok());
+            REQUIRE(uint32_t{0xFF012345} == val.value());
+          }
         }
 
-        SECTION("with specified endianness") {
-          const auto val = io::try_read_at<io::big_endian<uint32_t>>(3, data);
-          REQUIRE(val.ok());
-          REQUIRE(uint32_t{0xFF012345} == val.value());
+        SECTION("returns error if the read goes past the end of the buffer") {
+          const auto val = io::try_read_at<uint32_t>(5, data);
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == val.error());
+        }
+
+        SECTION("returns error if the read starts past the end of the buffer") {
+          const auto val = io::try_read_at<uint32_t>(9, data);
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == val.error());
+        }
+
+        SECTION("returns error for pathological read offset") {
+          const auto val = io::try_read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data);
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::invalid_position_offset == val.error());
         }
       }
 
-      SECTION("returns error if the read goes past the end of the buffer") {
-        const auto val = io::try_read_at<uint32_t>(5, data);
-        REQUIRE(val.is_error());
-        REQUIRE(io::read_error::insufficient_buffer == val.error());
-      }
+      SECTION("range value") {
+        SECTION("returns value on good read") {
+          const auto val = io::try_read_range_at(3, data, std::vector<uint16_t>(2, 0));
+          REQUIRE(val.ok());
+          REQUIRE(std::vector<uint16_t>{0x01FF, 0x4523} == val.value());
+        }
 
-      SECTION("returns error if the read starts past the end of the buffer") {
-        const auto val = io::try_read_at<uint32_t>(9, data);
-        REQUIRE(val.is_error());
-        REQUIRE(io::read_error::insufficient_buffer == val.error());
-      }
+        SECTION("returns error if the read goes past the end of the buffer") {
+          const auto val = io::try_read_range_at(5, data, std::vector<uint16_t>(2, 0));
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == val.error());
+        }
 
-      SECTION("returns error for pathological read offset") {
-        const auto val = io::try_read_at<uint32_t>(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data);
-        REQUIRE(val.is_error());
-        REQUIRE(io::read_error::invalid_position_offset == val.error());
+        SECTION("returns error if the read starts past the end of the buffer") {
+          const auto val = io::try_read_range_at(9, data, std::vector<uint16_t>(2, 0));
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == val.error());
+        }
+
+        SECTION("returns error for pathological read offset") {
+          const auto val =
+              io::try_read_range_at(std::numeric_limits<size_t>::max() - sizeof(uint32_t) + 1, data, std::vector<uint16_t>(2, 0));
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::invalid_position_offset == val.error());
+        }
       }
     }
 

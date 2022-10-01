@@ -217,6 +217,22 @@ read_result_t<Value_T> try_read_at(size_t position, const std::span<const io::by
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename Range_T>
+  requires common::is_sized_range_v<Range_T>
+read_result_t<Range_T> try_read_range_at(size_t position, const std::span<const io::byte>& buffer, Range_T&& range) noexcept {
+  if (position + byte_count(range) < position) {
+    return read_error::invalid_position_offset;
+  }
+
+  if (position >= buffer.size()) {
+    return read_error::insufficient_buffer;
+  }
+
+  return try_read_range({std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail::buffer::read {
 
   template <typename FirstValue_T, typename... OtherValue_Ts>
