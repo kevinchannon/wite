@@ -30,7 +30,9 @@ class byte_read_buffer_view {
   explicit byte_read_buffer_view(std::span<const io::byte> buf) : _data{std::move(buf)}, _get_pos{_data.begin()} {}
 
   byte_read_buffer_view(std::span<const io::byte> buf, typename std::span<const io::byte>::size_type offset)
-      : _data{std::move(buf)}, _get_pos{std::next(_data.begin(), offset)} {}
+      : _data{std::move(buf)}, _get_pos{_data.begin()} {
+    seek(offset);
+  }
 
   byte_read_buffer_view& seek(size_t position) {
     if (position > _data.size()) {

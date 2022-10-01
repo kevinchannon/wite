@@ -25,6 +25,13 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 #endif
 
 TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
+  SECTION("construction"){
+    SECTION("throws std::out_of_range if offset is bigger than buffer range") {
+      const auto data = io::static_byte_buffer<2>{io::byte{0x00}, io::byte{0x00}};
+      REQUIRE_THROWS_AS(io::byte_read_buffer_view(data, 3), std::out_of_range);
+    }
+  }
+
   SECTION("byte_read_buffer_view::seek") {
     const auto data = io::static_byte_buffer<10>{};
     auto view       = io::byte_read_buffer_view{data};
@@ -65,70 +72,76 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
                                            io::byte{0xAB},
                                            io::byte{0x89}};
 
-      SECTION("Little-endian") {
-        SECTION("Read int") {
-          auto read_buf = io::byte_read_buffer_view(array_buffer);
+      SECTION("scalar value") {
+        SECTION("Little-endian") {
+          SECTION("Read int") {
+            auto read_buf = io::byte_read_buffer_view(array_buffer);
 
-          SECTION("Dynamic endianness") {
-            REQUIRE(uint32_t(0x01234567) == read_buf.read<uint32_t>(io::endian::little));
-            REQUIRE(4 == read_buf.read_position());
+            SECTION("Dynamic endianness") {
+              REQUIRE(uint32_t(0x01234567) == read_buf.read<uint32_t>(io::endian::little));
+              REQUIRE(4 == read_buf.read_position());
+            }
+
+            SECTION("Static endianness") {
+              REQUIRE(uint32_t(0x01234567) == read_buf.read<io::little_endian<uint32_t>>());
+              REQUIRE(4 == read_buf.read_position());
+
+              read_buf.seek(0);
+              REQUIRE(uint32_t(0x67452301) == read_buf.read<io::big_endian<uint32_t>>());
+              REQUIRE(4 == read_buf.read_position());
+            }
+
+            SECTION("Default endianness") {
+              REQUIRE(uint32_t(0x01234567) == read_buf.read<uint32_t>());
+              REQUIRE(4 == read_buf.read_position());
+            }
           }
 
-          SECTION("Static endianness") {
-            REQUIRE(uint32_t(0x01234567) == read_buf.read<io::little_endian<uint32_t>>());
-            REQUIRE(4 == read_buf.read_position());
+          SECTION("Read 2 shorts") {
+            auto read_buf = io::byte_read_buffer_view(array_buffer);
 
-            read_buf.seek(0);
-            REQUIRE(uint32_t(0x67452301) == read_buf.read<io::big_endian<uint32_t>>());
-            REQUIRE(4 == read_buf.read_position());
+            REQUIRE(uint32_t(0x4567) == read_buf.read<uint16_t>(io::endian::little));
+            REQUIRE(uint32_t(0x0123) == read_buf.read<uint16_t>(io::endian::little));
           }
 
-          SECTION("Default endianness") {
-            REQUIRE(uint32_t(0x01234567) == read_buf.read<uint32_t>());
-            REQUIRE(4 == read_buf.read_position());
+          SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
+            auto read_buf = io::byte_read_buffer_view(array_buffer, 6);
+
+            REQUIRE_THROWS_AS(read_buf.read<io::little_endian<uint32_t>>(), std::out_of_range);
           }
         }
 
-        SECTION("Read 2 shorts") {
-          auto read_buf = io::byte_read_buffer_view(array_buffer);
+        SECTION("Big-endian") {
+          auto buffer = io::byte_read_buffer_view(array_buffer);
+          SECTION("Read int") {
+            SECTION("Dynmic endianness") {
+              REQUIRE(uint32_t(0x67452301) == buffer.read<uint32_t>(io::endian::big));
+              REQUIRE(4 == buffer.read_position());
+            }
 
-          REQUIRE(uint32_t(0x4567) == read_buf.read<uint16_t>(io::endian::little));
-          REQUIRE(uint32_t(0x0123) == read_buf.read<uint16_t>(io::endian::little));
-        }
+            SECTION("Static endianness") {
+              REQUIRE(uint32_t(0x67452301) == buffer.read<io::big_endian<uint32_t>>());
+              REQUIRE(4 == buffer.read_position());
+            }
+          }
 
-        SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
-          auto read_buf = io::byte_read_buffer_view(array_buffer, 6);
+          SECTION("Read 2 shorts") {
+            REQUIRE(uint32_t(0x6745) == buffer.read<io::big_endian<uint16_t>>());
+            REQUIRE(uint32_t(0x2301) == buffer.read<io::big_endian<uint16_t>>());
 
-          REQUIRE_THROWS_AS(read_buf.read<io::little_endian<uint32_t>>(), std::out_of_range);
+            REQUIRE(4 == buffer.read_position());
+          }
+
+          SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
+            auto read_buf = io::byte_read_buffer_view(array_buffer, 6);
+
+            REQUIRE_THROWS_AS(read_buf.read<io::big_endian<uint32_t>>(), std::out_of_range);
+          }
         }
       }
 
-      SECTION("Big-endian") {
-        auto buffer = io::byte_read_buffer_view(array_buffer);
-        SECTION("Read int") {
-          SECTION("Dynmic endianness") {
-            REQUIRE(uint32_t(0x67452301) == buffer.read<uint32_t>(io::endian::big));
-            REQUIRE(4 == buffer.read_position());
-          }
+      SECTION("range value") {
 
-          SECTION("Static endianness") {
-            REQUIRE(uint32_t(0x67452301) == buffer.read<io::big_endian<uint32_t>>());
-            REQUIRE(4 == buffer.read_position());
-          }
-        }
-
-        SECTION("Read 2 shorts") {
-          REQUIRE(uint32_t(0x6745) == buffer.read<io::big_endian<uint16_t>>());
-          REQUIRE(uint32_t(0x2301) == buffer.read<io::big_endian<uint16_t>>());
-
-          REQUIRE(4 == buffer.read_position());
-        }
-
-        SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
-          auto read_buf = io::byte_read_buffer_view(array_buffer, 6);
-
-          REQUIRE_THROWS_AS(read_buf.read<io::big_endian<uint32_t>>(), std::out_of_range);
-        }
       }
     }
 
@@ -180,6 +193,26 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
           REQUIRE(val.ok());
           REQUIRE(uint32_t{0x6745ABFF} == val.value());
           REQUIRE(4 == buffer.read_position());
+        }
+
+        SECTION("read 2 shorts") {
+          const auto first_value = buffer.try_read<uint16_t>();
+          REQUIRE(first_value.ok());
+          REQUIRE(uint32_t{0x4567} == first_value.value());
+          REQUIRE(2 == buffer.read_position());
+
+          const auto second_value = buffer.try_read<uint16_t>();
+          REQUIRE(second_value.ok());
+          REQUIRE(uint32_t{0xFFAB} == second_value.value());
+          REQUIRE(4 == buffer.read_position());
+        }
+
+        SECTION("Read past the end of the buffer returns error value") {
+          auto read_buf = io::byte_read_buffer_view(data, 2);
+
+          const auto val = read_buf.try_read<uint32_t>();
+          REQUIRE(val.is_error());
+          REQUIRE(io::read_error::insufficient_buffer == val.error());
         }
       }
     }
