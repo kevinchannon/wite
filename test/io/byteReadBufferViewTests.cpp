@@ -167,7 +167,15 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
       }
 
       SECTION("range value") {
+        auto read_buf = io::byte_read_buffer_view{array_buffer, 1};
 
+        SECTION("return value on good read") {
+          REQUIRE(std::vector<uint16_t>{0x2345, 0xEF01, 0xABCD} == read_buf.read_range(std::vector<uint16_t>(3, 0)));
+        }
+
+        SECTION("throws std::out_of_range if reading past the end of the buffer") {
+          REQUIRE_THROWS_AS(read_buf.read_range(std::vector<uint16_t>(8, 0)), std::out_of_range);
+        }
       }
     }
 
