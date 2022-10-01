@@ -211,9 +211,12 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
       }
 
       SECTION("throws out_of_range if the buffer is too small") {
+        const auto initial_buffer_position = write_view.write_position();
         const auto write_to_buffer = [&]() { write_view.write(a, io::big_endian{b}, c, d, a); };
         REQUIRE_THROWS_AS(write_to_buffer(), std::out_of_range);
-        REQUIRE(data_size == write_view.write_position());
+
+        // On error, the write position should remain in the position is was in before the function call that caused the error.
+        REQUIRE(initial_buffer_position == write_view.write_position());
       }
     }
   }
