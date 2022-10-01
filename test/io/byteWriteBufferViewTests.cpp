@@ -56,124 +56,146 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
 
   SECTION("write") {
     SECTION("single value") {
-      SECTION("Little-endian") {
-        auto array_buffer = std::array<io::byte, 14>{};
+      SECTION("scalar value") {
+        SECTION("Little-endian") {
+          auto array_buffer = std::array<io::byte, 14>{};
 
-        SECTION("Write int at start of buffer (dynamic endianness)") {
-          auto buffer = io::byte_write_buffer_view{array_buffer};
-          REQUIRE(sizeof(uint32_t) == buffer.write(0x89ABCDEF, io::endian::little));
-          REQUIRE(4 == buffer.write_position());
+          SECTION("Write int at start of buffer (dynamic endianness)") {
+            auto buffer = io::byte_write_buffer_view{array_buffer};
+            REQUIRE(sizeof(uint32_t) == buffer.write(0x89ABCDEF, io::endian::little));
+            REQUIRE(4 == buffer.write_position());
 
-          REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[0]));
-          REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[1]));
-          REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[2]));
-          REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[3]));
-
-          REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
-
-          SECTION("and then another write to the buffer (static endianness)") {
-            REQUIRE(sizeof(uint32_t) == buffer.write(io::little_endian{0x01234567}));
-            REQUIRE(8 == buffer.write_position());
-
-            REQUIRE(0x67 == io::to_integer<uint8_t>(array_buffer[4]));
-            REQUIRE(0x45 == io::to_integer<uint8_t>(array_buffer[5]));
-            REQUIRE(0x23 == io::to_integer<uint8_t>(array_buffer[6]));
-            REQUIRE(0x01 == io::to_integer<uint8_t>(array_buffer[7]));
+            REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[0]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[1]));
+            REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[2]));
+            REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[3]));
 
             REQUIRE(
-                std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+                std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
-            SECTION("and then another write to the buffer (default endianness)") {
-              REQUIRE(sizeof(uint32_t) == buffer.write(0x463235F9));
-              REQUIRE(12 == buffer.write_position());
+            SECTION("and then another write to the buffer (static endianness)") {
+              REQUIRE(sizeof(uint32_t) == buffer.write(io::little_endian{0x01234567}));
+              REQUIRE(8 == buffer.write_position());
 
-              REQUIRE((io::endian::native == io::endian::little ? 0xF9 : 0x46) == io::to_integer<uint8_t>(array_buffer[8]));
-              REQUIRE((io::endian::native == io::endian::little ? 0x35 : 0x32) == io::to_integer<uint8_t>(array_buffer[9]));
-              REQUIRE((io::endian::native == io::endian::little ? 0x32 : 0x35) == io::to_integer<uint8_t>(array_buffer[10]));
-              REQUIRE((io::endian::native == io::endian::little ? 0x46 : 0xF9) == io::to_integer<uint8_t>(array_buffer[11]));
+              REQUIRE(0x67 == io::to_integer<uint8_t>(array_buffer[4]));
+              REQUIRE(0x45 == io::to_integer<uint8_t>(array_buffer[5]));
+              REQUIRE(0x23 == io::to_integer<uint8_t>(array_buffer[6]));
+              REQUIRE(0x01 == io::to_integer<uint8_t>(array_buffer[7]));
 
-              REQUIRE(std::all_of(
-                  std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+              REQUIRE(
+                  std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
-              SECTION("and then another write throws std::out_of_range") {
-                REQUIRE_THROWS_AS(buffer.write(0x01234567, io::endian::little), std::out_of_range);
+              SECTION("and then another write to the buffer (default endianness)") {
+                REQUIRE(sizeof(uint32_t) == buffer.write(0x463235F9));
+                REQUIRE(12 == buffer.write_position());
 
-                SECTION("and the buffer is not written to") {
-                  REQUIRE(12 == buffer.write_position());
-                  REQUIRE(std::all_of(
-                      std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+                REQUIRE((io::endian::native == io::endian::little ? 0xF9 : 0x46) == io::to_integer<uint8_t>(array_buffer[8]));
+                REQUIRE((io::endian::native == io::endian::little ? 0x35 : 0x32) == io::to_integer<uint8_t>(array_buffer[9]));
+                REQUIRE((io::endian::native == io::endian::little ? 0x32 : 0x35) == io::to_integer<uint8_t>(array_buffer[10]));
+                REQUIRE((io::endian::native == io::endian::little ? 0x46 : 0xF9) == io::to_integer<uint8_t>(array_buffer[11]));
+
+                REQUIRE(std::all_of(
+                    std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+
+                SECTION("and then another write throws std::out_of_range") {
+                  REQUIRE_THROWS_AS(buffer.write(0x01234567, io::endian::little), std::out_of_range);
+
+                  SECTION("and the buffer is not written to") {
+                    REQUIRE(12 == buffer.write_position());
+                    REQUIRE(std::all_of(
+                        std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+                  }
                 }
               }
             }
           }
         }
-      }
 
-      SECTION("Big-endian") {
-        auto array_buffer = std::array<io::byte, 10>{};
+        SECTION("Big-endian") {
+          auto array_buffer = std::array<io::byte, 10>{};
 
-        SECTION("Write int at start of buffer (dynamic endianness)") {
-          auto buffer = io::byte_write_buffer_view{array_buffer};
-          REQUIRE(sizeof(uint32_t) == buffer.write(0x89ABCDEF, io::endian::big));
-          REQUIRE(4 == buffer.write_position());
+          SECTION("Write int at start of buffer (dynamic endianness)") {
+            auto buffer = io::byte_write_buffer_view{array_buffer};
+            REQUIRE(sizeof(uint32_t) == buffer.write(0x89ABCDEF, io::endian::big));
+            REQUIRE(4 == buffer.write_position());
 
-          REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[0]));
-          REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[1]));
-          REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[2]));
-          REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[3]));
-
-          REQUIRE(std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
-
-          SECTION("and then another write to the buffer (static endianness)") {
-            REQUIRE(sizeof(uint32_t) == buffer.write(io::big_endian{0x01234567}));
-            REQUIRE(8 == buffer.write_position());
-
-            REQUIRE(0x01 == io::to_integer<uint8_t>(array_buffer[4]));
-            REQUIRE(0x23 == io::to_integer<uint8_t>(array_buffer[5]));
-            REQUIRE(0x45 == io::to_integer<uint8_t>(array_buffer[6]));
-            REQUIRE(0x67 == io::to_integer<uint8_t>(array_buffer[7]));
+            REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[0]));
+            REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[1]));
+            REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[2]));
+            REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[3]));
 
             REQUIRE(
-                std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+                std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
-            SECTION("and then another write throws std::out_of_range") {
-              REQUIRE_THROWS_AS(buffer.write(0x01234567, io::endian::big), std::out_of_range);
+            SECTION("and then another write to the buffer (static endianness)") {
+              REQUIRE(sizeof(uint32_t) == buffer.write(io::big_endian{0x01234567}));
+              REQUIRE(8 == buffer.write_position());
 
-              SECTION("and the buffer is not written to") {
-                REQUIRE(8 == buffer.write_position());
-                REQUIRE(std::all_of(
-                    std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+              REQUIRE(0x01 == io::to_integer<uint8_t>(array_buffer[4]));
+              REQUIRE(0x23 == io::to_integer<uint8_t>(array_buffer[5]));
+              REQUIRE(0x45 == io::to_integer<uint8_t>(array_buffer[6]));
+              REQUIRE(0x67 == io::to_integer<uint8_t>(array_buffer[7]));
+
+              REQUIRE(
+                  std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+
+              SECTION("and then another write throws std::out_of_range") {
+                REQUIRE_THROWS_AS(buffer.write(0x01234567, io::endian::big), std::out_of_range);
+
+                SECTION("and the buffer is not written to") {
+                  REQUIRE(8 == buffer.write_position());
+                  REQUIRE(std::all_of(
+                      std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
+                }
               }
             }
           }
         }
+
+        SECTION("Endian adapter interface") {
+          auto raw_buffer   = io::static_byte_buffer<10>{};
+          auto write_buffer = io::byte_write_buffer_view{raw_buffer};
+          auto read_buffer  = io::byte_read_buffer_view{raw_buffer};
+
+          const auto val_1 = uint32_t{0x01234567};
+          REQUIRE(sizeof(uint32_t) == write_buffer.write(io::little_endian{val_1}));
+
+          const auto val_2 = uint32_t{0x89ABCDEF};
+          REQUIRE(sizeof(uint32_t) == write_buffer.write(io::big_endian{val_2}));
+
+          const auto val_3 = int16_t{0x7D04};
+          REQUIRE(sizeof(uint16_t) == write_buffer.write(val_3));
+
+          REQUIRE(std::ranges::equal(io::static_byte_buffer<10>{io::byte{0x67},
+                                                                io::byte{0x45},
+                                                                io::byte{0x23},
+                                                                io::byte{0x01},
+                                                                io::byte{0x89},
+                                                                io::byte{0xAB},
+                                                                io::byte{0xCD},
+                                                                io::byte{0xEF},
+                                                                io::byte{0x04},
+                                                                io::byte{0x7D}},
+                                     raw_buffer));
+        }
       }
 
-      SECTION("Endian adapter interface") {
-        auto raw_buffer   = io::static_byte_buffer<10>{};
-        auto write_buffer = io::byte_write_buffer_view{raw_buffer};
-        auto read_buffer  = io::byte_read_buffer_view{raw_buffer};
+      SECTION("range value") {
+        auto data = io::static_byte_buffer<12>{};
 
-        const auto val_1 = uint32_t{0x01234567};
-        REQUIRE(sizeof(uint32_t) == write_buffer.write(io::little_endian{val_1}));
+        SECTION("returns the number of bytes written on success") {
+          const auto v = std::vector<uint16_t>{0x0123, 0x4567, 0x89AB, 0xCDEF};
+          REQUIRE(8 == io::byte_write_buffer_view{data}.write(v));
 
-        const auto val_2 = uint32_t{0x89ABCDEF};
-        REQUIRE(sizeof(uint32_t) == write_buffer.write(io::big_endian{val_2}));
-
-        const auto val_3 = int16_t{0x7D04};
-        REQUIRE(sizeof(uint16_t) == write_buffer.write(val_3));
-
-        REQUIRE(std::ranges::equal(io::static_byte_buffer<10>{io::byte{0x67},
-                                                              io::byte{0x45},
-                                                              io::byte{0x23},
-                                                              io::byte{0x01},
-                                                              io::byte{0x89},
-                                                              io::byte{0xAB},
-                                                              io::byte{0xCD},
-                                                              io::byte{0xEF},
-                                                              io::byte{0x04},
-                                                              io::byte{0x7D}},
-                                   raw_buffer));
+          REQUIRE(0x23 == io::to_integer<uint8_t>(data[0]));
+          REQUIRE(0x01 == io::to_integer<uint8_t>(data[1]));
+          REQUIRE(0x67 == io::to_integer<uint8_t>(data[2]));
+          REQUIRE(0x45 == io::to_integer<uint8_t>(data[3]));
+          REQUIRE(0xAB == io::to_integer<uint8_t>(data[4]));
+          REQUIRE(0x89 == io::to_integer<uint8_t>(data[5]));
+          REQUIRE(0xEF == io::to_integer<uint8_t>(data[6]));
+          REQUIRE(0xCD == io::to_integer<uint8_t>(data[7]));
+        }
       }
     }
 
