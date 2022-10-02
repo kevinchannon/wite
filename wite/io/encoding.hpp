@@ -1,8 +1,8 @@
 #pragma once
 
 #include <wite/env/environment.hpp>
-
 #include <wite/common/constructor_macros.hpp>
+#include <wite/io/types.hpp>
 
 #include <bit>
 #include <type_traits>
@@ -22,7 +22,7 @@ enum class endian { little = 0, big = 1, native = little };
 struct encoding {};
 
 template <typename Value_T, endian ENDIANNESS>
-requires std::is_integral_v<Value_T> and(sizeof(Value_T) > 1)
+  requires std::is_integral_v<Value_T> and (sizeof(Value_T) > 1)
 struct endianness : public encoding {
   using value_type = Value_T;
 
@@ -38,6 +38,10 @@ struct little_endian : public endianness<Value_T, endian::little> {
   little_endian(Value_T val) : endianness<Value_T, endian::little>{val} {}
 
   WITE_DEFAULT_CONSTRUCTORS(little_endian);
+
+  _WITE_NODISCARD auto begin_byte() const noexcept { return reinterpret_cast<const io::byte*>(&(this->value)); }
+  _WITE_NODISCARD auto begin_byte() noexcept { return const_cast<io::byte*>(const_cast<const little_endian*>(this)->begin_byte());
+  }
 };
 
 template <typename Value_T>
