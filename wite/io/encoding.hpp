@@ -1,7 +1,7 @@
 #pragma once
 
-#include <wite/env/environment.hpp>
 #include <wite/common/constructor_macros.hpp>
+#include <wite/env/environment.hpp>
 #include <wite/io/types.hpp>
 
 #include <bit>
@@ -35,13 +35,17 @@ struct endianness : public encoding {
 
 template <typename Value_T>
 struct little_endian : public endianness<Value_T, endian::little> {
+  using value_type = typename endianness<Value_T, endian::little>::value_type;
+
   little_endian(Value_T val) : endianness<Value_T, endian::little>{val} {}
 
   WITE_DEFAULT_CONSTRUCTORS(little_endian);
 
-  _WITE_NODISCARD auto begin_byte() const noexcept { return reinterpret_cast<const io::byte*>(&(this->value)); }
-  _WITE_NODISCARD auto begin_byte() noexcept { return const_cast<io::byte*>(const_cast<const little_endian*>(this)->begin_byte());
+  _WITE_NODISCARD auto byte_begin() const noexcept { return reinterpret_cast<const io::byte*>(&(this->value)); }
+  _WITE_NODISCARD auto byte_begin() noexcept {
+    return const_cast<io::byte*>(const_cast<const little_endian*>(this)->byte_begin());
   }
+  _WITE_NODISCARD auto byte_count() const noexcept { return sizeof(value_type); }
 };
 
 template <typename Value_T>
