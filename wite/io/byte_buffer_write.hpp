@@ -29,7 +29,7 @@ namespace detail::buffer::write {
 
   template<typename Encoded_T>
     requires is_encoded<std::decay_t<Encoded_T>>
-  size_t _write_single_encoded_value(auto buffer, Encoded_T&& value) {
+  size_t _write_single_encoded_value(auto buffer, Encoded_T&& value) noexcept {
     using RawValue_t = typename std::decay_t<Encoded_T>::value_type;
 
     if constexpr (std::is_same_v<little_endian<RawValue_t>, std::decay_t<Encoded_T>>) {
@@ -45,7 +45,7 @@ namespace detail::buffer::write {
 
   template<typename Value_T>
     requires((not common::is_sized_range_v<std::decay_t<Value_T>>) and (not is_encoded<std::decay_t<Value_T>>))
-  size_t _write_single_value(auto buffer, Value_T&& value) {
+  size_t _write_single_value(auto buffer, Value_T&& value) noexcept {
     std::copy_n(reinterpret_cast<const io::byte*>(&value), sizeof(value), buffer);
 
     return sizeof(std::decay_t<Value_T>);
@@ -53,7 +53,7 @@ namespace detail::buffer::write {
 
   template <typename Range_T>
     requires common::is_sized_range_v<std::decay_t<Range_T>>
-  size_t _write_single_range_value(auto buffer, Range_T&& values) {
+  size_t _write_single_range_value(auto buffer, Range_T&& values) noexcept {
     struct _write_info {
       size_t bytes_written{};
       std::span<io::byte>::iterator next_write_position{};
@@ -113,6 +113,8 @@ namespace detail::buffer::write {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
+
 template <typename... Value_Ts>
 size_t write(std::span<io::byte> buffer, Value_Ts&&... values) {
   if (buffer.size() < byte_count(std::forward<Value_Ts>(values)...)) {
@@ -121,6 +123,8 @@ size_t write(std::span<io::byte> buffer, Value_Ts&&... values) {
 
   return detail::buffer::write::_recursive_unsafe_write(buffer, std::forward<Value_Ts>(values)...);
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -221,6 +225,8 @@ namespace detail::buffer::write {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
+
 template <typename... Value_Ts>
 size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... values) {
   const auto write_end_pos = position + byte_count(std::forward<Value_Ts>(values)...);
@@ -235,6 +241,8 @@ size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... value
   return position + detail::buffer::write::_recursive_unsafe_write({std::next(buffer.begin(), position), buffer.end()},
                                                                    std::forward<Value_Ts>(values)...);
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -269,6 +277,8 @@ result<Result_T, write_error> try_to_bytes(Value_T&& value) noexcept {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
+
 template <typename Value_T, typename Result_T = static_byte_buffer<sizeof(std::decay_t<Value_T>)>>
   requires is_buffer_writeable<std::decay_t<Value_T>>
 Result_T to_bytes(Value_T&& value) {
@@ -290,6 +300,8 @@ size_t write(std::span<io::byte> buffer, Value_T value, endian endianness) {
     return write(buffer, big_endian{value});
   }
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

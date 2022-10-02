@@ -3,6 +3,10 @@
 #include <wite/env/environment.hpp>
 #include <wite/string/trim.hpp>
 
+#ifdef WITE_NO_EXCEPTIONS
+#error "Exceptions are required if string/split.hpp is included"
+#endif
+
 #include <string>
 #include <string_view>
 #include <type_traits>

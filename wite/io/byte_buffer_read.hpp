@@ -60,7 +60,7 @@ auto unchecked_read(auto buffer_iterator) noexcept
 namespace detail::buffer::read {
 
   template <typename FirstValue_T, typename... OtherValue_Ts>
-  auto _recursive_read(const std::span<const io::byte>& buffer) {
+  auto _recursive_read(const std::span<const io::byte>& buffer) noexcept {
     auto [first_value, next_pos] = io::unchecked_read<FirstValue_T>(buffer.begin());
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
@@ -74,6 +74,8 @@ namespace detail::buffer::read {
 }  // namespace detail::buffer::read
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifndef WITE_NO_EXCEPTIONS
 
 template <typename... Value_Ts>
 auto read(const std::span<const io::byte>& buffer) {
@@ -136,6 +138,8 @@ auto read_range_at(size_t position, const std::span<const io::byte>& buffer, Ran
   
   return read_range({std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -286,6 +290,8 @@ auto try_read_at(size_t position, const std::span<const io::byte>& buffer) noexc
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
+
 template <typename Value_T>
 requires is_buffer_readable<Value_T>
 Value_T read(const std::span<const io::byte>& buffer, endian endianness) {
@@ -303,6 +309,8 @@ template <typename Value_T>
 auto from_bytes(const std::span<const io::byte>& buffer) {
   return read<Value_T>(buffer);
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -51,6 +51,7 @@ class stack_vector {
 
   constexpr explicit stack_vector(uint8_t size) : _item_count{size} {}
 
+#ifndef WITE_NO_EXCEPTIONS
   constexpr stack_vector(std::initializer_list<value_type> init) {
     if (init.size() > capacity()) {
       throw std::invalid_argument{"Too many initialisation elements"};
@@ -59,6 +60,7 @@ class stack_vector {
     std::copy(init.begin(), init.end(), begin());
     _item_count = init.size();
   }
+#endif
 
   constexpr void swap(stack_vector& other) noexcept {
     using std::swap;
@@ -96,13 +98,18 @@ class stack_vector {
   _WITE_NODISCARD constexpr auto empty() const noexcept { return _item_count == 0; }
   _WITE_NODISCARD constexpr auto operator[](size_type pos) noexcept -> reference { return _data[pos]; }
   _WITE_NODISCARD constexpr auto operator[](size_type pos) const noexcept -> const_reference { return _data[pos]; }
+
+#ifndef WITE_NO_EXCEPTIONS
   _WITE_NODISCARD constexpr auto front() -> reference { return at(0); }
   _WITE_NODISCARD constexpr auto front() const -> const_reference { return at(0); }
   _WITE_NODISCARD constexpr auto back() -> reference { return at(size() - 1); }
   _WITE_NODISCARD constexpr auto back() const -> const_reference { return at(size() - 1); }
+#endif
+
   _WITE_NODISCARD constexpr auto data() noexcept { return _data.data(); }
   _WITE_NODISCARD constexpr auto data() const noexcept { return _data.data(); }
 
+#ifndef WITE_NO_EXCEPTIONS
   _WITE_NODISCARD constexpr auto at(size_type pos) -> reference {
     return const_cast<reference>(const_cast<const stack_vector*>(this)->at(pos));
   }
@@ -132,6 +139,8 @@ class stack_vector {
     resize(size() + 1);
     back() = std::forward<value_type>(x);
   }
+
+#endif
 
   void clear() noexcept { _item_count = 0; }
 

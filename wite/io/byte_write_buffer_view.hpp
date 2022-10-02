@@ -30,6 +30,8 @@ class byte_write_buffer_view {
 
   explicit byte_write_buffer_view(buffer_type buf) : _data{std::move(buf)}, _put_pos{_data.begin()} {}
 
+  #ifndef WITE_NO_EXCEPTIONS
+
   byte_write_buffer_view(buffer_type buf, size_type offset)
       : byte_write_buffer_view{std::move(buf)} {
     seek(offset);
@@ -44,6 +46,8 @@ class byte_write_buffer_view {
     return *this;
   }
 
+  #endif
+
   result<bool, write_error> try_seek(size_t position) noexcept {
     if (position > _data.size()) {
       return write_error::invalid_position_offset;
@@ -53,9 +57,11 @@ class byte_write_buffer_view {
     return true;
   }
 
-  void unchecked_seek(size_t position) { _put_pos = std::next(_data.begin(), position); }
+  void unchecked_seek(size_t position) noexcept { _put_pos = std::next(_data.begin(), position); }
 
   _WITE_NODISCARD std::ptrdiff_t write_position() const noexcept { return std::distance(_data.begin(), _put_pos); }
+
+  #ifndef WITE_NO_EXCEPTIONS
 
   template <typename... Value_Ts>
   size_t write(Value_Ts&&... values) {
@@ -63,16 +69,6 @@ class byte_write_buffer_view {
     std::advance(_put_pos, bytes_written);
 
     return bytes_written;
-  }
-
-  template <typename... Value_Ts>
-  write_result_t try_write(Value_Ts&&... values) noexcept {
-    const auto result = io::try_write({_put_pos, _data.end()}, std::forward<Value_Ts>(values)...);
-    if (result.ok()) {
-      std::advance(_put_pos, result.value());
-    }
-
-    return result;
   }
 
   template <typename Value_T>
@@ -83,6 +79,17 @@ class byte_write_buffer_view {
     return bytes_written;
   }
 
+  #endif
+
+  template <typename... Value_Ts>
+  write_result_t try_write(Value_Ts&&... values) noexcept {
+    const auto result = io::try_write({_put_pos, _data.end()}, std::forward<Value_Ts>(values)...);
+    if (result.ok()) {
+      std::advance(_put_pos, result.value());
+    }
+
+    return result;
+  }
 
 private:
   buffer_type _data;

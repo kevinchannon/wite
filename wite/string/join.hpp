@@ -2,6 +2,10 @@
 
 #include <wite/env/environment.hpp>
 
+#ifdef WITE_NO_EXCEPTIONS
+#error "Exceptions are required if string/join.hpp is included"
+#endif
+
 #include <algorithm>
 #include <numeric>
 #include <string>

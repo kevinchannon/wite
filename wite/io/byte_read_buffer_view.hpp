@@ -31,6 +31,8 @@ class byte_read_buffer_view {
 
   explicit byte_read_buffer_view(buffer_type buf) : _data{std::move(buf)}, _get_pos{_data.begin()} {}
 
+  #ifndef WITE_NO_EXCEPTIONS
+
   byte_read_buffer_view(buffer_type buf, size_type offset)
       : byte_read_buffer_view{std::move(buf)} {
     seek(offset);
@@ -45,6 +47,8 @@ class byte_read_buffer_view {
     return *this;
   }
 
+  #endif
+
   result<bool, read_error> try_seek(size_type position) noexcept {
     if (position > _data.size()) {
       return read_error::invalid_position_offset;
@@ -54,12 +58,14 @@ class byte_read_buffer_view {
     return true;
   }
 
-  void unchecked_seek(size_t position) {
+  void unchecked_seek(size_t position) noexcept {
     _get_pos = std::next(_data.begin(), position);
   }
 
   _WITE_NODISCARD size_type read_position() const noexcept { return std::distance(_data.begin(), _get_pos); }
   
+  #ifndef WITE_NO_EXCEPTIONS
+
   template <typename... Value_Ts>
   auto read() {
     auto out = io::read<Value_Ts...>({_get_pos, _data.end()});
@@ -75,6 +81,16 @@ class byte_read_buffer_view {
 
     return out;
   }
+
+  template <typename Value_T>
+  auto read(std::endian endianness) {
+    const auto out = io::read<Value_T>({_get_pos, _data.end()}, endianness);
+    std::advance(_get_pos, value_size<Value_T>());
+
+    return out;
+  }
+
+  #endif
 
   template <typename... Value_Ts>
   auto try_read() noexcept {
@@ -95,14 +111,6 @@ class byte_read_buffer_view {
     } else {
       _get_pos = _data.end();
     }
-
-    return out;
-  }
-
-  template <typename Value_T>
-  auto read(std::endian endianness) {
-    const auto out = io::read<Value_T>({_get_pos , _data.end()}, endianness);
-    std::advance(_get_pos, value_size<Value_T>());
 
     return out;
   }

@@ -3,6 +3,10 @@
 #include "wite/env/environment.hpp"
 #include "wite/io/types.hpp"
 
+#ifdef WITE_NO_EXCEPTIONS
+#error "Exceptions are required if binascii/hexlify.hpp is included"
+#endif
+
 #include <array>
 #include <string>
 #include <stdexcept>
