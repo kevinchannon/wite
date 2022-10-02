@@ -30,9 +30,7 @@ namespace detail::buffer::write {
   template<typename Encoded_T>
     requires is_encoded<std::decay_t<Encoded_T>>
   size_t _write_single_encoded_value(auto buffer, Encoded_T&& value) noexcept {
-
     std::copy_n(value.byte_begin(), value.byte_count(), buffer);
-
     return value.byte_count();
   }
 
@@ -40,7 +38,6 @@ namespace detail::buffer::write {
     requires((not common::is_sized_range_v<std::decay_t<Value_T>>) and (not is_encoded<std::decay_t<Value_T>>))
   size_t _write_single_value(auto buffer, Value_T&& value) noexcept {
     std::copy_n(reinterpret_cast<const io::byte*>(&value), sizeof(value), buffer);
-
     return sizeof(std::decay_t<Value_T>);
   }
 
