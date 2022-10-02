@@ -32,22 +32,10 @@ template <typename Value_T>
 auto unchecked_read(auto buffer_iterator) noexcept
 {
   if constexpr (io::is_encoded<Value_T>) {
-    using OutputValue_t = typename Value_T::value_type;
+    auto out = Value_T{};
+    std::copy_n(buffer_iterator, out.byte_count(), out.byte_begin());
+    return std::pair<typename Value_T::value_type, decltype(buffer_iterator)>{out.value, std::next(buffer_iterator, out.byte_count())};
 
-    auto out = OutputValue_t{};
-
-    if constexpr (std::is_same_v<io::little_endian<OutputValue_t>, Value_T>) {
-      std::copy_n(buffer_iterator, value_size<Value_T>(), reinterpret_cast<io::byte*>(&out));
-    } else if constexpr (std::is_same_v<io::big_endian<OutputValue_t>, Value_T>) {
-        std::copy_n(buffer_iterator,
-                  value_size<Value_T>(),
-                  std::make_reverse_iterator(std::next(reinterpret_cast<io::byte*>(&out), value_size<Value_T>())));
-    }
-    else {
-      static_assert(std::is_same_v<io::little_endian<OutputValue_t>, Value_T>, "Invalid encoding type");
-    }
-
-    return std::pair<OutputValue_t, decltype(buffer_iterator)>{out, std::next(buffer_iterator, value_size(out))};
   } else {
     auto out = Value_T{};
     std::copy_n(buffer_iterator, value_size<Value_T>(), reinterpret_cast<io::byte*>(&out));
