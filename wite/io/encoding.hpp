@@ -71,7 +71,7 @@ struct little_endian : public endianness<Value_T, endian::little> {
     }
   }
 
-  _WITE_NODISCARD auto byte_count() const noexcept { return sizeof(value_type); }
+  _WITE_NODISCARD constexpr auto byte_count() const noexcept { return sizeof(value_type); }
 };
 
 template <typename Value_T>
@@ -105,7 +105,7 @@ struct big_endian : public endianness<Value_T, endian::big> {
     }
   }
 
-  _WITE_NODISCARD auto byte_count() const noexcept { return sizeof(value_type); }
+  _WITE_NODISCARD constexpr auto byte_count() const noexcept { return sizeof(value_type); }
 };
 
 template <typename Value_T>

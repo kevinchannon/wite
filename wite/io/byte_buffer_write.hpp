@@ -30,17 +30,10 @@ namespace detail::buffer::write {
   template<typename Encoded_T>
     requires is_encoded<std::decay_t<Encoded_T>>
   size_t _write_single_encoded_value(auto buffer, Encoded_T&& value) noexcept {
-    using RawValue_t = typename std::decay_t<Encoded_T>::value_type;
 
-    if constexpr (std::is_same_v<little_endian<RawValue_t>, std::decay_t<Encoded_T>>) {
-      std::copy_n(reinterpret_cast<const io::byte*>(&value.value), sizeof(value.value), buffer);
-    } else if constexpr (std::is_same_v<big_endian<RawValue_t>, std::decay_t<Encoded_T>>) {
-      std::copy_n(std::make_reverse_iterator(std::next(reinterpret_cast<const io::byte*>(&value.value), sizeof(value.value))),
-                  sizeof(value.value),
-                  buffer);
-    }
+    std::copy_n(value.byte_begin(), value.byte_count(), buffer);
 
-    return sizeof(RawValue_t);
+    return value.byte_count();
   }
 
   template<typename Value_T>
