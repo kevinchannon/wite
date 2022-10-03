@@ -1,10 +1,8 @@
 # TODO
 
 ## IO
-* Read/write pairs and tuples (although this might just work...)
 
 ## String
-* Add `hexilify` and `unhexilify`
 * Add `fragment_string`
 * Add exmples
 
@@ -24,5 +22,3 @@
 * Add `index`
 
 ## Build things
-* Build in x64 and x86 in debug and release, to check things still work.
-* Build in different environments and compiler versions
