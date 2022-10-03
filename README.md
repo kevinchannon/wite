@@ -34,25 +34,63 @@ auto buffer_data = std::vector<io::byte>(100, io::byte{0x00});
   const auto u16 = uint16_t{100};
 
   // Write something to the buffer
-  auto writer = wite::io::bytes_write_buffer_view{my_buffer};
+  auto writer = io::bytes_write_buffer_view{buffer_data};
 
-  wite::io::write(writer, d);
-  wite::io::write(writer, i32);
-  wite::io::write(writer, u16);
+  writer.write(d);
+  writer.write(i32);
+  writer.write(u16);
 }
 
 // Read things from the buffer
 {
-  auto reader = wite::io::byte_read_buffer_view{buffer_data};
+  auto reader = io::byte_read_buffer_view{buffer_data};
 
-  const auto d = wite::io::read<double>(reader);
-  const auto i32 = wite::io::read<int32_t>(reader);
-  const auto u16 = wite::io::read<uint16_t>(reader);
+  const auto d = reader.read<double>();
+  const auto i32 = reader.read<int32_t>();
+  const auto u16 = reader.read<uint16_t>();
 }
 ```
 This example is using `byte_read_buffer_view` and `byte_write_buffer_view` to manipulate the bytes in the buffer. This does things like increment the read/write position and things like that.
 
-Because it's not specified above, then the write operations are using the native platform endianness.  The endianness may be specified as a template parameter (if you know it at compile time), or as an additional parameter if it's only known at runtime, for some reason.
+Because it's not specified above, then the write operations are using the native platform endianness.  The endianness may be specified using an "encoding adapter" (if you know it at compile time): 
+```
+const auto x = reader.read<io::big_endian<uint32_t>>();
+```
+or as an additional parameter if it's only known at runtime, for some reason.
+```
+const auto x = reader.read<uint32_t>(io::endian::big);
+```
+
+You can also write ranges of values (like vectors, arrays and lists):
+```
+const auto my_values = std::vector<double>{ 1.0, 2.0, 3.0 };
+const auto bytes_written = writer.write(my_values);
+```
+Because we don't know how the allocator works for your chosen range, in general, the read interface for ranges is a little different. You call the `read_range` method and pass it a range to use for the output data. This needs to have the right size and type for the data you expect. It's moved in if it's an R-value, so you can do something like this:
+```
+const auto v = reader.read(std::vector<double>(3, 0.0));
+```
+This will read a vector from the buffer into `v`.
+
+### Multiple values
+Often, you will know what things you expect to read and write at compile time.  If so, then you can write/read a bunch of values in one operation, like this:
+```
+const auto a = uint32_t{0x12345678};
+const auto b = uint16_t{0xABCD};
+const auto c = true;
+const auto d = uint32_t{0xFEDCBA98};
+
+const auto bytes_written = writer.write(a, io::big_endian{b}, c, d);
+
+...
+
+const auto [ w, x, y, z ] =
+    reader.read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
+```
+The advantage of this approach is that the various checks on the buffer capacity are only done once at the start, rather than for each value. Notice that you can use encoding adapters in the arguments. It's also possible to write ranges in this way too. So, you might serialise the size of a vector ahead of the vector itself. So, for a vector, `v`:
+```
+writer.write(uint64_t{v.size()}, v);
+```
 
 ## Simple byte conversions
 If you have a value and you want to get it as an array of `std::bytes`, then you can simply do:

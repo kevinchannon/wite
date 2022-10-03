@@ -1,10 +1,7 @@
 # TODO
 
 ## IO
-* Add read/write functionality via streams (in addition to the buffer interface)
-* Add macro to macro out exception-throwing code
-* Update readme with new things
-* Update examples with new things
+* Read/write pairs and tuples (although this might just work...)
 
 ## String
 * Add `hexilify` and `unhexilify`
