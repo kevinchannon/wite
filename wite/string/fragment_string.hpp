@@ -4,9 +4,9 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
 #include <numeric>
 #include <string>
-#include <cstring>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -35,14 +35,19 @@ namespace detail {
 template <typename Char_T, size_t FRAGMENT_COUNT = 1>
 class basic_fragment_string {
  public:
-  using value_type   = Char_T;
-  using str_type     = const value_type*;
-  using storage_type = std::array<str_type, FRAGMENT_COUNT>;
-  using this_type    = basic_fragment_string<value_type, FRAGMENT_COUNT>;
+  using value_type      = Char_T;
+  using size_type       = size_t;
+  using difference_type = std::ptrdiff_t;
+  using reference       = const value_type&;
+  using const_reference = reference;
+  using pointer         = const value_type*;
+  using const_pointer   = pointer;
+
+  using storage_type    = std::array<pointer, FRAGMENT_COUNT>;
 
   WITE_DEFAULT_CONSTRUCTORS(basic_fragment_string);
 
-  constexpr basic_fragment_string(str_type str) : _fragments{{str}} {}
+  constexpr basic_fragment_string(pointer str) : _fragments{{str}} {}
 
   template <size_t STR_LEN>
   constexpr basic_fragment_string(value_type psz[STR_LEN]) noexcept : _fragments{psz} {}
