@@ -53,12 +53,12 @@ void direct_read_write_with_offsets() {
   // If you don't want to be bothered with this, then the easiest thing is to use a byte-buffer view
   // (see simple_buffer_write_read_operations)
   io::write(global_buffer, int{42});
-  io::write({std::next(global_buffer.begin(), sizeof(int)), global_buffer.end()}, 3.141562);
+  io::write_at(sizeof(int), global_buffer, 3.141562);
 
   // When we read, then we again have to manage the offset of the elements ourselves. Again, using a
   // byte_read_buffer_view simplifies this.
   const auto a = io::read<int>(global_buffer);
-  const auto b = io::read<double>({std::next(global_buffer.begin(), sizeof(int)), global_buffer.end()});
+  const auto b = io::read_at<double>(sizeof(int), global_buffer);
 
   std::cout << "Read int " << a << " from the buffer" << std::endl;
   std::cout << "Read double " << b << " from the buffer" << std::endl;
