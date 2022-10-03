@@ -68,7 +68,7 @@ const auto bytes_written = writer.write(my_values);
 ```
 Because we don't know how the allocator works for your chosen range, in general, the read interface for ranges is a little different. You call the `read_range` method and pass it a range to use for the output data. This needs to have the right size and type for the data you expect. It's moved in if it's an R-value, so you can do something like this:
 ```
-const auto v = reader.read(std::vector<double>(3, 0.0));
+const auto v = reader.read_range(std::vector<double>(3, 0.0));
 ```
 This will read a vector from the buffer into `v`.
 
