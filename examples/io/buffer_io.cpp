@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string_view>
 #include <cassert>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +40,22 @@ void direct_read_write_of_buffer() {
   const auto b = io::read<double>(global_buffer);
 
   std::cout << "Read double " << b << " from buffer" << std::endl;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void direct_read_write_ranges() {
+  title("Direct buffer write/read of range values");
+
+    // Write then read a vector.
+    io::write(global_buffer, std::vector<uint32_t>{ 1, 2, 3, 4, 5});
+    const auto v = io::read_range(global_buffer, std::vector<uint32_t>(5, 0));
+
+    std::cout << "Read vector of uint32 values: [";
+    for (const auto& x : v) {
+      std::cout << " " << x;
+    }
+    std::cout << " ]" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -258,6 +275,9 @@ void buffer_multiple_write_read_operations() {
 
 void direct_buffer_access_examples() {
   direct_read_write_of_buffer();
+  std::cout << std::endl;
+
+  direct_read_write_ranges();
   std::cout << std::endl;
 
   direct_read_write_with_offsets();

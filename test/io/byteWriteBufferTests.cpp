@@ -194,6 +194,25 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
             REQUIRE(0x17 == io::to_integer<uint8_t>(buffer[15]));
           }
         }
+
+        SECTION("writes R-value ranges correctly") {
+          REQUIRE(3 * sizeof(uint32_t) == io::write(buffer, std::vector<uint32_t>{1, 2, 3}));
+
+          REQUIRE(0x01 == io::to_integer<uint8_t>(buffer[ 0]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[ 1]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[ 2]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[ 3]));
+
+          REQUIRE(0x02 == io::to_integer<uint8_t>(buffer[ 4]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[ 5]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[ 6]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[ 7]));
+
+          REQUIRE(0x03 == io::to_integer<uint8_t>(buffer[ 8]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[ 9]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[10]));
+          REQUIRE(0x00 == io::to_integer<uint8_t>(buffer[11]));
+        }
       }
 
       SECTION("static ranges") {
@@ -297,6 +316,37 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
         const auto pos = size_t{2};
 
         REQUIRE(pos + value_size * values.size() == io::write_at(pos, data, values));
+
+        REQUIRE(0x78 == io::to_integer<uint8_t>(data[2]));
+        REQUIRE(0x56 == io::to_integer<uint8_t>(data[3]));
+        REQUIRE(0x34 == io::to_integer<uint8_t>(data[4]));
+        REQUIRE(0x12 == io::to_integer<uint8_t>(data[5]));
+
+        REQUIRE(0x77 == io::to_integer<uint8_t>(data[6]));
+        REQUIRE(0xEF == io::to_integer<uint8_t>(data[7]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[8]));
+        REQUIRE(0xAB == io::to_integer<uint8_t>(data[9]));
+
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[10]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[11]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[12]));
+        REQUIRE(0xCD == io::to_integer<uint8_t>(data[13]));
+
+        REQUIRE(0x34 == io::to_integer<uint8_t>(data[14]));
+        REQUIRE(0x64 == io::to_integer<uint8_t>(data[15]));
+        REQUIRE(0x45 == io::to_integer<uint8_t>(data[16]));
+        REQUIRE(0x17 == io::to_integer<uint8_t>(data[17]));
+      }
+
+      SECTION("R-value range values are written correctly") {
+        const auto values         = {uint32_t{0x12345678}, uint32_t{0xABCDEF77}, uint32_t{0xCDCDCDCD}, uint32_t{0x17456434}};
+        constexpr auto value_size = sizeof(decltype(values)::value_type);
+
+        const auto pos = size_t{2};
+
+        REQUIRE(
+            pos + value_size * values.size() ==
+            io::write_at(pos, data, std::vector<uint32_t>{uint32_t{0x12345678}, uint32_t{0xABCDEF77}, uint32_t{0xCDCDCDCD}, uint32_t{0x17456434}}));
 
         REQUIRE(0x78 == io::to_integer<uint8_t>(data[2]));
         REQUIRE(0x56 == io::to_integer<uint8_t>(data[3]));
@@ -443,6 +493,30 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
             const auto result = io::try_write(data, values);
 
             REQUIRE(result.ok());
+            REQUIRE(sizeof(float) * values.size() == result.value());
+
+            REQUIRE(extract_byte(values[0], 0) == io::to_integer<uint32_t>(data[0]));
+            REQUIRE(extract_byte(values[0], 1) == io::to_integer<uint32_t>(data[1]));
+            REQUIRE(extract_byte(values[0], 2) == io::to_integer<uint32_t>(data[2]));
+            REQUIRE(extract_byte(values[0], 3) == io::to_integer<uint32_t>(data[3]));
+
+            REQUIRE(extract_byte(values[1], 0) == io::to_integer<uint32_t>(data[4]));
+            REQUIRE(extract_byte(values[1], 1) == io::to_integer<uint32_t>(data[5]));
+            REQUIRE(extract_byte(values[1], 2) == io::to_integer<uint32_t>(data[6]));
+            REQUIRE(extract_byte(values[1], 3) == io::to_integer<uint32_t>(data[7]));
+
+            REQUIRE(extract_byte(values[2], 0) == io::to_integer<uint32_t>(data[8]));
+            REQUIRE(extract_byte(values[2], 1) == io::to_integer<uint32_t>(data[9]));
+            REQUIRE(extract_byte(values[2], 2) == io::to_integer<uint32_t>(data[10]));
+            REQUIRE(extract_byte(values[2], 3) == io::to_integer<uint32_t>(data[11]));
+          }
+
+          SECTION("R-value ranges") {
+            const auto result = io::try_write(data, std::vector{1.123f, 2.456f, 3.789f});
+
+            REQUIRE(result.ok());
+
+            const auto values = std::vector{1.123f, 2.456f, 3.789f};
             REQUIRE(sizeof(float) * values.size() == result.value());
 
             REQUIRE(extract_byte(values[0], 0) == io::to_integer<uint32_t>(data[0]));

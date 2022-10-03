@@ -107,7 +107,7 @@ namespace detail::buffer::write {
 
 template <typename... Value_Ts>
 size_t write(std::span<io::byte> buffer, Value_Ts&&... values) {
-  if (buffer.size() < byte_count(std::forward<Value_Ts>(values)...)) {
+  if (buffer.size() < byte_count(values...)) {
     throw std::out_of_range{"Insufficient buffer space for write"};
   }
 
@@ -122,7 +122,7 @@ namespace detail::buffer::write {
 
   template <typename Value_T>
   write_result_t _try_write_single_value(std::span<io::byte> buffer, Value_T&& to_write) noexcept {
-    if (buffer.size() < byte_count(std::forward<Value_T>(to_write))) {
+    if (buffer.size() < byte_count(to_write)) {
       return write_error::insufficient_buffer;
     }
 
@@ -131,7 +131,7 @@ namespace detail::buffer::write {
 
   template <typename Range_T>
   write_result_t _try_write_range_value(std::span<io::byte> buffer, Range_T&& to_write) noexcept {
-    if (buffer.size() < byte_count(std::forward<Range_T>(to_write))) {
+    if (buffer.size() < byte_count(to_write)) {
       return write_error::insufficient_buffer;
     }
 
@@ -156,7 +156,7 @@ write_result_t try_write(std::span<io::byte> buffer, Value_T&& to_write) noexcep
 template <typename Value_T>
   requires is_buffer_writeable<Value_T>
 write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T value) noexcept {
-  if (position + sizeof(value) < position) {
+  if (position + byte_count(value) < position) {
     return write_error::invalid_position_offset;
   }
 
@@ -219,7 +219,7 @@ namespace detail::buffer::write {
 
 template <typename... Value_Ts>
 size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... values) {
-  const auto write_end_pos = position + byte_count(std::forward<Value_Ts>(values)...);
+  const auto write_end_pos = position + byte_count(values...);
   if (write_end_pos < position) {
     throw std::invalid_argument{"Buffer read position exceeds allowed value"};
   }
