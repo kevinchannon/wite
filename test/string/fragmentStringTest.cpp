@@ -30,4 +30,9 @@ TEST_CASE("fragment_string tests", "[string]") {
     const auto fs_5 = fs_4 + "is " + "a " + "weasle";
     REQUIRE(std::string{"me thinks it is a weasle"} == fs_5.to_str());
   }
+
+  SECTION("length and size match") {
+    const auto fs = string::fragment_string{"Lorem ipsum dolor sit"};
+    REQUIRE(fs.length() == fs.size());
+  }
 }

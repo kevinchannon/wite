@@ -2,10 +2,11 @@
 
 #include <wite/common/constructor_macros.hpp>
 
-#include <array>
-#include <string>
 #include <algorithm>
+#include <array>
 #include <numeric>
+#include <string>
+#include <cstring>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -61,13 +62,15 @@ class basic_fragment_string {
     return out;
   }
 
-  const storage_type& fragments() const { return _fragments; }
+  [[nodiscard]] constexpr const storage_type& fragments() const noexcept { return _fragments; }
 
-  size_t length() const {
+  [[nodiscard]] constexpr auto length() const noexcept {
     return std::accumulate(_fragments.begin(), _fragments.end(), size_t{}, [](auto&& len, auto&& fragment) {
       return len += detail::string_length(fragment);
     });
   }
+
+  [[nodiscard]] constexpr auto size() const noexcept { return length(); }
 
  private:
   storage_type _fragments;
@@ -82,7 +85,7 @@ using fragment_wstring = basic_fragment_string<wchar_t>;
 
 template <typename Char_T, size_t LEFT_FRAG_COUNT, size_t STR_LEN>
 basic_fragment_string<Char_T, LEFT_FRAG_COUNT + 1> operator+(const basic_fragment_string<Char_T, LEFT_FRAG_COUNT>& left,
-                                                           const Char_T right[STR_LEN]) {
+                                                             const Char_T right[STR_LEN]) {
   return basic_fragment_string<Char_T, LEFT_FRAG_COUNT + 1>(left, basic_fragment_string<Char_T>(right));
 }
 
@@ -90,7 +93,7 @@ basic_fragment_string<Char_T, LEFT_FRAG_COUNT + 1> operator+(const basic_fragmen
 
 template <typename Char_T, size_t LEFT_FRAG_COUNT>
 basic_fragment_string<Char_T, LEFT_FRAG_COUNT + 1> operator+(const basic_fragment_string<Char_T, LEFT_FRAG_COUNT>& left,
-                                                           const Char_T* right) {
+                                                             const Char_T* right) {
   return basic_fragment_string<Char_T, LEFT_FRAG_COUNT + 1>(left, basic_fragment_string<Char_T>(right));
 }
 
