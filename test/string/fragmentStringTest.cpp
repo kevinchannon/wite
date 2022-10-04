@@ -66,12 +66,21 @@ TEST_CASE("fragment_string tests", "[string]") {
 }
 
 TEST_CASE("fragment_string iterator", "[string]") {
-  SECTION("construction") {
-    const char* s1 = "first fragment";
-    const char* s2 = "second fragment";
+  const char* s1 = "first fragment";
+  const char* s2 = "second fragment";
 
-    const auto fs = fragment_string{s1} + " " + s2;
+  const auto fs = fragment_string{s1} + " " + s2;
 
+  SECTION("get begin") {
     REQUIRE('f' == *fs.begin());
+  }
+
+  SECTION("operator++") {
+    auto it = fs.begin();
+
+    for (auto i = 0u; i < std::strlen(s1); ++i) {
+      REQUIRE(s1[i] == *it);
+      ++it;
+    }
   }
 }

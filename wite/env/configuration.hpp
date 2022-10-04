@@ -20,3 +20,9 @@
 #else
 #define _WITE_CONFIG_WORD_SIZE_64
 #endif
+
+#ifdef _WITE_CONFIG_DEBUG
+#define _WITE_RELEASE_NOEXCEPT
+#else
+#define _WITE_RELEASE_NOEXCEPT noexcept
+#endif

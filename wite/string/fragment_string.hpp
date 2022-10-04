@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wite/common/constructor_macros.hpp>
+#include <wite/env/environment.hpp>
 
 #include <algorithm>
 #include <array>
@@ -35,7 +36,6 @@ namespace detail {
 template <typename Char_T, size_t FRAGMENT_COUNT = 1>
 class basic_fragment_string {
  public:
-
   class iterator {
    public:
     using value_type      = Char_T;
@@ -47,8 +47,13 @@ class basic_fragment_string {
     using const_pointer   = pointer;
 
     iterator(const basic_fragment_string& parent) : _parent{parent}, _current{_parent.fragments().front()} {}
-    
+
     [[nodiscard]] constexpr const_reference operator*() const { return *_current; }
+
+    iterator& operator++() _WITE_RELEASE_NOEXCEPT {
+      ++_current;
+      return *this;
+    }
 
    private:
     const basic_fragment_string& _parent;
