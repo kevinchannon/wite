@@ -35,6 +35,26 @@ namespace detail {
 template <typename Char_T, size_t FRAGMENT_COUNT = 1>
 class basic_fragment_string {
  public:
+
+  class iterator {
+   public:
+    using value_type      = Char_T;
+    using size_type       = size_t;
+    using difference_type = std::ptrdiff_t;
+    using reference       = const value_type&;
+    using const_reference = reference;
+    using pointer         = const value_type*;
+    using const_pointer   = pointer;
+
+    iterator(const basic_fragment_string& parent) : _parent{parent}, _current{_parent.fragments().front()} {}
+    
+    [[nodiscard]] constexpr const_reference operator*() const { return *_current; }
+
+   private:
+    const basic_fragment_string& _parent;
+    pointer _current;
+  };
+
   using value_type      = Char_T;
   using size_type       = size_t;
   using difference_type = std::ptrdiff_t;
@@ -42,8 +62,9 @@ class basic_fragment_string {
   using const_reference = reference;
   using pointer         = const value_type*;
   using const_pointer   = pointer;
+  using const_iterator  = iterator;
 
-  using storage_type    = std::array<pointer, FRAGMENT_COUNT>;
+  using storage_type = std::array<pointer, FRAGMENT_COUNT>;
 
   WITE_DEFAULT_CONSTRUCTORS(basic_fragment_string);
 
@@ -76,6 +97,8 @@ class basic_fragment_string {
   }
 
   [[nodiscard]] constexpr auto size() const noexcept { return length(); }
+
+  [[nodiscard]] auto begin() const noexcept { return iterator(*this); }
 
  private:
   storage_type _fragments;

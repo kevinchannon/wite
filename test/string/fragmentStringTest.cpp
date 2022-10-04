@@ -66,5 +66,12 @@ TEST_CASE("fragment_string tests", "[string]") {
 }
 
 TEST_CASE("fragment_string iterator", "[string]") {
+  SECTION("construction") {
+    const char* s1 = "first fragment";
+    const char* s2 = "second fragment";
 
+    const auto fs = fragment_string{s1} + " " + s2;
+
+    REQUIRE('f' == *fs.begin());
+  }
 }
