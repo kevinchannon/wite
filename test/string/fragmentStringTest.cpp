@@ -78,9 +78,21 @@ TEST_CASE("fragment_string iterator", "[string]") {
   SECTION("operator++") {
     auto it = fs.begin();
 
-    for (auto i = 0u; i < std::strlen(s1); ++i) {
-      REQUIRE(s1[i] == *it);
-      ++it;
+    SECTION("iterates over the first fragment") {
+      for (auto i = 0u; i < std::strlen(s1); ++i) {
+        REQUIRE(s1[i] == *it);
+        ++it;
+      }
+
+      SECTION("and traverses across fagments") {
+        REQUIRE(' ' == *it);
+        ++it;
+
+        for (auto i = 0u; i < std::strlen(s2); ++i) {
+          REQUIRE(s2[i] == *it);
+          ++it;
+        }
+      }
     }
   }
 }

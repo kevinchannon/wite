@@ -36,6 +36,8 @@ namespace detail {
 template <typename Char_T, size_t FRAGMENT_COUNT = 1>
 class basic_fragment_string {
  public:
+  using storage_type = std::array<const Char_T*, FRAGMENT_COUNT>;
+
   class iterator {
    public:
     using value_type      = Char_T;
@@ -46,17 +48,24 @@ class basic_fragment_string {
     using pointer         = const value_type*;
     using const_pointer   = pointer;
 
-    iterator(const basic_fragment_string& parent) : _parent{parent}, _current{_parent.fragments().front()} {}
+    iterator(const basic_fragment_string& parent)
+        : _fragment{parent.fragments().begin()}, _fragment_end{parent.fragments().end()}, _current{*_fragment} {}
 
     [[nodiscard]] constexpr const_reference operator*() const { return *_current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
       ++_current;
+      if (0 == *_current and _fragment != std::prev(_fragment_end)) {
+        ++_fragment;
+        _current = *_fragment;
+      }
+
       return *this;
     }
 
    private:
-    const basic_fragment_string& _parent;
+    basic_fragment_string::storage_type::const_iterator _fragment;
+    basic_fragment_string::storage_type::const_iterator _fragment_end;
     pointer _current;
   };
 
@@ -68,8 +77,6 @@ class basic_fragment_string {
   using pointer         = const value_type*;
   using const_pointer   = pointer;
   using const_iterator  = iterator;
-
-  using storage_type = std::array<pointer, FRAGMENT_COUNT>;
 
   WITE_DEFAULT_CONSTRUCTORS(basic_fragment_string);
 
