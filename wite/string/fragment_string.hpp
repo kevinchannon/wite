@@ -8,8 +8,9 @@
 #include <cstring>
 #include <numeric>
 #include <ranges>
-#include <string>
 #include <stdexcept>
+#include <string>
+#include <string_view>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -31,26 +32,16 @@ namespace detail {
       static_assert(std::bool_constant<std::is_same_v<Char_T, char>>::value, "Invalid char type");
     }
   }
-
-  template<typename Char_T>
-  struct _fragment {
-    size_t length{0};
-    const Char_T* data{nullptr};
-
-    WITE_DEFAULT_CONSTRUCTORS(_fragment);
-
-    _fragment(size_t len, const Char_T* data) : length{len}, data{data} {}
-  };
-
 }  // namespace detail
 
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Char_T, size_t FRAGMENT_COUNT = 1>
 class basic_fragment_string {
+  using _fragment_type = std::basic_string_view<Char_T>;
 
  public:
-  using storage_type = std::array<detail::_fragment<Char_T>, FRAGMENT_COUNT>;
+  using storage_type = std::array<_fragment_type, FRAGMENT_COUNT>;
 
   class iterator {
    public:
@@ -62,9 +53,9 @@ class basic_fragment_string {
     using pointer         = const value_type*;
     using const_pointer   = pointer;
 
-    iterator(basic_fragment_string::storage_type::const_iterator begin_fragment,
-             basic_fragment_string::storage_type::const_iterator end_fragment,
-             pointer current)
+    iterator(typename basic_fragment_string::storage_type::const_iterator begin_fragment,
+             typename basic_fragment_string::storage_type::const_iterator end_fragment,
+             typename basic_fragment_string::storage_type::value_type::const_iterator current)
         : _fragment{begin_fragment}, _fragment_end{end_fragment}, _current{current} {}
 
     [[nodiscard]] constexpr auto operator<=>(const iterator&) const = default;
@@ -73,23 +64,23 @@ class basic_fragment_string {
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
-      if (_current == std::prev(_fragment_end)->data + std::prev(_fragment_end)->length) {
+      if (_fragment == std::prev(_fragment_end) and _current == std::prev(_fragment_end)->end()) {
         throw std::out_of_range{"fragment_string::operator++: already at end"};
       }
 #endif
       ++_current;
-      if (0 == *_current and _fragment != std::prev(_fragment_end)) {
+      if (_fragment->end() == _current and _fragment != std::prev(_fragment_end)) {
         ++_fragment;
-        _current = _fragment->data;
+        _current = _fragment->begin();
       }
 
       return *this;
     }
 
     iterator& operator--() _WITE_RELEASE_NOEXCEPT {
-      if (_current == _fragment->data) {
+      if (_current == _fragment->begin()) {
         --_fragment;
-        _current = _fragment->data + _fragment->length;
+        _current = _fragment->end();
       }
 
       --_current;
@@ -101,19 +92,19 @@ class basic_fragment_string {
       auto fragment_start_offset = size_t{0};
 
       _fragment = std::find_if(_fragment, _fragment_end, [offset, &fragment_start_offset](const auto& f) {
-        if (fragment_start_offset + f.length >= offset) {
+        if (fragment_start_offset + f.length() >= offset) {
           return true;
         }
 
-        fragment_start_offset += f.length;
+        fragment_start_offset += f.length();
       });
 
-      _current = _fragment->data + (offset - fragment_start_offset);
+      _current = std::next(_fragment->begin(), offset - fragment_start_offset);
     }
 
-    basic_fragment_string::storage_type::const_iterator _fragment;
-    basic_fragment_string::storage_type::const_iterator _fragment_end;
-    pointer _current;
+    typename basic_fragment_string::storage_type::const_iterator _fragment;
+    typename basic_fragment_string::storage_type::const_iterator _fragment_end;
+    typename basic_fragment_string::storage_type::value_type::const_iterator _current;
   };
 
   using value_type      = Char_T;
@@ -127,10 +118,10 @@ class basic_fragment_string {
 
   WITE_DEFAULT_CONSTRUCTORS(basic_fragment_string);
 
-  constexpr basic_fragment_string(pointer str) : _fragments{{{detail::string_length(str), str}}} {}
+  constexpr basic_fragment_string(pointer str) : _fragments{{{str}}} {}
 
   template <size_t STR_LEN>
-  constexpr basic_fragment_string(value_type psz[STR_LEN]) noexcept : _fragments{{{detail::string_length(psz), psz}}} {}
+  constexpr basic_fragment_string(value_type psz[STR_LEN]) noexcept : _fragments{{{psz}}} {}
 
   template <size_t LEFT_FRAG_COUNT, size_t RIGHT_FRAG_COUNT>
   constexpr basic_fragment_string(const basic_fragment_string<value_type, LEFT_FRAG_COUNT>& left,
@@ -143,7 +134,7 @@ class basic_fragment_string {
     auto out = std::basic_string<value_type>{};
     out.reserve(length());
     out = std::accumulate(_fragments.cbegin(), _fragments.cend(), std::move(out), [](auto&& str, const auto& fragment) {
-      return str += fragment.data;
+      return str += fragment.data();
     });
     return out;
   }
@@ -152,16 +143,16 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr auto length() const noexcept {
     return std::accumulate(
-        _fragments.begin(), _fragments.end(), size_t{}, [](auto&& len, auto&& fragment) { return len += fragment.length; });
+        _fragments.begin(), _fragments.end(), size_t{}, [](auto&& len, auto&& fragment) { return len += fragment.length(); });
   }
 
   [[nodiscard]] constexpr auto size() const noexcept { return length(); }
 
   [[nodiscard]] constexpr auto begin() const noexcept {
-    return iterator(_fragments.begin(), _fragments.end(), _fragments.front().data);
+    return iterator(_fragments.begin(), _fragments.end(), _fragments.front().begin());
   }
   [[nodiscard]] constexpr auto end() const noexcept {
-    return iterator(std::prev(_fragments.end()), _fragments.end(), std::next(_fragments.back().data, _fragments.back().length));
+    return iterator(std::prev(_fragments.end()), _fragments.end(), _fragments.back().end());
   }
 
  private:

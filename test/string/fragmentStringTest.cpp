@@ -76,8 +76,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
   }
 
   SECTION("end points to the null char at the end of the last fragment") {
-    const auto end = fs.end();
-    REQUIRE((s2 + std::strlen(s2) == &(*end)));
+    auto end = fs.end();
+    REQUIRE(s2 + std::strlen(s2) == (&(*(--end)) + 1));
   }
 
   SECTION("operator++") {
