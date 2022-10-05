@@ -80,6 +80,16 @@ class basic_fragment_string {
       return *this;
     }
 
+    iterator& operator--() _WITE_RELEASE_NOEXCEPT {
+      if (_current == _fragment->data) {
+        --_fragment;
+        _current = _fragment->data + _fragment->length;
+      }
+
+      --_current;
+      return *this;
+    }
+
    private:
     void _seek(size_type offset) {
       auto fragment_start_offset = size_t{0};

@@ -83,13 +83,13 @@ TEST_CASE("fragment_string iterator", "[string]") {
   SECTION("operator++") {
     auto it = fs.begin();
 
-    SECTION("iterates over the first fragment") {
+    SECTION("iterates over the first fragment...") {
       for (auto i = 0u; i < std::strlen(s1); ++i) {
         REQUIRE(s1[i] == *it);
         ++it;
       }
 
-      SECTION("and traverses across fagments") {
+      SECTION("and then traverses across fagments...") {
         REQUIRE(' ' == *it);
         ++it;
 
@@ -97,9 +97,36 @@ TEST_CASE("fragment_string iterator", "[string]") {
           REQUIRE(s2[i] == *it);
           ++it;
         }
+
+        SECTION("and finishes at the end") {
+          REQUIRE(fs.end() == it);
+        }
+      }
+    }
+  }
+
+  SECTION("operator--") {
+    auto it = fs.end();
+
+    SECTION("iterates over the last fragment") {
+      for (auto i = static_cast<int64_t>(std::strlen(s2) - 1); i >= 0; --i) {
+        --it;
+        REQUIRE(s2[i] == *it);
       }
 
-      REQUIRE(fs.end() == it);
+      SECTION("and then traverses across fagments...") {
+        --it;
+        REQUIRE(' ' == *it);
+
+        for (auto i = static_cast<int64_t>(std::strlen(s1) - 1); i >= 0; --i) {
+          --it;
+          REQUIRE(s1[i] == *it);
+        }
+
+        SECTION("and finishes at the beginning") {
+          REQUIRE(fs.begin() == it);
+        }
+      }
     }
   }
 }
