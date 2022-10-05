@@ -104,6 +104,10 @@ class basic_fragment_string {
         return false;
       });
 
+      if (_fragment == _fragment_end) {
+        throw std::out_of_range{"fragment_string::_seek: trying to seek beyond end of range"};
+      }
+
       _current = std::next(_fragment->begin(), offset);
     }
 

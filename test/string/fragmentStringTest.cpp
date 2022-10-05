@@ -158,5 +158,11 @@ TEST_CASE("fragment_string iterator", "[string]") {
       it += 20;
       REQUIRE('d' == *it);
     }
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("increment beyond the end throws std::out_of_range in debug") {
+      REQUIRE_THROWS_AS(it += 30, std::out_of_range);
+    }
+#endif
   }
 }
