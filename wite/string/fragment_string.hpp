@@ -87,19 +87,24 @@ class basic_fragment_string {
       return *this;
     }
 
+    iterator& operator+=(difference_type offset) _WITE_RELEASE_NOEXCEPT {
+      _seek(offset);
+      return *this;
+    }
+
    private:
     void _seek(size_type offset) {
-      auto fragment_start_offset = size_t{0};
-
-      _fragment = std::find_if(_fragment, _fragment_end, [offset, &fragment_start_offset](const auto& f) {
-        if (fragment_start_offset + f.length() >= offset) {
+      _fragment = std::find_if(_fragment, _fragment_end, [&offset](const auto& f) {
+        const auto fragment_len = f.length();
+        if (fragment_len > offset) {
           return true;
         }
 
-        fragment_start_offset += f.length();
+        offset -= fragment_len;
+        return false;
       });
 
-      _current = std::next(_fragment->begin(), offset - fragment_start_offset);
+      _current = std::next(_fragment->begin(), offset);
     }
 
     typename basic_fragment_string::storage_type::const_iterator _fragment;

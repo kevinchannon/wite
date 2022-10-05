@@ -135,4 +135,28 @@ TEST_CASE("fragment_string iterator", "[string]") {
       }
     }
   }
+
+  SECTION("operator+=") {
+    auto it = fs.begin();
+
+    SECTION("increment within fragment") {
+      it += 5;
+      REQUIRE(' ' == *it);
+    }
+
+    SECTION("increment up to fragment boundary") {
+      it += 13;
+      REQUIRE('t' == *it);
+    }
+
+    SECTION("increment to fragment boundary") {
+      it += 14;
+      REQUIRE(' ' == *it);
+    }
+
+    SECTION("increment accross multiple fragments") {
+      it += 20;
+      REQUIRE('d' == *it);
+    }
+  }
 }
