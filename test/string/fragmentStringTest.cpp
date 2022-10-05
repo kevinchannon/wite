@@ -98,6 +98,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
           ++it;
         }
       }
+
+      REQUIRE(fs.end() == it);
     }
   }
 }

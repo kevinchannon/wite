@@ -66,6 +66,8 @@ class basic_fragment_string {
              pointer current)
         : _fragment{begin_fragment}, _fragment_end{end_fragment}, _current{current} {}
 
+    [[nodiscard]] constexpr auto operator<=>(const iterator&) const = default;
+
     [[nodiscard]] constexpr const_reference operator*() const { return *_current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
