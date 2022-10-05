@@ -101,6 +101,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
         SECTION("and finishes at the end") {
           REQUIRE(fs.end() == it);
         }
+
+#ifdef _WITE_CONFIG_DEBUG
+        SECTION("incrementing out past the end throws std::out_of_range in debug") {
+          REQUIRE_THROWS_AS(++it, std::out_of_range);
+        }
+#endif
       }
     }
   }

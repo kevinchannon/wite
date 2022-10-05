@@ -9,6 +9,7 @@
 #include <numeric>
 #include <ranges>
 #include <string>
+#include <stdexcept>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +72,11 @@ class basic_fragment_string {
     [[nodiscard]] constexpr const_reference operator*() const { return *_current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
+#ifdef _WITE_CONFIG_DEBUG
+      if (_current == std::prev(_fragment_end)->data + std::prev(_fragment_end)->length) {
+        throw std::out_of_range{"fragment_string::operator++: already at end"};
+      }
+#endif
       ++_current;
       if (0 == *_current and _fragment != std::prev(_fragment_end)) {
         ++_fragment;
