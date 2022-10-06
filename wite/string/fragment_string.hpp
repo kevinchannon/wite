@@ -14,6 +14,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WITE_CONFIG_DEBUG
+#define _WITE_FRAG_STR_DEBUG_ARG(arg) , arg
+#else
+#define _WITE_FRAG_STR_DEBUG_ARG(arg)
+#endif  // _WITE_CONFIG_DEBUG
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace wite {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,8 +63,13 @@ class basic_fragment_string {
 
     iterator(typename basic_fragment_string::storage_type::const_iterator begin_fragment,
              typename basic_fragment_string::storage_type::const_iterator end_fragment,
-             typename basic_fragment_string::storage_type::value_type::const_iterator current)
-        : _fragment{begin_fragment}, _fragment_end{end_fragment}, _current{current} {}
+             typename basic_fragment_string::storage_type::value_type::const_iterator current
+                 _WITE_FRAG_STR_DEBUG_ARG(typename basic_fragment_string::storage_type::const_iterator fragment_range_begin))
+        : _fragment{begin_fragment}
+        , _fragment_end{end_fragment}
+        , _current{current}
+        _WITE_FRAG_STR_DEBUG_ARG(_fragment_range_begin{fragment_range_begin})
+        {}
 
     [[nodiscard]] constexpr auto operator<=>(const iterator&) const = default;
 
@@ -78,6 +91,12 @@ class basic_fragment_string {
     }
 
     iterator& operator--() _WITE_RELEASE_NOEXCEPT {
+#ifdef _WITE_CONFIG_DEBUG
+      if (_fragment == _fragment_range_begin and _current == _fragment->begin()) {
+        throw std::out_of_range{"fragment_string::operator--: already at beginning"};
+      }
+#endif
+
       if (_current == _fragment->begin()) {
         --_fragment;
         _current = _fragment->end();
@@ -114,8 +133,12 @@ class basic_fragment_string {
     }
 
     typename basic_fragment_string::storage_type::const_iterator _fragment;
-    typename basic_fragment_string::storage_type::const_iterator _fragment_end;
+    const typename basic_fragment_string::storage_type::const_iterator _fragment_end;
     typename basic_fragment_string::storage_type::value_type::const_iterator _current;
+
+#ifdef _WITE_CONFIG_DEBUG
+    const typename basic_fragment_string::storage_type::const_iterator _fragment_range_begin;
+#endif
   };
 
   using value_type      = Char_T;
@@ -160,10 +183,12 @@ class basic_fragment_string {
   [[nodiscard]] constexpr auto size() const noexcept { return length(); }
 
   [[nodiscard]] constexpr auto begin() const noexcept {
-    return iterator(_fragments.begin(), _fragments.end(), _fragments.front().begin());
+    return iterator(
+        _fragments.begin(), _fragments.end(), _fragments.front().begin() _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
   }
   [[nodiscard]] constexpr auto end() const noexcept {
-    return iterator(std::prev(_fragments.end()), _fragments.end(), _fragments.back().end());
+    return iterator(
+        std::prev(_fragments.end()), _fragments.end(), _fragments.back().end() _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
   }
 
  private:

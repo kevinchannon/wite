@@ -132,6 +132,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
         SECTION("and finishes at the beginning") {
           REQUIRE(fs.begin() == it);
         }
+
+#ifdef _WITE_CONFIG_DEBUG
+        SECTION("decrementing past the beginning throws std::out_of_range in debug") {
+          REQUIRE_THROWS_AS(--it, std::out_of_range);
+        }
+#endif
       }
     }
   }
