@@ -2,7 +2,12 @@ name: Release
 permissions:
   contents: write
 
-on: workflow_dispatch
+on:
+    workflow_dispatch:
+        inputs:
+            git-ref:
+                description: Tag to release
+                required: false
 
 jobs:
   release:
@@ -12,7 +17,7 @@ jobs:
       
       - name: Package source code
         working-directory: build/
-        run: cmake --build . --target my_project_package
+        run: cmake --build . --target wite_package
 
       - name: Add packaged source code to release
         uses: svenstaro/upload-release-action@v2
