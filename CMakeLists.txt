@@ -8,7 +8,7 @@ project ("wite")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 
-include_directories(CMAKE_CURRENT_SOURCE_DIR)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Do this check in case we're included in another project via FetchContent
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
