@@ -8,6 +8,8 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL)
+
 enable_testing()
 
 add_executable(wite_test 
