@@ -6,8 +6,12 @@ on:
     workflow_dispatch:
         inputs:
             git-ref:
-                description: Tag to release
+                description: Commit to release
                 required: false
+            version:
+                description: Version to release
+                default: v1.0.0
+                required: true
 
 jobs:
   release:
@@ -26,4 +30,4 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/wite-src.zip
-          tag: ${{ github.ref }}
+          tag: ${{ github.event.inputs.version }}
