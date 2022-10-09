@@ -284,10 +284,25 @@ TEST_CASE("fragment_string iterator", "[string]") {
   }
 
   SECTION("distance between iterators") {
+      SECTION("zero distance"){
+        const auto it_1 = fs.begin();
+        const auto it_2 = it_1;
+        REQUIRE(0 == it_1 - it_2);
+        REQUIRE(0 == it_2 - it_1);
+      }
+      
     SECTION("within a fragment") {
       const auto it_1 = fs.begin();
       const auto it_2 = it_1 + 5;
       REQUIRE(5 == it_2 - it_1);
+      REQUIRE(-5 == it_1 - it_2);
+    }
+    
+    SECTION("across fragments") {
+      const auto it_1 = fs.begin() + 3;
+      const auto it_2 = it_1 + 18;
+      REQUIRE(15 == it_2 - it_1);
+      REQUIRE(-15 == it_1 - it_2);
     }
   }
 }

@@ -52,6 +52,8 @@ class basic_fragment_string {
   using storage_type = std::array<_fragment_type, FRAGMENT_COUNT>;
 
   class iterator {
+    using _fragment_iterator = typename basic_fragment_string::storage_type::const_iterator;
+   
    public:
     using value_type      = Char_T;
     using size_type       = size_t;
@@ -129,6 +131,19 @@ class basic_fragment_string {
     }
 
     difference_type operator-(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
+      auto distance = difference_type{0};
+      
+      const auto fragment_separation = _fragment - other._fragment;
+      if (fragment_separation > 0) {
+        return _sublength(other._fragment, _fragment)
+          + std::distance(_fragment->begin(), _current)
+          - std::distance(other._fragment->begin(), other._current);
+      } else if (fragment_separation < 0) {
+        _sublength(_fragment, other._fragment)
+          + std::distance(other._fragment->begin(), other._current)
+          - std::distance(_fragment->begin(), _current);
+      }
+      
       return _current - other._current;
     }
 
@@ -179,9 +194,15 @@ class basic_fragment_string {
         offset -= idx;
       }
     }
+    
+    static size_type _sublength(_fragment_iterator begin, _fragment_iterator end) _WITE_RELEASE_NOEXCEPT {
+      return std::accumulate(begin, end, size_type{}, [](auto&& len, auto&& fragment) {
+        return len += fragment.length();
+      });
+    }
 
-    typename basic_fragment_string::storage_type::const_iterator _fragment;
-    const typename basic_fragment_string::storage_type::const_iterator _fragment_end;
+    _fragment_iterator _fragment;
+    const _fragment_iterator _fragment_end;
     typename basic_fragment_string::storage_type::value_type::const_iterator _current;
 
 #ifdef _WITE_CONFIG_DEBUG
