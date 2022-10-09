@@ -1,6 +1,7 @@
 #include <wite/string/fragment_string.hpp>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 using namespace wite;
 
@@ -143,32 +144,45 @@ TEST_CASE("fragment_string iterator", "[string]") {
   }
 
   SECTION("operator+=") {
-    auto it = fs.begin();
 
-    SECTION("increment within fragment") {
-      it += 5;
-      REQUIRE(' ' == *it);
-    }
+    auto [test_name, direction, it] =
+        GENERATE_REF(table<const char*, int, decltype(fs)::iterator>(
+            {{"positive offset",  1, fs.begin()},
+             {"negative offset", -1, --fs.end()}}));
 
-    SECTION("increment up to fragment boundary") {
-      it += 13;
-      REQUIRE('t' == *it);
-    }
+    const auto reference_string = std::string{"first fragment second fragment"};
+    auto expected               = (direction > 0 ? reference_string.begin() : std::prev(reference_string.end()));
 
-    SECTION("increment to fragment boundary") {
-      it += 14;
-      REQUIRE(' ' == *it);
-    }
+    SECTION(test_name) {
+      SECTION("increment within fragment") {
+        it += direction * 5;
+        expected += direction * 5;
+        REQUIRE(*expected == *it);
+      }
 
-    SECTION("increment accross multiple fragments") {
-      it += 20;
-      REQUIRE('d' == *it);
-    }
+      SECTION("increment up to fragment boundary") {
+        it += direction * 13;
+        expected += direction * 13;
+        REQUIRE(*expected == *it);
+      }
+
+      SECTION("increment to fragment boundary") {
+        it += direction * 14;
+        expected += direction * 14;
+        REQUIRE(*expected == *it);
+      }
+
+      SECTION("increment accross multiple fragments") {
+        it += direction * 20;
+        expected += direction * 20;
+        REQUIRE(*expected == *it);
+      }
 
 #ifdef _WITE_CONFIG_DEBUG
-    SECTION("increment beyond the end throws std::out_of_range in debug") {
-      REQUIRE_THROWS_AS(it += 30, std::out_of_range);
-    }
+      SECTION("increment outside string throws std::out_of_range in debug") {
+        REQUIRE_THROWS_AS(it += direction * 30, std::out_of_range);
+      }
 #endif
+    }
   }
 }

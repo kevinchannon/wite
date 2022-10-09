@@ -112,7 +112,15 @@ class basic_fragment_string {
     }
 
    private:
-    void _seek(size_type offset) {
+    void _seek(difference_type offset) {
+      if (offset > 0) {
+        _seek_forward(static_cast<size_type>(offset));
+      } else {
+        _seek_backward(static_cast<size_type>(-offset));
+      }
+    }
+
+    void _seek_forward(size_type offset) {
       _fragment = std::find_if(_fragment, _fragment_end, [&offset](const auto& f) {
         const auto fragment_len = f.length();
         if (fragment_len > offset) {
@@ -125,11 +133,30 @@ class basic_fragment_string {
 
 #ifdef _WITE_CONFIG_DEBUG
       if (_fragment == _fragment_end) {
-        throw std::out_of_range{"fragment_string::_seek: trying to seek beyond end of range"};
+        throw std::out_of_range{"fragment_string::_seek_forward: trying to seek beyond end of range"};
       }
 #endif
 
       _current = std::next(_fragment->begin(), offset);
+    }
+
+    void _seek_backward(size_type offset) {
+      while (offset > 0) {
+        const auto idx = static_cast<size_type>(std::distance(_fragment->begin(), _current));
+        if (offset <= idx) {
+          _current -= offset;
+          return;
+        }
+
+#ifdef _WITE_CONFIG_DEBUG
+        if (_fragment == _fragment_range_begin) {
+          throw std::out_of_range{"fragment_string::_seek_backward: trying to seek to before start of range"};
+        }
+#endif
+        --_fragment;
+        _current = _fragment->end();
+        offset -= idx;
+      }
     }
 
     typename basic_fragment_string::storage_type::const_iterator _fragment;
