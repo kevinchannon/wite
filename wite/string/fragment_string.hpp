@@ -128,6 +128,10 @@ class basic_fragment_string {
       return out;
     }
 
+    difference_type operator-(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
+      return _current - other._current;
+    }
+
    private:
     void _seek(difference_type offset) {
       if (offset > 0) {

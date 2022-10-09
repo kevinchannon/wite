@@ -282,4 +282,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
     }
   #endif
   }
+
+  SECTION("distance between iterators") {
+    SECTION("within a fragment") {
+      const auto it_1 = fs.begin();
+      const auto it_2 = it_1 + 5;
+      REQUIRE(5 == it_2 - it_1);
+    }
+  }
 }
