@@ -144,11 +144,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
   }
 
   SECTION("operator+=") {
-
-    auto [test_name, direction, it] =
-        GENERATE_REF(table<const char*, int, decltype(fs)::iterator>(
-            {{"positive offset",  1, fs.begin()},
-             {"negative offset", -1, --fs.end()}}));
+    // clang-format off
+    auto [test_name, direction, it] = GENERATE_REF(table<const char*, int, decltype(fs)::iterator>({
+      {"positive offset", 1, fs.begin()},
+      {"negative offset", -1, --fs.end()}
+    }));
+    // clang-format on
 
     const auto reference_string = std::string{"first fragment second fragment"};
     auto expected               = (direction > 0 ? reference_string.begin() : std::prev(reference_string.end()));
@@ -181,6 +182,50 @@ TEST_CASE("fragment_string iterator", "[string]") {
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("increment outside string throws std::out_of_range in debug") {
         REQUIRE_THROWS_AS(it += direction * 30, std::out_of_range);
+      }
+#endif
+    }
+  }
+
+  SECTION("operator-=") {
+    // clang-format off
+    auto [test_name, direction, it] = GENERATE_REF(table<const char*, int, decltype(fs)::iterator>({
+      {"positive offset", 1, --fs.end()},
+      {"negative offset", -1, fs.begin()}
+    }));
+    // clang-format on
+
+    const auto reference_string = std::string{"first fragment second fragment"};
+    auto expected               = (direction > 0 ? std::prev(reference_string.end()) : reference_string.begin());
+
+    SECTION(test_name) {
+      SECTION("increment within fragment") {
+        it -= direction * 5;
+        expected -= direction * 5;
+        REQUIRE(*expected == *it);
+      }
+
+      SECTION("increment up to fragment boundary") {
+        it -= direction * 13;
+        expected -= direction * 13;
+        REQUIRE(*expected == *it);
+      }
+
+      SECTION("increment to fragment boundary") {
+        it -= direction * 14;
+        expected -= direction * 14;
+        REQUIRE(*expected == *it);
+      }
+
+      SECTION("increment accross multiple fragments") {
+        it -= direction * 20;
+        expected -= direction * 20;
+        REQUIRE(*expected == *it);
+      }
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("increment outside string throws std::out_of_range in debug") {
+        REQUIRE_THROWS_AS(it -= direction * 30, std::out_of_range);
       }
 #endif
     }

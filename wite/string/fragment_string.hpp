@@ -111,6 +111,11 @@ class basic_fragment_string {
       return *this;
     }
 
+    iterator& operator-=(difference_type offset) _WITE_RELEASE_NOEXCEPT {
+      _seek(-offset);
+      return *this;
+    }
+
    private:
     void _seek(difference_type offset) {
       if (offset > 0) {
