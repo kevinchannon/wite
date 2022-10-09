@@ -122,6 +122,12 @@ class basic_fragment_string {
       return out;
     }
 
+    iterator operator-(difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+      auto out = *this;
+      out -= offset;
+      return out;
+    }
+
    private:
     void _seek(difference_type offset) {
       if (offset > 0) {
