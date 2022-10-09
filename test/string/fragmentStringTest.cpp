@@ -167,7 +167,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
         REQUIRE(*expected == *it);
       }
 
-      SECTION("increment to fragment boundary") {
+      SECTION("increment over fragment boundary") {
         it += direction * 14;
         expected += direction * 14;
         REQUIRE(*expected == *it);
@@ -229,5 +229,25 @@ TEST_CASE("fragment_string iterator", "[string]") {
       }
 #endif
     }
+  }
+
+  SECTION("add integer offset") {
+    SECTION("smaller than fragment size") {
+      const auto it_1 = fs.begin();
+      const auto it_2 = it_1 + 4;
+      REQUIRE('t' == *it_2);
+    }
+
+    SECTION("accross a fragment boundary") {
+      const auto it_1 = fs.begin();
+      const auto it_2 = it_1 + 20;
+      REQUIRE('d' == *it_2);
+    }
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("increment outside string throws std::out_of_range in debug") {
+      REQUIRE_THROWS_AS(fs.begin() + 30, std::out_of_range);
+    }
+#endif
   }
 }
