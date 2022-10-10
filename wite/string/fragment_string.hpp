@@ -139,7 +139,7 @@ class basic_fragment_string {
           + std::distance(_fragment->begin(), _current)
           - std::distance(other._fragment->begin(), other._current);
       } else if (fragment_separation < 0) {
-        _sublength(_fragment, other._fragment)
+        return _sublength(_fragment, other._fragment)
           + std::distance(other._fragment->begin(), other._current)
           - std::distance(_fragment->begin(), _current);
       }
