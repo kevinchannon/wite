@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <iostream>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -139,9 +140,9 @@ class basic_fragment_string {
           + std::distance(_fragment->begin(), _current)
           - std::distance(other._fragment->begin(), other._current);
       } else if (fragment_separation < 0) {
-        return _sublength(_fragment, other._fragment)
-          + std::distance(other._fragment->begin(), other._current)
-          - std::distance(_fragment->begin(), _current);
+        return std::distance(other._fragment->begin(), other._current)
+          - std::distance(_fragment->begin(), _current)
+          - _sublength(_fragment, other._fragment);
       }
       
       return _current - other._current;
