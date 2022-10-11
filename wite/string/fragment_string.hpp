@@ -74,7 +74,7 @@ class basic_fragment_string {
         _WITE_FRAG_STR_DEBUG_ARG(_fragment_range_begin{fragment_range_begin})
         {}
 
-    [[nodiscard]] constexpr auto operator<=>(const iterator&) const = default;
+    [[nodiscard]] constexpr auto operator<=>(const iterator&) const noexcept = default;
 
     [[nodiscard]] constexpr const_reference operator*() const { return *_current; }
 
@@ -132,6 +132,11 @@ class basic_fragment_string {
     }
 
     difference_type operator-(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
+
+#ifdef _WITE_CONFIG_DEBUG
+      _debug_verify_integrity(other);
+#endif
+
       auto distance = difference_type{0};
       
       const auto fragment_separation = _fragment - other._fragment;
@@ -149,6 +154,14 @@ class basic_fragment_string {
     }
 
    private:
+#ifdef _WITE_CONFIG_DEBUG
+    void _debug_verify_integrity(const iterator& other) const {
+      if (&(*other._fragment_range_begin) != &(*_fragment_range_begin)) {
+        throw std::logic_error{"ERROR: Iterators point to different parent objects"};
+      }
+    }
+#endif
+
     void _seek(difference_type offset) {
       if (offset > 0) {
         _seek_forward(static_cast<size_type>(offset));

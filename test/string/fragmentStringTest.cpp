@@ -304,5 +304,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
       REQUIRE(15 == it_2 - it_1);
       REQUIRE(-15 == it_1 - it_2);
     }
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
+      const auto fs2 = fragment_string{"A new string"} + "parts to get" + "correct fragment count";
+      REQUIRE_THROWS_AS(fs.begin() - fs2.begin(), std::logic_error);
+    }
+#endif
   }
 }
