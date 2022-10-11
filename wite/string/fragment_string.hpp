@@ -292,6 +292,16 @@ class basic_fragment_string {
     return const_reverse_iterator{this->begin()};
   }
 
+  [[nodiscard]] constexpr const_reference at(size_type pos) const {
+    if (pos >= length()) {
+      throw std::out_of_range{"Error: accessing fragment_string beyond end of string"};
+    }
+
+    return this->operator[](pos);
+  }
+
+  [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept { return *std::next(begin(), pos); }
+
  private:
   storage_type _fragments;
 };

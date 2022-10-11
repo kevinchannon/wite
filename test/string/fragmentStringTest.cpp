@@ -64,7 +64,32 @@ TEST_CASE("fragment_string tests", "[string]") {
     const auto fs = fragment_string{"Lorem ipsum dolor sit"};
     REQUIRE(fs.length() == fs.size());
   }
-}
+
+  SECTION("element access") {
+    const char* s1 = "first fragment";
+    const char* s2 = "second fragment";
+
+    const auto fs = fragment_string{s1} + " " + s2 + " last fragment";
+
+    const auto equivalent_str = std::string_view{"first fragment second fragment last fragment"};
+
+    SECTION("operator[]") {
+      for (auto i = 0u; i < equivalent_str.length(); ++i) {
+        REQUIRE(equivalent_str[i] == fs[i]);
+      }
+    }
+
+    SECTION("at() returns the same as operator[]") {
+      for (auto i = 0u; i < fs.length(); ++i) {
+        REQUIRE(fs[i] == fs.at(i));
+      }
+    }
+
+    SECTION("at() throws out of range if requested element is beyond the end of the string") {
+      REQUIRE_THROWS_AS(fs.at(44), std::out_of_range);
+    }
+  }
+  }
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";
