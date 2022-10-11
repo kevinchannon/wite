@@ -242,6 +242,8 @@ class basic_fragment_string {
   using pointer         = const value_type*;
   using const_pointer   = pointer;
   using const_iterator  = iterator;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
 
   WITE_DEFAULT_CONSTRUCTORS(basic_fragment_string);
 
@@ -282,6 +284,12 @@ class basic_fragment_string {
   [[nodiscard]] constexpr auto end() const noexcept {
     return iterator(
         std::prev(_fragments.end()), _fragments.end(), _fragments.back().end() _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
+  }
+  [[nodiscard]] constexpr auto rbegin() const noexcept {
+    return const_reverse_iterator{this->end()};
+  }
+  [[nodiscard]] constexpr auto rend() const noexcept {
+    return const_reverse_iterator{this->begin()};
   }
 
  private:

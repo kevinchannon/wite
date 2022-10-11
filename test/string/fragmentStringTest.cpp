@@ -405,3 +405,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
     }
   }
 }
+
+TEST_CASE("fragment_string reverse iterator", "[string]") {
+    const char* s1 = "first fragment";
+    const char* s2 = "second fragment";
+
+    const auto fs  = fragment_string{s1} + " " + s2;
+
+    REQUIRE("tnemgarf dnoces tnemgarf tsrif" == std::string(fs.rbegin(), fs.rend()));
+}
