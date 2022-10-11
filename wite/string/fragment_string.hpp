@@ -6,12 +6,12 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <iostream>
 #include <numeric>
 #include <ranges>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <iostream>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,26 +62,26 @@ class basic_fragment_string {
 
 #ifdef _WITE_CONFIG_DEBUG
       const typename basic_fragment_string::storage_type::const_iterator debug_fragment_range_begin;
-#endif 
+#endif
 
       [[nodiscard]] constexpr auto operator<=>(const _data_type&) const noexcept = default;
     } _data;
-   
+
    public:
-    using value_type      = Char_T;
-    using size_type       = size_t;
-    using difference_type = std::ptrdiff_t;
-    using reference       = const value_type&;
-    using const_reference = reference;
-    using pointer         = const value_type*;
-    using const_pointer   = pointer;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type        = Char_T;
+    using size_type         = size_t;
+    using difference_type   = std::ptrdiff_t;
+    using reference         = const value_type&;
+    using const_reference   = reference;
+    using pointer           = const value_type*;
+    using const_pointer     = pointer;
 
     iterator(typename basic_fragment_string::storage_type::const_iterator begin_fragment,
              typename basic_fragment_string::storage_type::const_iterator end_fragment,
              typename basic_fragment_string::storage_type::value_type::const_iterator current
                  _WITE_FRAG_STR_DEBUG_ARG(typename basic_fragment_string::storage_type::const_iterator fragment_range_begin))
-        : _data{begin_fragment, end_fragment, current _WITE_FRAG_STR_DEBUG_ARG(fragment_range_begin)}
-        {}
+        : _data{begin_fragment, end_fragment, current _WITE_FRAG_STR_DEBUG_ARG(fragment_range_begin)} {}
 
     [[nodiscard]] constexpr auto operator<=>(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
@@ -90,7 +90,7 @@ class basic_fragment_string {
 
       return _data <=> other._data;
     }
- 
+
     [[nodiscard]] constexpr bool operator==(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
       _debug_verify_integrity(other);
@@ -155,24 +155,21 @@ class basic_fragment_string {
     }
 
     difference_type operator-(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
-
 #ifdef _WITE_CONFIG_DEBUG
       _debug_verify_integrity(other);
 #endif
 
       auto distance = difference_type{0};
-      
+
       const auto fragment_separation = _data.fragment - other._data.fragment;
       if (fragment_separation > 0) {
-        return _sublength(other._data.fragment, _data.fragment)
-          + std::distance(_data.fragment->begin(), _data.current)
-          - std::distance(other._data.fragment->begin(), other._data.current);
+        return _sublength(other._data.fragment, _data.fragment) + std::distance(_data.fragment->begin(), _data.current) -
+               std::distance(other._data.fragment->begin(), other._data.current);
       } else if (fragment_separation < 0) {
-        return std::distance(other._data.fragment->begin(), other._data.current)
-          - std::distance(_data.fragment->begin(), _data.current)
-          - _sublength(_data.fragment, other._data.fragment);
+        return std::distance(other._data.fragment->begin(), other._data.current) -
+               std::distance(_data.fragment->begin(), _data.current) - _sublength(_data.fragment, other._data.fragment);
       }
-      
+
       return _data.current - other._data.current;
     }
 
@@ -231,11 +228,9 @@ class basic_fragment_string {
         offset -= idx;
       }
     }
-    
+
     static size_type _sublength(_fragment_iterator begin, _fragment_iterator end) _WITE_RELEASE_NOEXCEPT {
-      return std::accumulate(begin, end, size_type{}, [](auto&& len, auto&& fragment) {
-        return len += fragment.length();
-      });
+      return std::accumulate(begin, end, size_type{}, [](auto&& len, auto&& fragment) { return len += fragment.length(); });
     }
   };
 

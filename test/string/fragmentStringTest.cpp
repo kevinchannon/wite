@@ -384,4 +384,24 @@ TEST_CASE("fragment_string iterator", "[string]") {
 #endif
     }
   }
+
+  SECTION("standard library iterator utilities compatibility") {
+    SECTION("std::distance") {
+      REQUIRE(3 == std::distance(fs.begin() + 13, fs.begin() + 16));
+    }
+
+    SECTION("std::next") {
+      REQUIRE('e' == *std::next(fs.begin(), 16));
+    }
+
+    SECTION("std::prev") {
+      REQUIRE('t' == *std::prev(fs.begin() + 16, 3));
+    }
+
+    SECTION("std::advance") {
+      auto it = fs.begin();
+      std::advance(it, 16);
+      REQUIRE('e' == *it);
+    }
+  }
 }
