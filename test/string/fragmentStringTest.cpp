@@ -317,35 +317,71 @@ TEST_CASE("fragment_string iterator", "[string]") {
     SECTION("equal-to compares as expected") {
       REQUIRE(      fs.begin() == fs.begin());
       REQUIRE_FALSE(fs.begin() == (fs.begin() + 1));
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() == fs2.begin(), std::logic_error);
+      }
+#endif
     }
 
     SECTION("not-equal-to compares as expected") {
       REQUIRE(      fs.begin() != (fs.begin() + 1));
       REQUIRE_FALSE(fs.begin() != fs.begin());
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() != fs2.begin(), std::logic_error);
+      }
+#endif
     }
 
     SECTION("less-than compares as expected") {
       REQUIRE(      (fs.begin() + 1) < (fs.begin() + 2));
       REQUIRE_FALSE((fs.begin() + 1) < (fs.begin() + 1));
       REQUIRE_FALSE((fs.begin() + 2) < (fs.begin() + 1));
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() < fs2.begin(), std::logic_error);
+      }
+#endif
     }
 
     SECTION("less-than-or-equal-to compares as expected") {
       REQUIRE(      (fs.begin() + 1) <= (fs.begin() + 2));
       REQUIRE(      (fs.begin() + 1) <= (fs.begin() + 1));
       REQUIRE_FALSE((fs.begin() + 2) <= (fs.begin() + 1));
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() <= fs2.begin(), std::logic_error);
+      }
+#endif
     }
 
     SECTION("greater-than compares as expected") {
       REQUIRE(      (fs.begin() + 3) > (fs.begin() + 2));
       REQUIRE_FALSE((fs.begin() + 2) > (fs.begin() + 2));
       REQUIRE_FALSE((fs.begin() + 2) > (fs.begin() + 3));
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() > fs2.begin(), std::logic_error);
+      }
+#endif
     }
 
     SECTION("greater-than-or-equal-to compares as expected") {
       REQUIRE(      (fs.begin() + 3) >= (fs.begin() + 2));
       REQUIRE(      (fs.begin() + 2) >= (fs.begin() + 2));
       REQUIRE_FALSE((fs.begin() + 2) >= (fs.begin() + 3));
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() >= fs2.begin(), std::logic_error);
+      }
+#endif
     }
   }
 }

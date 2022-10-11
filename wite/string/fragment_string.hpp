@@ -83,7 +83,13 @@ class basic_fragment_string {
         : _data{begin_fragment, end_fragment, current _WITE_FRAG_STR_DEBUG_ARG(fragment_range_begin)}
         {}
 
-    [[nodiscard]] constexpr auto operator<=>(const iterator&) const _WITE_RELEASE_NOEXCEPT = default;
+    [[nodiscard]] constexpr auto operator<=>(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
+#ifdef _WITE_CONFIG_DEBUG
+      _debug_verify_integrity(other);
+#endif
+
+      return _data <=> other._data;
+    }
  
     [[nodiscard]] constexpr bool operator==(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
