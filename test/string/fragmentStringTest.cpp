@@ -71,6 +71,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
   const char* s2 = "second fragment";
 
   const auto fs = fragment_string{s1} + " " + s2;
+  const auto fs2 = fragment_string{"A second string"} + "parts to get" + "correct fragment count";
 
   SECTION("get begin") {
     REQUIRE('f' == *fs.begin());
@@ -307,9 +308,44 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-      const auto fs2 = fragment_string{"A new string"} + "parts to get" + "correct fragment count";
       REQUIRE_THROWS_AS(fs.begin() - fs2.begin(), std::logic_error);
     }
 #endif
+  }
+
+  SECTION("Comparison operators") {
+    SECTION("equal-to compares as expected") {
+      REQUIRE(      fs.begin() == fs.begin());
+      REQUIRE_FALSE(fs.begin() == (fs.begin() + 1));
+    }
+
+    SECTION("not-equal-to compares as expected") {
+      REQUIRE(      fs.begin() != (fs.begin() + 1));
+      REQUIRE_FALSE(fs.begin() != fs.begin());
+    }
+
+    SECTION("less-than compares as expected") {
+      REQUIRE(      (fs.begin() + 1) < (fs.begin() + 2));
+      REQUIRE_FALSE((fs.begin() + 1) < (fs.begin() + 1));
+      REQUIRE_FALSE((fs.begin() + 2) < (fs.begin() + 1));
+    }
+
+    SECTION("less-than-or-equal-to compares as expected") {
+      REQUIRE(      (fs.begin() + 1) <= (fs.begin() + 2));
+      REQUIRE(      (fs.begin() + 1) <= (fs.begin() + 1));
+      REQUIRE_FALSE((fs.begin() + 2) <= (fs.begin() + 1));
+    }
+
+    SECTION("greater-than compares as expected") {
+      REQUIRE(      (fs.begin() + 3) > (fs.begin() + 2));
+      REQUIRE_FALSE((fs.begin() + 2) > (fs.begin() + 2));
+      REQUIRE_FALSE((fs.begin() + 2) > (fs.begin() + 3));
+    }
+
+    SECTION("greater-than-or-equal-to compares as expected") {
+      REQUIRE(      (fs.begin() + 3) >= (fs.begin() + 2));
+      REQUIRE(      (fs.begin() + 2) >= (fs.begin() + 2));
+      REQUIRE_FALSE((fs.begin() + 2) >= (fs.begin() + 3));
+    }
   }
 }
