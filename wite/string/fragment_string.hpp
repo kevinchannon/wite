@@ -54,6 +54,18 @@ class basic_fragment_string {
 
   class iterator {
     using _fragment_iterator = typename basic_fragment_string::storage_type::const_iterator;
+
+    struct _data_type {
+      _fragment_iterator fragment;
+      const _fragment_iterator fragment_end;
+      typename basic_fragment_string::storage_type::value_type::const_iterator current;
+
+#ifdef _WITE_CONFIG_DEBUG
+      const typename basic_fragment_string::storage_type::const_iterator debug_fragment_range_begin;
+#endif 
+
+      [[nodiscard]] constexpr auto operator<=>(const _data_type&) const noexcept = default;
+    } _data;
    
    public:
     using value_type      = Char_T;
@@ -68,26 +80,23 @@ class basic_fragment_string {
              typename basic_fragment_string::storage_type::const_iterator end_fragment,
              typename basic_fragment_string::storage_type::value_type::const_iterator current
                  _WITE_FRAG_STR_DEBUG_ARG(typename basic_fragment_string::storage_type::const_iterator fragment_range_begin))
-        : _fragment{begin_fragment}
-        , _fragment_end{end_fragment}
-        , _current{current}
-        _WITE_FRAG_STR_DEBUG_ARG(_fragment_range_begin{fragment_range_begin})
+        : _data{begin_fragment, end_fragment, current _WITE_FRAG_STR_DEBUG_ARG(fragment_range_begin)}
         {}
 
     [[nodiscard]] constexpr auto operator<=>(const iterator&) const noexcept = default;
 
-    [[nodiscard]] constexpr const_reference operator*() const { return *_current; }
+    [[nodiscard]] constexpr const_reference operator*() const { return *_data.current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
-      if (_fragment == std::prev(_fragment_end) and _current == std::prev(_fragment_end)->end()) {
+      if (_data.fragment == std::prev(_data.fragment_end) and _data.current == std::prev(_data.fragment_end)->end()) {
         throw std::out_of_range{"fragment_string::operator++: already at end"};
       }
 #endif
-      ++_current;
-      if (_fragment->end() == _current and _fragment != std::prev(_fragment_end)) {
-        ++_fragment;
-        _current = _fragment->begin();
+      ++_data.current;
+      if (_data.fragment->end() == _data.current and _data.fragment != std::prev(_data.fragment_end)) {
+        ++_data.fragment;
+        _data.current = _data.fragment->begin();
       }
 
       return *this;
@@ -95,17 +104,17 @@ class basic_fragment_string {
 
     iterator& operator--() _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
-      if (_fragment == _fragment_range_begin and _current == _fragment->begin()) {
+      if (_data.fragment == _data.debug_fragment_range_begin and _data.current == _data.fragment->begin()) {
         throw std::out_of_range{"fragment_string::operator--: already at beginning"};
       }
 #endif
 
-      if (_current == _fragment->begin()) {
-        --_fragment;
-        _current = _fragment->end();
+      if (_data.current == _data.fragment->begin()) {
+        --_data.fragment;
+        _data.current = _data.fragment->end();
       }
 
-      --_current;
+      --_data.current;
       return *this;
     }
 
@@ -139,24 +148,24 @@ class basic_fragment_string {
 
       auto distance = difference_type{0};
       
-      const auto fragment_separation = _fragment - other._fragment;
+      const auto fragment_separation = _data.fragment - other._data.fragment;
       if (fragment_separation > 0) {
-        return _sublength(other._fragment, _fragment)
-          + std::distance(_fragment->begin(), _current)
-          - std::distance(other._fragment->begin(), other._current);
+        return _sublength(other._data.fragment, _data.fragment)
+          + std::distance(_data.fragment->begin(), _data.current)
+          - std::distance(other._data.fragment->begin(), other._data.current);
       } else if (fragment_separation < 0) {
-        return std::distance(other._fragment->begin(), other._current)
-          - std::distance(_fragment->begin(), _current)
-          - _sublength(_fragment, other._fragment);
+        return std::distance(other._data.fragment->begin(), other._data.current)
+          - std::distance(_data.fragment->begin(), _data.current)
+          - _sublength(_data.fragment, other._data.fragment);
       }
       
-      return _current - other._current;
+      return _data.current - other._data.current;
     }
 
    private:
 #ifdef _WITE_CONFIG_DEBUG
     void _debug_verify_integrity(const iterator& other) const {
-      if (&(*other._fragment_range_begin) != &(*_fragment_range_begin)) {
+      if (&(*other._data.debug_fragment_range_begin) != &(*_data.debug_fragment_range_begin)) {
         throw std::logic_error{"ERROR: Iterators point to different parent objects"};
       }
     }
@@ -171,7 +180,7 @@ class basic_fragment_string {
     }
 
     void _seek_forward(size_type offset) {
-      _fragment = std::find_if(_fragment, _fragment_end, [&offset](const auto& f) {
+      _data.fragment = std::find_if(_data.fragment, _data.fragment_end, [&offset](const auto& f) {
         const auto fragment_len = f.length();
         if (fragment_len > offset) {
           return true;
@@ -182,29 +191,29 @@ class basic_fragment_string {
       });
 
 #ifdef _WITE_CONFIG_DEBUG
-      if (_fragment == _fragment_end) {
+      if (_data.fragment == _data.fragment_end) {
         throw std::out_of_range{"fragment_string::_seek_forward: trying to seek beyond end of range"};
       }
 #endif
 
-      _current = std::next(_fragment->begin(), offset);
+      _data.current = std::next(_data.fragment->begin(), offset);
     }
 
     void _seek_backward(size_type offset) {
       while (offset > 0) {
-        const auto idx = static_cast<size_type>(std::distance(_fragment->begin(), _current));
+        const auto idx = static_cast<size_type>(std::distance(_data.fragment->begin(), _data.current));
         if (offset <= idx) {
-          _current -= offset;
+          _data.current -= offset;
           return;
         }
 
 #ifdef _WITE_CONFIG_DEBUG
-        if (_fragment == _fragment_range_begin) {
+        if (_data.fragment == _data.debug_fragment_range_begin) {
           throw std::out_of_range{"fragment_string::_seek_backward: trying to seek to before start of range"};
         }
 #endif
-        --_fragment;
-        _current = _fragment->end();
+        --_data.fragment;
+        _data.current = _data.fragment->end();
         offset -= idx;
       }
     }
@@ -214,14 +223,6 @@ class basic_fragment_string {
         return len += fragment.length();
       });
     }
-
-    _fragment_iterator _fragment;
-    const _fragment_iterator _fragment_end;
-    typename basic_fragment_string::storage_type::value_type::const_iterator _current;
-
-#ifdef _WITE_CONFIG_DEBUG
-    const typename basic_fragment_string::storage_type::const_iterator _fragment_range_begin;
-#endif
   };
 
   using value_type      = Char_T;
