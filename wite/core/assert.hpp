@@ -13,8 +13,8 @@
 
 namespace wite {
 
-struct assertion_error : public std::runtime_error {
-  assertion_error(const char* msg) : std::runtime_error{msg} {}
+struct assertion_error : public std::logic_error {
+  assertion_error(const char* msg) : std::logic_error{msg} {}
 };
 
 }  // namespace wite
