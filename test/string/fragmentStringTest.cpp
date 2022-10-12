@@ -88,8 +88,12 @@ TEST_CASE("fragment_string tests", "[string]") {
     SECTION("at() throws out of range if requested element is beyond the end of the string") {
       REQUIRE_THROWS_AS(fs.at(44), std::out_of_range);
     }
+
+    SECTION("front() returns the first character") {
+      REQUIRE('f' == fs.front());
+    }
   }
-  }
+}
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";

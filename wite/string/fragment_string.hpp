@@ -302,6 +302,8 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept { return *std::next(begin(), pos); }
 
+  [[nodiscard]] constexpr const_reference front() const _WITE_RELEASE_NOEXCEPT { return _fragments.front().front(); }
+
  private:
   storage_type _fragments;
 };
