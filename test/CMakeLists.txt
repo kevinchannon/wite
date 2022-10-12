@@ -33,6 +33,8 @@ target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}
 )
 
+add_compile_definitions(_WITE_ASSERT_WITH_EXCEPTION)
+
 target_link_libraries(wite_test PRIVATE Catch2::Catch2WithMain)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)

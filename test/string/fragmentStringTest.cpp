@@ -8,6 +8,10 @@ using namespace wite;
 TEST_CASE("fragment_string tests", "[string]") {
   SECTION("construct") {
     SECTION("from a single C-string") {
+      SECTION("has zero length for empty string") {
+        REQUIRE(0 == fragment_string{""}.length());
+      }
+
       SECTION("narrow chars") {
         const auto fs = fragment_string{"hello!"};
 
@@ -92,6 +96,14 @@ TEST_CASE("fragment_string tests", "[string]") {
     SECTION("front() returns the first character") {
       REQUIRE('f' == fs.front());
     }
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("front() asserts if the string has zero length") {
+      REQUIRE_THROWS_AS(fragment_string("").front(), wite::assertion_error);
+
+    }
+#endif
+
   }
 }
 
@@ -134,8 +146,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
         }
 
 #ifdef _WITE_CONFIG_DEBUG
-        SECTION("incrementing out past the end throws std::out_of_range in debug") {
-          REQUIRE_THROWS_AS(++it, std::out_of_range);
+        SECTION("incrementing out past the end asserts in debug") {
+          REQUIRE_THROWS_AS(++it, wite::assertion_error);
         }
 #endif
       }
@@ -165,8 +177,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
         }
 
 #ifdef _WITE_CONFIG_DEBUG
-        SECTION("decrementing past the beginning throws std::out_of_range in debug") {
-          REQUIRE_THROWS_AS(--it, std::out_of_range);
+        SECTION("decrementing past the beginning asserts in debug") {
+          REQUIRE_THROWS_AS(--it, wite::assertion_error);
         }
 #endif
       }
@@ -210,8 +222,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       }
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("increment outside string throws std::out_of_range in debug") {
-        REQUIRE_THROWS_AS(it += direction * 30, std::out_of_range);
+      SECTION("increment outside string asserts in debug") {
+        REQUIRE_THROWS_AS(it += direction * 30, wite::assertion_error);
       }
 #endif
     }
@@ -254,8 +266,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       }
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("increment outside string throws std::out_of_range in debug") {
-        REQUIRE_THROWS_AS(it -= direction * 30, std::out_of_range);
+      SECTION("increment outside string asserts in debug") {
+        REQUIRE_THROWS_AS(it -= direction * 30, wite::assertion_error);
       }
 #endif
     }
@@ -281,8 +293,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
     }
 
   #ifdef _WITE_CONFIG_DEBUG
-    SECTION("increment outside string throws std::out_of_range in debug") {
-      REQUIRE_THROWS_AS(fs.begin() + 30, std::out_of_range);
+    SECTION("increment outside string asserts in debug") {
+      REQUIRE_THROWS_AS(fs.begin() + 30, wite::assertion_error);
     }
   #endif
   }
@@ -307,8 +319,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
     }
 
   #ifdef _WITE_CONFIG_DEBUG
-    SECTION("increment outside string throws std::out_of_range in debug") {
-      REQUIRE_THROWS_AS(fs.end() - 31, std::out_of_range);
+    SECTION("increment outside string asserts in debug") {
+      REQUIRE_THROWS_AS(fs.end() - 31, wite::assertion_error);
     }
   #endif
   }
@@ -336,8 +348,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
     }
 
 #ifdef _WITE_CONFIG_DEBUG
-    SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-      REQUIRE_THROWS_AS(fs.begin() - fs2.begin(), std::logic_error);
+    SECTION("asserts when comparing iterators from different strings in debug") {
+      REQUIRE_THROWS_AS(fs.begin() - fs2.begin(), wite::assertion_error);
     }
 #endif
   }
@@ -348,8 +360,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       REQUIRE_FALSE(fs.begin() == (fs.begin() + 1));
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() == fs2.begin(), std::logic_error);
+      SECTION("asserts when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() == fs2.begin(), wite::assertion_error);
       }
 #endif
     }
@@ -359,8 +371,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       REQUIRE_FALSE(fs.begin() != fs.begin());
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() != fs2.begin(), std::logic_error);
+      SECTION("asserts when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() != fs2.begin(), wite::assertion_error);
       }
 #endif
     }
@@ -371,8 +383,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       REQUIRE_FALSE((fs.begin() + 2) < (fs.begin() + 1));
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() < fs2.begin(), std::logic_error);
+      SECTION("asserts when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() < fs2.begin(), wite::assertion_error);
       }
 #endif
     }
@@ -383,8 +395,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       REQUIRE_FALSE((fs.begin() + 2) <= (fs.begin() + 1));
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() <= fs2.begin(), std::logic_error);
+      SECTION("asserts when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() <= fs2.begin(), wite::assertion_error);
       }
 #endif
     }
@@ -395,8 +407,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       REQUIRE_FALSE((fs.begin() + 2) > (fs.begin() + 3));
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() > fs2.begin(), std::logic_error);
+      SECTION("asserts when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() > fs2.begin(), wite::assertion_error);
       }
 #endif
     }
@@ -407,8 +419,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
       REQUIRE_FALSE((fs.begin() + 2) >= (fs.begin() + 3));
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("throws std::logic_error when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() >= fs2.begin(), std::logic_error);
+      SECTION("asserts when comparing iterators from different strings in debug") {
+        REQUIRE_THROWS_AS(fs.begin() >= fs2.begin(), wite::assertion_error);
       }
 #endif
     }

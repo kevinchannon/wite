@@ -2,6 +2,7 @@
 
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/environment.hpp>
+#include <wite/core/assert.hpp>
 
 #include <algorithm>
 #include <array>
@@ -102,11 +103,10 @@ class basic_fragment_string {
     [[nodiscard]] constexpr const_reference operator*() const { return *_data.current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
-#ifdef _WITE_CONFIG_DEBUG
-      if (_data.fragment == std::prev(_data.fragment_end) and _data.current == std::prev(_data.fragment_end)->end()) {
-        throw std::out_of_range{"fragment_string::operator++: already at end"};
-      }
-#endif
+      _WITE_DEBUG_ASSERT_FALSE(
+          _data.fragment == std::prev(_data.fragment_end) and _data.current == std::prev(_data.fragment_end)->end(),
+          "fragment_string::operator++: already at end");
+
       ++_data.current;
       if (_data.fragment->end() == _data.current and _data.fragment != std::prev(_data.fragment_end)) {
         ++_data.fragment;
@@ -117,11 +117,8 @@ class basic_fragment_string {
     }
 
     iterator& operator--() _WITE_RELEASE_NOEXCEPT {
-#ifdef _WITE_CONFIG_DEBUG
-      if (_data.fragment == _data.debug_fragment_range_begin and _data.current == _data.fragment->begin()) {
-        throw std::out_of_range{"fragment_string::operator--: already at beginning"};
-      }
-#endif
+      _WITE_DEBUG_ASSERT_FALSE(_data.fragment == _data.debug_fragment_range_begin and _data.current == _data.fragment->begin(),
+                               "fragment_string::operator--: already at beginning");
 
       if (_data.current == _data.fragment->begin()) {
         --_data.fragment;
@@ -176,9 +173,8 @@ class basic_fragment_string {
    private:
 #ifdef _WITE_CONFIG_DEBUG
     void _debug_verify_integrity(const iterator& other) const {
-      if (&(*other._data.debug_fragment_range_begin) != &(*_data.debug_fragment_range_begin)) {
-        throw std::logic_error{"ERROR: Iterators point to different parent objects"};
-      }
+      _WITE_DEBUG_ASSERT_FALSE(&(*other._data.debug_fragment_range_begin) != &(*_data.debug_fragment_range_begin),
+                               "ERROR: Iterators point to different parent objects");
     }
 #endif
 
@@ -201,11 +197,8 @@ class basic_fragment_string {
         return false;
       });
 
-#ifdef _WITE_CONFIG_DEBUG
-      if (_data.fragment == _data.fragment_end) {
-        throw std::out_of_range{"fragment_string::_seek_forward: trying to seek beyond end of range"};
-      }
-#endif
+      _WITE_DEBUG_ASSERT(_data.fragment != _data.fragment_end,
+                         "fragment_string::_seek_forward: trying to seek beyond end of range");
 
       _data.current = std::next(_data.fragment->begin(), offset);
     }
@@ -218,11 +211,8 @@ class basic_fragment_string {
           return;
         }
 
-#ifdef _WITE_CONFIG_DEBUG
-        if (_data.fragment == _data.debug_fragment_range_begin) {
-          throw std::out_of_range{"fragment_string::_seek_backward: trying to seek to before start of range"};
-        }
-#endif
+        _WITE_DEBUG_ASSERT(_data.fragment != _data.debug_fragment_range_begin,
+                           "fragment_string::_seek_backward: trying to seek to before start of range");
         --_data.fragment;
         _data.current = _data.fragment->end();
         offset -= idx;
@@ -302,7 +292,11 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept { return *std::next(begin(), pos); }
 
-  [[nodiscard]] constexpr const_reference front() const _WITE_RELEASE_NOEXCEPT { return _fragments.front().front(); }
+  [[nodiscard]] constexpr const_reference front() const _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(length() > 0, "accessing fragment_string beyond end of string");
+
+    return _fragments.front().front();
+  }
 
  private:
   storage_type _fragments;
