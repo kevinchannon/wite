@@ -135,7 +135,29 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(fs.empty());
     }
   }
+
+  SECTION("compare()...") {
+    const auto fs = fragment_string{"defg"} + "hijk" + "lmnop";
+
+    SECTION("with std::string") {
+      REQUIRE(0 == fs.compare(std::string("defghijklmnop")));
+      REQUIRE(0 > fs.compare(std::string("defghjjklmnop")));
+      REQUIRE(0 < fs.compare(std::string("defghiiklmnop")));
+    }
+
+    SECTION("with const char*") {
+      REQUIRE(0 == fs.compare("defghijklmnop"));
+      REQUIRE(0 > fs.compare("defghjjklmnop"));
+      REQUIRE(0 < fs.compare("defghiiklmnop"));
+    }
+
+    SECTION("with std::string_view") {
+      REQUIRE(0 == fs.compare(std::string_view("defghijklmnop")));
+      REQUIRE(0 > fs.compare(std::string_view("defghjjklmnop")));
+      REQUIRE(0 < fs.compare(std::string_view("defghiiklmnop")));
+    }
   }
+}
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";
