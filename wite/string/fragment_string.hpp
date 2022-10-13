@@ -1,8 +1,8 @@
 #pragma once
 
 #include <wite/common/constructor_macros.hpp>
-#include <wite/env/environment.hpp>
 #include <wite/core/assert.hpp>
+#include <wite/env/environment.hpp>
 
 #include <algorithm>
 #include <array>
@@ -224,16 +224,16 @@ class basic_fragment_string {
     }
   };
 
-  using value_type      = Char_T;
-  using size_type       = size_t;
-  using difference_type = std::ptrdiff_t;
-  using reference       = const value_type&;
-  using const_reference = reference;
-  using pointer         = const value_type*;
-  using const_pointer   = pointer;
-  using const_iterator  = iterator;
+  using value_type             = Char_T;
+  using size_type              = size_t;
+  using difference_type        = std::ptrdiff_t;
+  using reference              = const value_type&;
+  using const_reference        = reference;
+  using pointer                = const value_type*;
+  using const_pointer          = pointer;
+  using const_iterator         = iterator;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  using reverse_iterator = std::reverse_iterator<iterator>;
+  using reverse_iterator       = std::reverse_iterator<iterator>;
 
   WITE_DEFAULT_CONSTRUCTORS(basic_fragment_string);
 
@@ -267,20 +267,20 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr auto size() const noexcept { return length(); }
 
-  [[nodiscard]] constexpr auto begin() const noexcept {
+  [[nodiscard]] constexpr auto cbegin() const noexcept {
     return iterator(
         _fragments.begin(), _fragments.end(), _fragments.front().begin() _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
   }
-  [[nodiscard]] constexpr auto end() const noexcept {
+  [[nodiscard]] constexpr auto begin() const noexcept { return cbegin(); }
+  [[nodiscard]] constexpr auto cend() const noexcept {
     return iterator(
         std::prev(_fragments.end()), _fragments.end(), _fragments.back().end() _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
   }
-  [[nodiscard]] constexpr auto rbegin() const noexcept {
-    return const_reverse_iterator{this->end()};
-  }
-  [[nodiscard]] constexpr auto rend() const noexcept {
-    return const_reverse_iterator{this->begin()};
-  }
+  [[nodiscard]] constexpr auto end() const noexcept { return cend(); }
+  [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator{this->end()}; }
+  [[nodiscard]] constexpr auto rbegin() const noexcept { return crbegin(); }
+  [[nodiscard]] constexpr auto crend() const noexcept { return const_reverse_iterator{this->begin()}; }
+  [[nodiscard]] constexpr auto rend() const noexcept { return crend(); }
 
   [[nodiscard]] constexpr const_reference at(size_type pos) const {
     if (pos >= length()) {
