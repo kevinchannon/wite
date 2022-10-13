@@ -145,6 +145,7 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 < fs.compare(std::string("defghiiklmnop")));
       REQUIRE(0 < fs.compare(std::string("defghijklmno")));
       REQUIRE(0 > fs.compare(std::string("defghijklmnopq")));
+      REQUIRE(0 > fs.compare(std::string("defghjjklmn")));
     }
 
     SECTION("with const char*") {
@@ -153,6 +154,7 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 < fs.compare("defghiiklmnop"));
       REQUIRE(0 < fs.compare("defghijklmno"));
       REQUIRE(0 > fs.compare("defghijklmnopq"));
+      REQUIRE(0 > fs.compare("defghjjklmn"));
     }
 
     SECTION("with std::string_view") {
@@ -161,6 +163,7 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 < fs.compare(std::string_view("defghiiklmnop")));
       REQUIRE(0 < fs.compare(std::string_view("defghijklmno")));
       REQUIRE(0 > fs.compare(std::string_view("defghijklmnopq")));
+      REQUIRE(0 > fs.compare(std::string_view("defghjjklmn")));
     }
   }
 }
