@@ -308,14 +308,16 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr bool empty() const noexcept { return 0 == length(); }
 
-  constexpr int compare(const std::string_view& other) const noexcept { return _compare(other.begin(), other.end()); }
-  constexpr int compare(const std::string& other) const noexcept { return _compare(other.begin(), other.end()); }
-  constexpr int compare(const char* other) const noexcept { return compare(std::string_view{other}); }
+  constexpr int compare(const std::string_view& other) const _WITE_RELEASE_NOEXCEPT {
+    return _compare(other.begin(), other.end());
+  }
+  constexpr int compare(const std::string& other) const _WITE_RELEASE_NOEXCEPT { return _compare(other.begin(), other.end()); }
+  constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT { return compare(std::string_view{other}); }
 
  private:
 
   template<typename Iter_T>
-  constexpr int _compare(Iter_T begin, Iter_T end) const noexcept {
+  constexpr int _compare(Iter_T begin, Iter_T end) const _WITE_RELEASE_NOEXCEPT {
     auto it_this  = this->begin();
     const auto end_this = this->end();
 
@@ -329,7 +331,18 @@ class basic_fragment_string {
       }
     }
 
-    return 0;
+    if (begin == end) {
+      if (it_this == end_this) {
+        return 0;
+      }
+      else {
+        return 1;
+      }
+    }
+
+    _WITE_DEBUG_ASSERT(it_this == end_this, "Failed to compare fragment_string");
+
+    return -1;
   }
 
   storage_type _fragments;

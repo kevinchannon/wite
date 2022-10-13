@@ -4,6 +4,9 @@
 
 #ifdef _WITE_CONFIG_DEBUG
 #ifdef _WITE_ASSERT_WITH_EXCEPTION
+
+#define _WITE_RELEASE_NOEXCEPT
+
 #if _WITE_FEATURE_USE_STD_FORMAT
 #include <format>
 #else
@@ -34,9 +37,11 @@ struct assertion_error : public std::logic_error {
 #else
 #include <cassert>
 #define _WITE_DEBUG_ASSERT(pred, msg) assert(pred)
+#define _WITE_RELEASE_NOEXCEPT noexcept
 #endif
 #else
 #define _WITE_DEBUG_ASSERT(pred, msg)
+#define _WITE_RELEASE_NOEXCEPT noexcept
 #endif
 
 #define _WITE_DEBUG_ASSERT_FALSE(pred, msg) _WITE_DEBUG_ASSERT(!(pred), msg)
