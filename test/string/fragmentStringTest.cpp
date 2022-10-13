@@ -113,7 +113,18 @@ TEST_CASE("fragment_string tests", "[string]") {
     }
 #endif
   }
-}
+
+  SECTION("empty() returns the correct value") {
+    SECTION("when the string is non-empty") {
+      REQUIRE_FALSE(fragment_string("some chars").empty());
+    }
+
+    SECTION("when the string is empty") {
+      const auto fs = fragment_string{""} + "" + "" + "";
+      REQUIRE(fs.empty());
+    }
+  }
+  }
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";

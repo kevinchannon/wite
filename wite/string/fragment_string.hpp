@@ -304,6 +304,8 @@ class basic_fragment_string {
     return _fragments.back().back();
   }
 
+  [[nodiscard]] constexpr bool empty() const noexcept { return 0 == length(); }
+
  private:
   storage_type _fragments;
 };
