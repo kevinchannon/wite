@@ -319,6 +319,10 @@ class basic_fragment_string {
     return _compare(other.begin(), other.end());
   }
 
+  constexpr bool starts_with(Char_T c) const noexcept {
+    return front() == c;
+  }
+
  private:
 
   template<typename Iter_T>

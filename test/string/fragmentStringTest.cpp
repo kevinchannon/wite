@@ -186,7 +186,12 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 < fs.compare(fragment_string{"cde"} + "fgh" + "jj" + "klm" + "n"));
     }
   }
-}
+
+  SECTION("starts_with()") {
+    const auto fs = fragment_string("xyz01") + "23456" + "789";
+    REQUIRE(fs.starts_with('x'));
+  }
+  }
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";
