@@ -145,7 +145,7 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 < fs.compare(std::string("defghiiklmnop")));
       REQUIRE(0 < fs.compare(std::string("defghijklmno")));
       REQUIRE(0 > fs.compare(std::string("defghijklmnopq")));
-      REQUIRE(0 > fs.compare(std::string("defghjjklmn")));
+      REQUIRE(0 < fs.compare(std::string("cdefghjjklmn")));
     }
 
     SECTION("with const char*") {
@@ -154,7 +154,7 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 < fs.compare("defghiiklmnop"));
       REQUIRE(0 < fs.compare("defghijklmno"));
       REQUIRE(0 > fs.compare("defghijklmnopq"));
-      REQUIRE(0 > fs.compare("defghjjklmn"));
+      REQUIRE(0 < fs.compare("cdefghjjklmn"));
     }
 
     SECTION("with std::string_view") {
@@ -163,7 +163,27 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 < fs.compare(std::string_view("defghiiklmnop")));
       REQUIRE(0 < fs.compare(std::string_view("defghijklmno")));
       REQUIRE(0 > fs.compare(std::string_view("defghijklmnopq")));
-      REQUIRE(0 > fs.compare(std::string_view("defghjjklmn")));
+      REQUIRE(0 < fs.compare(std::string_view("cdefghjjklmn")));
+    }
+
+    SECTION("with fragment_string") {
+      REQUIRE(0 == fs.compare(fragment_string{"defgh"} + "ijklmnop"));
+      REQUIRE(0 == fs.compare(fragment_string{"de"} + "fgh" + "ij" + "klm" + "no" + "p"));
+
+      REQUIRE(0 > fs.compare(fragment_string{"defgh"} + "jjklmnop"));
+      REQUIRE(0 > fs.compare(fragment_string{"de"} + "fgh" + "jj" + "klm" + "no" + "p"));
+
+      REQUIRE(0 < fs.compare(fragment_string{"defgh"} + "iiklmnop"));
+      REQUIRE(0 < fs.compare(fragment_string{"de"} + "fgh" + "ii" + "klm" + "no" + "p"));
+
+      REQUIRE(0 < fs.compare(fragment_string{"defgh"} + "ijklmno"));
+      REQUIRE(0 < fs.compare(fragment_string{"de"} + "fgh" + "ij" + "klm" + "no"));
+
+      REQUIRE(0 > fs.compare(fragment_string{"defgh"} + "ijklmnopq"));
+      REQUIRE(0 > fs.compare(fragment_string{"de"} + "fgh" + "ij" + "klm" + "no" + "pq"));
+
+      REQUIRE(0 < fs.compare(fragment_string{"cdefgh"} + "jjklmn"));
+      REQUIRE(0 < fs.compare(fragment_string{"cde"} + "fgh" + "jj" + "klm" + "n"));
     }
   }
 }

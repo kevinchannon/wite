@@ -314,6 +314,11 @@ class basic_fragment_string {
   constexpr int compare(const std::string& other) const _WITE_RELEASE_NOEXCEPT { return _compare(other.begin(), other.end()); }
   constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT { return compare(std::string_view{other}); }
 
+  template<size_t OTHER_FRAG_COUNT>
+  constexpr int compare(const basic_fragment_string<value_type, OTHER_FRAG_COUNT>& other) const _WITE_RELEASE_NOEXCEPT {
+    return _compare(other.begin(), other.end());
+  }
+
  private:
 
   template<typename Iter_T>
