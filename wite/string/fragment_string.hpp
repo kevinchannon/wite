@@ -327,6 +327,14 @@ class basic_fragment_string {
     return front() == c;
   }
 
+  constexpr bool starts_with(std::basic_string_view<Char_T> sv) const noexcept {
+    if (length() == 0) {
+      return false;
+    }
+
+    return std::equal(sv.begin(), sv.end(), this->begin(), std::next(this->begin(), sv.length()));
+  }
+
  private:
 
   template<typename Iter_T>

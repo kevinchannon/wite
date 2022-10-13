@@ -196,6 +196,11 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE_FALSE(fs.starts_with('y'));
     }
 
+    SECTION("a string view") {
+      REQUIRE_FALSE(fragment_string().starts_with(std::string_view("anything")));
+      REQUIRE(fs.starts_with(std::string_view("xyz0123")));
+      REQUIRE_FALSE(fs.starts_with(std::string_view("yz0123")));
+    }
   }
   }
 
