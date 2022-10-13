@@ -332,6 +332,10 @@ class basic_fragment_string {
       return false;
     }
 
+    if (length() < sv.length()) {
+      return false;
+    }
+
     return std::equal(sv.begin(), sv.end(), this->begin(), std::next(this->begin(), sv.length()));
   }
 
