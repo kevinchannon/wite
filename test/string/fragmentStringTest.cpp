@@ -64,9 +64,20 @@ TEST_CASE("fragment_string tests", "[string]") {
     }
   }
 
-  SECTION("length and size match") {
-    const auto fs = fragment_string{"Lorem ipsum dolor sit"};
-    REQUIRE(fs.length() == fs.size());
+  SECTION("length and size") {
+    const auto fs = fragment_string{"Lorem"} + " ipsum" + " dolor" + " sit";
+
+    SECTION("length() and size() return the same value") {
+      REQUIRE(fs.length() == fs.size());
+    }
+
+    SECTION("length() and max_size() return the same value") {
+      REQUIRE(fs.length() == fs.max_size());
+    }
+
+    SECTION("length() and capacity() return the same value") {
+      REQUIRE(fs.length() == fs.capacity());
+    }
   }
 
   SECTION("element access") {

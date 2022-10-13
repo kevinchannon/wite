@@ -266,6 +266,8 @@ class basic_fragment_string {
   }
 
   [[nodiscard]] constexpr auto size() const noexcept { return length(); }
+  [[nodiscard]] constexpr auto max_size() const noexcept { return length(); }
+  [[nodiscard]] constexpr auto capacity() const noexcept { return length(); }
 
   [[nodiscard]] constexpr auto cbegin() const noexcept {
     return iterator(
@@ -305,6 +307,7 @@ class basic_fragment_string {
   }
 
   [[nodiscard]] constexpr bool empty() const noexcept { return 0 == length(); }
+
 
  private:
   storage_type _fragments;
