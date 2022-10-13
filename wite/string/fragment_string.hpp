@@ -320,6 +320,10 @@ class basic_fragment_string {
   }
 
   constexpr bool starts_with(Char_T c) const noexcept {
+    if (length() == 0) {
+      return false;
+    }
+
     return front() == c;
   }
 

@@ -188,6 +188,8 @@ TEST_CASE("fragment_string tests", "[string]") {
   }
 
   SECTION("starts_with()") {
+    REQUIRE_FALSE(fragment_string().starts_with('?'));
+
     const auto fs = fragment_string("xyz01") + "23456" + "789";
     REQUIRE(fs.starts_with('x'));
   }
