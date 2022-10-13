@@ -298,6 +298,12 @@ class basic_fragment_string {
     return _fragments.front().front();
   }
 
+  [[nodiscard]] constexpr const_reference back() const _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(length() > 0, "accessing fragment_string beyond end of string");
+
+    return _fragments.back().back();
+  }
+
  private:
   storage_type _fragments;
 };
@@ -335,5 +341,9 @@ basic_fragment_string<Char_T, LEFT_FRAG_COUNT + RIGHT_FRAG_COUNT> operator+(
 ///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace wite
+
+///////////////////////////////////////////////////////////////////////////////
+
+#undef _WITE_FRAG_STR_DEBUG_ARG
 
 ///////////////////////////////////////////////////////////////////////////////

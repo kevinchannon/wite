@@ -70,12 +70,12 @@ TEST_CASE("fragment_string tests", "[string]") {
   }
 
   SECTION("element access") {
-    const char* s1 = "first fragment";
-    const char* s2 = "second fragment";
+    const char* s1 = "abcdefghij";
+    const char* s2 = "lmnopqrs";
 
-    const auto fs = fragment_string{s1} + " " + s2 + " last fragment";
+    const auto fs = fragment_string{s1} + "k" + s2 + "tuvwxyz";
 
-    const auto equivalent_str = std::string_view{"first fragment second fragment last fragment"};
+    const auto equivalent_str = std::string_view{"abcdefghijklmnopqrstuvwxyz"};
 
     SECTION("operator[]") {
       for (auto i = 0u; i < equivalent_str.length(); ++i) {
@@ -90,20 +90,28 @@ TEST_CASE("fragment_string tests", "[string]") {
     }
 
     SECTION("at() throws out of range if requested element is beyond the end of the string") {
-      REQUIRE_THROWS_AS(fs.at(44), std::out_of_range);
+      REQUIRE_THROWS_AS(fs.at(26), std::out_of_range);
     }
 
     SECTION("front() returns the first character") {
-      REQUIRE('f' == fs.front());
+      REQUIRE('a' == fs.front());
     }
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("front() asserts if the string has zero length") {
       REQUIRE_THROWS_AS(fragment_string("").front(), wite::assertion_error);
-
     }
 #endif
 
+    SECTION("back() returns the last character") {
+      REQUIRE('z' == fs.back());
+    }
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("back() asserts if the string has zero length") {
+      REQUIRE_THROWS_AS(fragment_string("").back(), wite::assertion_error);
+    }
+#endif
   }
 }
 
