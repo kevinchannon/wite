@@ -334,7 +334,6 @@ class basic_fragment_string {
     return false;
   }
 
-
   template<size_t OTHER_FRAG_COUNT>
   constexpr bool starts_with(basic_fragment_string<Char_T, OTHER_FRAG_COUNT> other) const noexcept {
     // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
