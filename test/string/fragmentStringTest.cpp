@@ -209,6 +209,13 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE_FALSE(fs.starts_with("yz0123"));
       REQUIRE_FALSE(fs.starts_with("xyz0123456789A"));
     }
+
+    SECTION("a fragment_string") {
+      REQUIRE_FALSE(fragment_string().starts_with(fragment_string("any") + "thing"));
+      REQUIRE(fs.starts_with(fragment_string("xyz") + "0123"));
+      REQUIRE_FALSE(fs.starts_with(fragment_string("y") + "z0123"));
+      REQUIRE_FALSE(fs.starts_with(fragment_string("xyz012345678") + "9A"));
+    }
   }
   }
 

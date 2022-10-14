@@ -328,15 +328,27 @@ class basic_fragment_string {
   }
 
   constexpr bool starts_with(std::basic_string_view<Char_T> sv) const noexcept {
-    if (length() == 0) {
-      return false;
+    // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
+    if (const auto len = length(); len != 0) {
+      if (const auto sv_len = sv.length(); len >= sv_len) {
+        return std::equal(sv.begin(), sv.end(), this->begin(), std::next(this->begin(), sv_len));
+       }
     }
 
-    if (length() < sv.length()) {
-      return false;
+    return false;
+  }
+
+
+  template<size_t OTHER_FRAG_COUNT>
+  constexpr bool starts_with(basic_fragment_string<Char_T, OTHER_FRAG_COUNT> other) const noexcept {
+    // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
+    if (const auto len = length(); len != 0) {
+       if (const auto other_len = other.length(); len >= other_len) {
+        return std::equal(other.begin(), other.end(), this->begin(), std::next(this->begin(), other_len));
+       }
     }
 
-    return std::equal(sv.begin(), sv.end(), this->begin(), std::next(this->begin(), sv.length()));
+    return false;
   }
 
  private:
