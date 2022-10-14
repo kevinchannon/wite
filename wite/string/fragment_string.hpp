@@ -320,11 +320,7 @@ class basic_fragment_string {
   }
 
   constexpr bool starts_with(Char_T c) const noexcept {
-    if (length() == 0) {
-      return false;
-    }
-
-    return front() == c;
+    return length() > 0 ? front() == c : false;
   }
 
   constexpr bool starts_with(std::basic_string_view<Char_T> sv) const noexcept {
