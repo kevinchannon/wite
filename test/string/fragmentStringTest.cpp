@@ -217,7 +217,17 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE_FALSE(fs.starts_with(fragment_string("xyz012345678") + "9A"));
     }
   }
+
+  SECTION("ends_with()") {
+    const auto fs = fragment_string("x") + "yx0123456" + "789" + "ABCDE";
+
+    SECTION("a single character") {
+      REQUIRE_FALSE(fragment_string().ends_with('?'));
+      REQUIRE(fs.ends_with('E'));
+      REQUIRE_FALSE(fs.ends_with('D'));
+    }
   }
+}
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";

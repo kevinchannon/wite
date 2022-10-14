@@ -319,9 +319,7 @@ class basic_fragment_string {
     return _compare(other.begin(), other.end());
   }
 
-  constexpr bool starts_with(Char_T c) const noexcept {
-    return length() > 0 ? front() == c : false;
-  }
+  constexpr bool starts_with(Char_T c) const noexcept { return length() > 0 ? front() == c : false; }
 
   constexpr bool starts_with(std::basic_string_view<Char_T> sv) const noexcept {
     // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
@@ -345,6 +343,8 @@ class basic_fragment_string {
 
     return false;
   }
+
+  constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
 
  private:
 
