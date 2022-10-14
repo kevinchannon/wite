@@ -346,6 +346,17 @@ class basic_fragment_string {
 
   constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
 
+  constexpr bool ends_with(std::basic_string_view<Char_T> sv) const noexcept {
+    // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
+    if (const auto len = length(); len != 0) {
+       if (const auto sv_len = sv.length(); len >= sv_len) {
+        return std::equal(sv.rbegin(), sv.rend(), this->rbegin(), std::next(this->rbegin(), sv_len));
+       }
+    }
+
+    return false;
+  }
+
  private:
 
   template<typename Iter_T>

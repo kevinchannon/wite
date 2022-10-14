@@ -226,6 +226,20 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(fs.ends_with('E'));
       REQUIRE_FALSE(fs.ends_with('D'));
     }
+
+    SECTION("a string view") {
+      REQUIRE_FALSE(fragment_string().ends_with(std::string_view("anything")));
+      REQUIRE(fs.ends_with(std::string_view("89ABCDE")));
+      REQUIRE_FALSE(fs.ends_with(std::string_view("BC")));
+      REQUIRE_FALSE(fs.ends_with(std::string_view("wxyz0123456789ABCDE")));
+    }
+
+    SECTION("a c-string") {
+      REQUIRE_FALSE(fragment_string().ends_with("anything"));
+      REQUIRE(fs.ends_with("89ABCDE"));
+      REQUIRE_FALSE(fs.ends_with("BC"));
+      REQUIRE_FALSE(fs.ends_with("wxyz0123456789ABCDE"));
+    }
   }
 }
 
