@@ -308,56 +308,54 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr bool empty() const noexcept { return 0 == length(); }
 
-  constexpr int compare(const std::string_view& other) const _WITE_RELEASE_NOEXCEPT {
+  [[nodiscard]] constexpr int compare(const std::string_view& other) const _WITE_RELEASE_NOEXCEPT {
     return _compare(other.begin(), other.end());
   }
-  constexpr int compare(const std::string& other) const _WITE_RELEASE_NOEXCEPT { return _compare(other.begin(), other.end()); }
-  constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT { return compare(std::string_view{other}); }
+  [[nodiscard]] constexpr int compare(const std::string& other) const _WITE_RELEASE_NOEXCEPT {
+    return _compare(other.begin(), other.end());
+  }
+  [[nodiscard]] constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT { return compare(std::string_view{other}); }
 
   template<size_t OTHER_FRAG_COUNT>
-  constexpr int compare(const basic_fragment_string<value_type, OTHER_FRAG_COUNT>& other) const _WITE_RELEASE_NOEXCEPT {
+  [[nodiscard]] constexpr int compare(const basic_fragment_string<value_type, OTHER_FRAG_COUNT>& other) const
+      _WITE_RELEASE_NOEXCEPT {
     return _compare(other.begin(), other.end());
   }
 
-  constexpr bool starts_with(Char_T c) const noexcept { return length() > 0 ? front() == c : false; }
+  [[nodiscard]] constexpr bool starts_with(Char_T c) const noexcept { return length() > 0 ? front() == c : false; }
 
-  constexpr bool starts_with(std::basic_string_view<Char_T> sv) const noexcept {
-    // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
-    if (const auto len = length(); len != 0) {
-      if (const auto sv_len = sv.length(); len >= sv_len) {
-        return std::equal(sv.begin(), sv.end(), this->begin(), std::next(this->begin(), sv_len));
-       }
-    }
-
-    return false;
+  [[nodiscard]] constexpr bool starts_with(std::basic_string_view<Char_T> sv) const noexcept {
+    return _match_substring(this->begin(), this->length(), sv.begin(), sv.end(), sv.length());
   }
 
   template<size_t OTHER_FRAG_COUNT>
-  constexpr bool starts_with(basic_fragment_string<Char_T, OTHER_FRAG_COUNT> other) const noexcept {
-    // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
-    if (const auto len = length(); len != 0) {
-       if (const auto other_len = other.length(); len >= other_len) {
-        return std::equal(other.begin(), other.end(), this->begin(), std::next(this->begin(), other_len));
-       }
-    }
-
-    return false;
+  [[nodiscard]] constexpr bool starts_with(basic_fragment_string<Char_T, OTHER_FRAG_COUNT> other) const noexcept {
+    return _match_substring(this->begin(), this->length(), other.begin(), other.end(), other.length());
   }
 
-  constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
+  [[nodiscard]] constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
 
-  constexpr bool ends_with(std::basic_string_view<Char_T> sv) const noexcept {
-    // This is written in this weird way because it avoids multiple calls to this->length(), which is relatively expensive.
-    if (const auto len = length(); len != 0) {
-       if (const auto sv_len = sv.length(); len >= sv_len) {
-        return std::equal(sv.rbegin(), sv.rend(), this->rbegin(), std::next(this->rbegin(), sv_len));
-       }
-    }
-
-    return false;
+  [[nodiscard]] constexpr bool ends_with(std::basic_string_view<Char_T> sv) const noexcept {
+    return _match_substring(this->rbegin(), this->length(), sv.rbegin(), sv.rend(), sv.length());
   }
 
  private:
+  template <typename ThisIter_T, typename OtherIter_T>
+  [[nodiscard]] static constexpr bool _match_substring(ThisIter_T this_begin,
+                                                       size_type this_length,
+                                                       OtherIter_T other_begin,
+                                                       OtherIter_T other_end,
+                                                       size_type other_length) noexcept {
+    if (this_length == 0) {
+       return false;
+    }
+
+    if (this_length < other_length) {
+       return false;
+    }
+
+    return std::equal(other_begin, other_end, this_begin, std::next(this_begin, other_length));
+  }
 
   template<typename Iter_T>
   constexpr int _compare(Iter_T begin, Iter_T end) const _WITE_RELEASE_NOEXCEPT {
