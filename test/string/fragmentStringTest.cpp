@@ -240,6 +240,13 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE_FALSE(fs.ends_with("BC"));
       REQUIRE_FALSE(fs.ends_with("wxyz0123456789ABCDE"));
     }
+
+    SECTION("a fragment_string") {
+      REQUIRE_FALSE(fragment_string().ends_with(fragment_string("any") + "thing"));
+      REQUIRE(fs.ends_with(fragment_string("9A") + "BCDE"));
+      REQUIRE_FALSE(fs.ends_with(fragment_string("A") + "BCD"));
+      REQUIRE_FALSE(fs.ends_with(fragment_string("xyz012345678") + "9ABCDEF"));
+    }
   }
 }
 

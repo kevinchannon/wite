@@ -339,6 +339,11 @@ class basic_fragment_string {
     return _match_substring(this->rbegin(), this->length(), sv.rbegin(), sv.rend(), sv.length());
   }
 
+  template <size_t OTHER_FRAG_COUNT>
+  [[nodiscard]] constexpr bool ends_with(basic_fragment_string<Char_T, OTHER_FRAG_COUNT> other) const noexcept {
+    return _match_substring(this->rbegin(), this->length(), other.rbegin(), other.rend(), other.length());
+  }
+
  private:
   template <typename ThisIter_T, typename OtherIter_T>
   [[nodiscard]] static constexpr bool _match_substring(ThisIter_T this_begin,
