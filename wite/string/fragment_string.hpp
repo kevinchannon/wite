@@ -322,26 +322,30 @@ class basic_fragment_string {
     return _compare(other.begin(), other.end());
   }
 
-  [[nodiscard]] constexpr bool starts_with(Char_T c) const noexcept { return length() > 0 ? front() == c : false; }
+  [[nodiscard]] constexpr bool starts_with(value_type c) const noexcept { return length() > 0 ? front() == c : false; }
 
-  [[nodiscard]] constexpr bool starts_with(std::basic_string_view<Char_T> sv) const noexcept {
+  [[nodiscard]] constexpr bool starts_with(std::basic_string_view<value_type> sv) const noexcept {
     return _match_substring(this->begin(), this->length(), sv.begin(), sv.end(), sv.length());
   }
 
   template<size_t OTHER_FRAG_COUNT>
-  [[nodiscard]] constexpr bool starts_with(basic_fragment_string<Char_T, OTHER_FRAG_COUNT> other) const noexcept {
+  [[nodiscard]] constexpr bool starts_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
     return _match_substring(this->begin(), this->length(), other.begin(), other.end(), other.length());
   }
 
   [[nodiscard]] constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
 
-  [[nodiscard]] constexpr bool ends_with(std::basic_string_view<Char_T> sv) const noexcept {
+  [[nodiscard]] constexpr bool ends_with(std::basic_string_view<value_type> sv) const noexcept {
     return _match_substring(this->rbegin(), this->length(), sv.rbegin(), sv.rend(), sv.length());
   }
 
   template <size_t OTHER_FRAG_COUNT>
-  [[nodiscard]] constexpr bool ends_with(basic_fragment_string<Char_T, OTHER_FRAG_COUNT> other) const noexcept {
+  [[nodiscard]] constexpr bool ends_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
     return _match_substring(this->rbegin(), this->length(), other.rbegin(), other.rend(), other.length());
+  }
+
+  [[nodiscard]] constexpr bool contains(value_type c) const noexcept {
+    return std::ranges::any_of(_fragments, [c](const auto& f) { return _fragment_type::npos != f.find(c); });
   }
 
  private:

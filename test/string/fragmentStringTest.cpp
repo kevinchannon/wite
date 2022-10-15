@@ -248,6 +248,28 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE_FALSE(fs.ends_with(fragment_string("xyz012345678") + "9ABCDEF"));
     }
   }
+
+  SECTION("contains()") {
+    const auto fs = fragment_string("defghij") + "klmnopqr" + "st" + "uvw";
+
+    SECTION("a single character") {
+      REQUIRE_FALSE(fragment_string().contains('?'));
+
+      SECTION("valid leters return true")
+      {
+        const auto valid_letter =
+            GENERATE('d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w');
+
+        REQUIRE(fs.contains(valid_letter));
+      }
+
+      SECTION("invalid letters return false") {
+        const auto invalid_letter = GENERATE('a', 'b', 'c', 'x', 'y', 'z');
+
+        REQUIRE_FALSE(fs.contains(invalid_letter));
+      }
+    }
+  }
 }
 
 TEST_CASE("fragment_string iterator", "[string]") {
