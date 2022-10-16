@@ -409,7 +409,12 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr std::basic_string<Char_T> substr(size_type pos   = 0,
                                                            size_type count = std::basic_string<Char_T>::npos) const {
-    const auto it_end = ((count == std::basic_string<Char_T>::npos) or (pos + count == length())) ? this->end() : std::next(this->begin(), pos + count);
+    const auto len    = length();
+    if (pos >= len) {
+      throw std::out_of_range{"fragment_string: substring start out of range"};
+    }
+
+    const auto it_end = ((count == std::basic_string<Char_T>::npos) or (pos + count == len)) ? this->end() : std::next(this->begin(), pos + count);
     return std::basic_string<Char_T>(std::next(this->begin(), pos), it_end);
   }
 
