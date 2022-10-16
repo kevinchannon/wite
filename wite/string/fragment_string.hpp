@@ -407,6 +407,12 @@ class basic_fragment_string {
     return false;
   }
 
+  [[nodiscard]] constexpr std::basic_string<Char_T> substr(size_type pos   = 0,
+                                                           size_type count = std::basic_string<Char_T>::npos) const {
+    const auto it_end = ((count == std::basic_string<Char_T>::npos) or (pos + count == length())) ? this->end() : std::next(this->begin(), pos + count);
+    return std::basic_string<Char_T>(std::next(this->begin(), pos), it_end);
+  }
+
  private:
   template <typename ThisIter_T, typename OtherIter_T>
   [[nodiscard]] static constexpr bool _match_substring(ThisIter_T this_begin,

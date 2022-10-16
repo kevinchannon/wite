@@ -291,6 +291,26 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE_FALSE(fs.contains(fragment_string("cdef") + "g" + "hijklmnopqrstuvw"));
     }
   }
+
+  SECTION("substr()") {
+    const auto fs = fragment_string("defghij") + "klmnopqr" + "st" + "uvw";
+
+    SECTION("single fragment substring from beginning") {
+      REQUIRE(std::string{"defgh"} == fs.substr(0, 5));
+    }
+
+    SECTION("multi-fragment substring from beginning") {
+      REQUIRE(std::string{"defghijklm"} == fs.substr(0, 10));
+    }
+
+    SECTION("multi-fragment substring from middle") {
+      REQUIRE(std::string{"qrstuv"} == fs.substr(13, 6));
+    }
+
+    SECTION("multi-fragment right sub-string") {
+      REQUIRE(std::string("tuvw") == fs.substr(16, 4));
+    }
+  }
 }
 
 TEST_CASE("fragment_string iterator", "[string]") {
