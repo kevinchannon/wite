@@ -156,15 +156,11 @@ class basic_fragment_string {
       _debug_verify_integrity(other);
 #endif
 
-      auto distance = difference_type{0};
-
       const auto fragment_separation = _data.fragment - other._data.fragment;
       if (fragment_separation > 0) {
-        return _sublength(other._data.fragment, _data.fragment) + std::distance(_data.fragment->begin(), _data.current) -
-               std::distance(other._data.fragment->begin(), other._data.current);
+        return _distance(other._data.fragment, other._data.current, _data.fragment, _data.current);
       } else if (fragment_separation < 0) {
-        return std::distance(other._data.fragment->begin(), other._data.current) -
-               std::distance(_data.fragment->begin(), _data.current) - _sublength(_data.fragment, other._data.fragment);
+        return -_distance(_data.fragment, _data.current, other._data.fragment, other._data.current);
       }
 
       return _data.current - other._data.current;
@@ -187,23 +183,23 @@ class basic_fragment_string {
     }
 
     void _seek_forward(size_type offset) {
-      _data.fragment = std::find_if(_data.fragment, _data.fragment_end, [&offset](const auto& f) {
-        const auto fragment_len = f.length();
-        if (fragment_len > offset) {
-          return true;
+      while (offset > 0) {
+        const auto dist_to_fragment_end = static_cast<size_type>(std::distance(_data.current, _data.fragment->end()));
+        if (offset < dist_to_fragment_end) {
+          _data.current += offset;
+          return;
         }
 
-        offset -= fragment_len;
-        return false;
-      });
-
-      _WITE_DEBUG_ASSERT(_data.fragment != _data.fragment_end,
-                         "fragment_string::_seek_forward: trying to seek beyond end of range");
-
-      _data.current = std::next(_data.fragment->begin(), offset);
+        _WITE_DEBUG_ASSERT(_data.fragment != std::prev(_data.fragment_end),
+                           "fragment_string::_seek_forward: trying to seek beyond end of range");
+        ++_data.fragment;
+        _data.current = _data.fragment->begin();
+        offset -= dist_to_fragment_end;
+      }
     }
 
     void _seek_backward(size_type offset) {
+
       while (offset > 0) {
         const auto idx = static_cast<size_type>(std::distance(_data.fragment->begin(), _data.current));
         if (offset <= idx) {
@@ -220,7 +216,17 @@ class basic_fragment_string {
     }
 
     static size_type _sublength(_fragment_iterator begin, _fragment_iterator end) _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(begin <= end, "fragment_string: invalid arguments (out of order) to _sublength");
+
       return std::accumulate(begin, end, size_type{}, [](auto&& len, auto&& fragment) { return len += fragment.length(); });
+    }
+
+    [[nodiscard]] static constexpr difference_type _distance(auto low_frag,
+                                                             auto low_current,
+                                                             auto high_frag,
+                                                             auto high_current) noexcept {
+      return _sublength(low_frag, high_frag) - std::distance(low_frag->begin(), low_current) +
+             std::distance(high_frag->begin(), high_current);
     }
   };
 
@@ -346,6 +352,25 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr bool contains(value_type c) const noexcept {
     return std::ranges::any_of(_fragments, [c](const auto& f) { return _fragment_type::npos != f.find(c); });
+  }
+
+  [[nodiscard]] constexpr bool contains(std::basic_string_view<value_type> sv) const noexcept {
+    const auto this_len = this->length();
+    const auto sv_len   = sv.length();
+    if (sv_len > this_len) {
+      return false;
+    }
+
+    const auto this_end = std::next(this->begin(), this_len - sv_len);
+    auto effective_len  = this_len;
+
+    for (auto it = this->begin(); it != this_end and effective_len != 0; ++it, --effective_len) {
+      if (_match_substring(it, effective_len, sv.begin(), sv.end(), sv_len)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
  private:

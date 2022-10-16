@@ -269,6 +269,20 @@ TEST_CASE("fragment_string tests", "[string]") {
         REQUIRE_FALSE(fs.contains(invalid_letter));
       }
     }
+
+    SECTION("a string view") {
+      REQUIRE_FALSE(fragment_string().contains(std::string_view("anything")));
+      REQUIRE(fs.contains(std::string_view("ijkl")));
+      REQUIRE_FALSE(fs.contains(std::string_view("ijkkl")));
+      REQUIRE_FALSE(fs.contains(std::string_view("cdefjhijklmnopqrstuvw")));
+    }
+
+    SECTION("a c-string") {
+      REQUIRE_FALSE(fragment_string().contains("anything"));
+      REQUIRE(fs.contains("ijkl"));
+      REQUIRE_FALSE(fs.contains("ijkkl"));
+      REQUIRE_FALSE(fs.contains("cdefjhijklmnopqrstuvw"));
+    }
   }
 }
 
@@ -508,8 +522,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
     SECTION("across fragments") {
       const auto it_1 = fs.begin() + 3;
       const auto it_2 = it_1 + 18;
-      REQUIRE(15 == it_2 - it_1);
-      REQUIRE(-15 == it_1 - it_2);
+      REQUIRE(18 == it_2 - it_1);
+      REQUIRE(-18 == it_1 - it_2);
     }
 
 #ifdef _WITE_CONFIG_DEBUG
