@@ -334,6 +334,10 @@ class basic_fragment_string {
     return _match_substring(this->begin(), this->length(), sv.begin(), sv.end(), sv.length());
   }
 
+  [[nodiscard]] constexpr bool starts_with(const Char_T* pszStr) const noexcept {
+    return starts_with(std::basic_string_view<value_type>(pszStr));
+  }
+
   template<size_t OTHER_FRAG_COUNT>
   [[nodiscard]] constexpr bool starts_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
     return _match_substring(this->begin(), this->length(), other.begin(), other.end(), other.length());
@@ -343,6 +347,10 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr bool ends_with(std::basic_string_view<value_type> sv) const noexcept {
     return _match_substring(this->rbegin(), this->length(), sv.rbegin(), sv.rend(), sv.length());
+  }
+
+  [[nodiscard]] constexpr bool ends_with(const Char_T* pszStr) const noexcept {
+    return ends_with(std::basic_string_view<value_type>(pszStr));
   }
 
   template <size_t OTHER_FRAG_COUNT>
@@ -371,6 +379,10 @@ class basic_fragment_string {
     }
 
     return false;
+  }
+
+  [[nodiscard]] constexpr bool contains(const Char_T* pszStr) const noexcept {
+    return contains(std::basic_string_view<value_type>(pszStr));
   }
 
  private:
