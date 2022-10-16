@@ -414,7 +414,7 @@ class basic_fragment_string {
       throw std::out_of_range{"fragment_string: substring start out of range"};
     }
 
-    const auto it_end = ((count == std::basic_string<Char_T>::npos) or (pos + count == len)) ? this->end() : std::next(this->begin(), pos + count);
+    const auto it_end = ((count == std::basic_string<Char_T>::npos) or (pos + count >= len)) ? this->end() : std::next(this->begin(), pos + count);
     return std::basic_string<Char_T>(std::next(this->begin(), pos), it_end);
   }
 

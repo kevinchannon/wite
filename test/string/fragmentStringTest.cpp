@@ -314,6 +314,10 @@ TEST_CASE("fragment_string tests", "[string]") {
     SECTION("throw std::out_of_range when position is beyond the end of the string") {
       REQUIRE_THROWS_AS(fs.substr(20), std::out_of_range);
     }
+
+    SECTION("clips substring length to length of string") {
+      REQUIRE(std::string("tuvw") == fs.substr(16, 10));
+    }
   }
 }
 
