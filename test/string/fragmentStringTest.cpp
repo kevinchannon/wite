@@ -283,6 +283,13 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE_FALSE(fs.contains("ijkkl"));
       REQUIRE_FALSE(fs.contains("cdefjhijklmnopqrstuvw"));
     }
+
+    SECTION("a fragment_string") {
+      REQUIRE_FALSE(fragment_string().contains(fragment_string("any") + "thing"));
+      REQUIRE(fs.contains(fragment_string("ijkl") + "m"));
+      REQUIRE_FALSE(fs.contains(fragment_string("cde") + "fghijk"));
+      REQUIRE_FALSE(fs.contains(fragment_string("cdef") + "g" + "hijklmnopqrstuvw"));
+    }
   }
 }
 

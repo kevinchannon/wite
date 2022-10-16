@@ -369,11 +369,11 @@ class basic_fragment_string {
       return false;
     }
 
-    const auto this_end = std::next(this->begin(), this_len - sv_len);
-    auto effective_len  = this_len;
+    const auto this_end    = std::next(this->begin(), this_len - sv_len);
+    auto effective_len     = this_len;
 
     for (auto it = this->begin(); it != this_end and effective_len != 0; ++it, --effective_len) {
-      if (_match_substring(it, effective_len, sv.begin(), sv.end(), sv_len)) {
+      if (std::equal(sv.begin(), sv.end(), it, std::next(it, sv_len))) {
         return true;
       }
     }
@@ -383,6 +383,28 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr bool contains(const Char_T* pszStr) const noexcept {
     return contains(std::basic_string_view<value_type>(pszStr));
+  }
+
+  template<size_t OTHER_FRAG_COUNT>
+  [[nodiscard]] constexpr bool contains(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
+    const auto this_len = this->length();
+    const auto other_len   = other.length();
+    if (other_len > this_len) {
+      return false;
+    }
+
+    const auto other_begin = other.begin();
+    const auto other_end   = other.end();
+    const auto this_end = std::next(this->begin(), this_len - other_len);
+    auto effective_len  = this_len;
+
+    for (auto it = this->begin(); it != this_end and effective_len != 0; ++it, --effective_len) {
+      if (std::equal(other_begin, other_end, it, std::next(it, other_len))) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
  private:
