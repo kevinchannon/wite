@@ -418,6 +418,12 @@ class basic_fragment_string {
     return std::basic_string<Char_T>(std::next(this->begin(), pos), it_end);
   }
 
+  [[nodiscard]] constexpr size_type copy(Char_T* dest, size_type count, size_type pos = 0) const {
+    std::copy_n(std::next(begin(), pos), count, dest);
+
+    return count;
+  }
+
  private:
   template <typename ThisIter_T, typename OtherIter_T>
   [[nodiscard]] static constexpr bool _match_substring(ThisIter_T this_begin,

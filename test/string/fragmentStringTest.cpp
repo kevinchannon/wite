@@ -319,7 +319,17 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(std::string("tuvw") == fs.substr(16, 10));
     }
   }
-}
+
+  SECTION("copy()") {
+    const auto fs = fragment_string{"abcdef"} + "gh" + "i" + "jklmnopqrstuvwxy" + "z";
+    auto dest     = std::array<char, 26>{};
+
+    SECTION("single fragment substring from beginning") {
+      REQUIRE(5 == fs.copy(dest.data(), 5, 0));
+      REQUIRE(std::strcmp("abcde", dest.data()) == 0);
+    }
+  }
+  }
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";
