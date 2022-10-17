@@ -431,6 +431,10 @@ class basic_fragment_string {
     return count;
   }
 
+  [[nodiscard]] constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
+    return _fragments.front().find(ch);
+  }
+
  private:
   template <typename ThisIter_T, typename OtherIter_T>
   [[nodiscard]] static constexpr bool _match_substring(ThisIter_T this_begin,

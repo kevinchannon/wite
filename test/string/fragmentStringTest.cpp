@@ -349,7 +349,15 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(0 == std::strcmp("uvwxyz", dest.data()));
     }
   }
+
+  SECTION("find()") {
+    const auto fs = fragment_string{"ab"};
+    
+    SECTION("find single character") {
+      REQUIRE(1 == fs.find('b'));
+    }
   }
+}
 
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";
