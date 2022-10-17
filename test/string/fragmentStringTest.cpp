@@ -343,6 +343,11 @@ TEST_CASE("fragment_string tests", "[string]") {
     SECTION("throw std::out_of_range when position is beyond the end of the string") {
       REQUIRE_THROWS_AS(fs.copy(dest.data(), 1, 26), std::out_of_range);
     }
+
+    SECTION("clips substring length to length of string") {
+      REQUIRE(6 == fs.copy(dest.data(), 10, 20));
+      REQUIRE(0 == std::strcmp("uvwxyz", dest.data()));
+    }
   }
   }
 
