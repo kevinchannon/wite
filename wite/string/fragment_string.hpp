@@ -419,6 +419,10 @@ class basic_fragment_string {
   }
 
   [[nodiscard]] constexpr size_type copy(Char_T* dest, size_type count, size_type pos = 0) const {
+    if (pos >= length()) {
+      throw std::out_of_range{"fragment_string: copy start out of range"};
+    }
+
     std::copy_n(std::next(begin(), pos), count, dest);
 
     return count;

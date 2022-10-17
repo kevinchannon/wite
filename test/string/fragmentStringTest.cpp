@@ -339,6 +339,10 @@ TEST_CASE("fragment_string tests", "[string]") {
       REQUIRE(5 == fs.copy(dest.data(), 5, 5));
       REQUIRE(0 == std::strcmp("fghij", dest.data()));
     }
+
+    SECTION("throw std::out_of_range when position is beyond the end of the string") {
+      REQUIRE_THROWS_AS(fs.copy(dest.data(), 1, 26), std::out_of_range);
+    }
   }
   }
 
