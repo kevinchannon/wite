@@ -309,6 +309,7 @@ TEST_CASE("fragment_string tests", "[string]") {
 
     SECTION("multi-fragment right sub-string") {
       REQUIRE(std::string("tuvw") == fs.substr(16, 4));
+      REQUIRE(std::string("tuvw") == fs.substr(16));
     }
 
     SECTION("throw std::out_of_range when position is beyond the end of the string") {
@@ -326,7 +327,17 @@ TEST_CASE("fragment_string tests", "[string]") {
 
     SECTION("single fragment substring from beginning") {
       REQUIRE(5 == fs.copy(dest.data(), 5, 0));
-      REQUIRE(std::strcmp("abcde", dest.data()) == 0);
+      REQUIRE(0 == std::strcmp("abcde", dest.data()));
+    }
+
+    SECTION("multi-fragment substring from beginning") {
+      REQUIRE(10 == fs.copy(dest.data(), 10, 0));
+      REQUIRE(0 == std::strcmp("abcdefghij", dest.data()));
+    }
+
+    SECTION("multi-fragment substring from middle") {
+      REQUIRE(5 == fs.copy(dest.data(), 5, 5));
+      REQUIRE(0 == std::strcmp("fghij", dest.data()));
     }
   }
   }
