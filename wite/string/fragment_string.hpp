@@ -442,13 +442,16 @@ class basic_fragment_string {
       return std::string::npos;
     }
 
-    const auto this_end = std::next(this->begin(), this_len - sv_len);
-    auto effective_len  = this_len;
+    const auto this_end = this->end();
     auto out            = size_type{0};
 
-    for (auto it = this->begin(); it != this_end and effective_len != 0; ++it, --effective_len, ++out) {
-      if (std::equal(sv.begin(), sv.end(), it, std::next(it, sv_len))) {
+    for (auto it = this->begin(), curr_end = std::next(this->begin(), sv_len);; ++it, ++curr_end, ++out) {
+      if (std::equal(sv.begin(), sv.end(), it, curr_end)) {
         return out;
+      }
+
+      if (curr_end == this_end) {
+        break;
       }
     }
 

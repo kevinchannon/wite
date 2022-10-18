@@ -273,6 +273,7 @@ TEST_CASE("fragment_string tests", "[string]") {
     SECTION("a string view") {
       REQUIRE_FALSE(fragment_string().contains(std::string_view("anything")));
       REQUIRE(fs.contains(std::string_view("ijkl")));
+      REQUIRE(fs.contains(std::string_view("vw")));
       REQUIRE_FALSE(fs.contains(std::string_view("ijkkl")));
       REQUIRE_FALSE(fs.contains(std::string_view("cdefjhijklmnopqrstuvw")));
     }
@@ -386,6 +387,18 @@ TEST_CASE("fragment_string tests", "[string]") {
       SECTION("find in first fragment") {
         const auto fs = fragment_string{"abcde"} + "fghijkl" + "mnopq";
         REQUIRE(1 == fs.find("bcd"));
+      }
+
+      SECTION("find in any fragment") {
+        const auto fs = fragment_string{"ab"} + "cd" + "ef";
+        const auto [to_find, expected_position] =
+            GENERATE(table<std::string_view, size_t>({{"ab", 0}, {"bc", 1}, {"cd", 2}, {"de", 3}, {"ef", 4}}));
+
+        SECTION(std::string{to_find}) {
+          REQUIRE(expected_position == fs.find(to_find));
+        }
+
+        REQUIRE(4 == fs.find("ef"));
       }
     }
   }
