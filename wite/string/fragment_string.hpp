@@ -432,7 +432,18 @@ class basic_fragment_string {
   }
 
   [[nodiscard]] constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
-    return _fragments.front().find(ch);
+    auto length_of_checked_fragments = size_type{0};
+
+    for (const auto& f : _fragments) {
+      const auto position = f.find(ch);
+      if (std::basic_string_view<Char_T>::npos == position) {
+        length_of_checked_fragments += f.length();
+      } else {
+        return length_of_checked_fragments + position;
+      }
+    }
+
+    return std::basic_string<Char_T>::npos;
   }
 
  private:
