@@ -381,6 +381,13 @@ TEST_CASE("fragment_string tests", "[string]") {
         REQUIRE(std::string::npos == fs.find('a', 8));
       }
     }
+
+    SECTION("a string-view") {
+      SECTION("find in first fragment") {
+        const auto fs = fragment_string{"abcde"} + "fghijkl" + "mnopq";
+        REQUIRE(1 == fs.find("bcd"));
+      }
+    }
   }
 }
 

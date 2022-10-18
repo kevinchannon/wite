@@ -362,23 +362,8 @@ class basic_fragment_string {
     return std::ranges::any_of(_fragments, [c](const auto& f) { return _fragment_type::npos != f.find(c); });
   }
 
-  [[nodiscard]] constexpr bool contains(std::basic_string_view<value_type> sv) const noexcept {
-    const auto this_len = this->length();
-    const auto sv_len   = sv.length();
-    if (sv_len > this_len) {
-      return false;
-    }
-
-    const auto this_end    = std::next(this->begin(), this_len - sv_len);
-    auto effective_len     = this_len;
-
-    for (auto it = this->begin(); it != this_end and effective_len != 0; ++it, --effective_len) {
-      if (std::equal(sv.begin(), sv.end(), it, std::next(it, sv_len))) {
-        return true;
-      }
-    }
-
-    return false;
+  [[nodiscard]] constexpr bool contains(std::basic_string_view<Char_T> sv) const noexcept {
+    return std::string::npos != find(std::move(sv));
   }
 
   [[nodiscard]] constexpr bool contains(const Char_T* pszStr) const noexcept {
@@ -434,7 +419,7 @@ class basic_fragment_string {
   [[nodiscard]] constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
     if (pos >= length()) {
       return std::basic_string<Char_T>::npos;
-    }
+    } 
 
     auto [fragment, length_of_checked_fragments] = _seek_fragment_containing_position(pos);
 
@@ -448,6 +433,26 @@ class basic_fragment_string {
     }
 
     return std::basic_string<Char_T>::npos;
+  }
+
+  [[nodiscard]] constexpr size_type find(const std::basic_string_view<Char_T> sv, size_type pos = 0) const noexcept {
+    const auto this_len = this->length();
+    const auto sv_len   = sv.length();
+    if (sv_len > this_len) {
+      return std::string::npos;
+    }
+
+    const auto this_end = std::next(this->begin(), this_len - sv_len);
+    auto effective_len  = this_len;
+    auto out            = size_type{0};
+
+    for (auto it = this->begin(); it != this_end and effective_len != 0; ++it, --effective_len, ++out) {
+      if (std::equal(sv.begin(), sv.end(), it, std::next(it, sv_len))) {
+        return out;
+      }
+    }
+
+    return std::string::npos;
   }
 
  private:
