@@ -432,17 +432,11 @@ class basic_fragment_string {
   }
 
   [[nodiscard]] constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
-    auto length_of_checked_fragments = size_type{0};
-    auto fragment = _fragments.begin();
-
-    if (pos > 0) {
-      for (; length_of_checked_fragments <= pos; ++fragment) {
-        length_of_checked_fragments += fragment->length();
-      }
-
-      --fragment;
-      length_of_checked_fragments -= fragment->length();
+    if (pos >= length()) {
+      return std::basic_string<Char_T>::npos;
     }
+
+    auto [fragment, length_of_checked_fragments] = _seek_fragment_containing_position(pos);
 
     for (; fragment < _fragments.end(); ++fragment) {
       const auto position = fragment->find(ch);
@@ -501,6 +495,24 @@ class basic_fragment_string {
     _WITE_DEBUG_ASSERT(it_this == end_this, "Failed to compare fragment_string");
 
     return -1;
+  }
+
+  std::pair<typename storage_type::const_iterator, size_type> _seek_fragment_containing_position(size_type pos) const noexcept {
+    if (pos == 0) {
+      return {_fragments.begin(), 0};
+    }
+
+    auto length_of_checked_fragments = size_type{0};
+    auto fragment = _fragments.begin();
+
+    for (; length_of_checked_fragments <= pos; ++fragment) {
+      length_of_checked_fragments += fragment->length();
+    }
+
+    --fragment;
+    length_of_checked_fragments -= fragment->length();
+
+    return {fragment, length_of_checked_fragments};
   }
 
   storage_type _fragments;

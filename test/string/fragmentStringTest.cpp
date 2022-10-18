@@ -375,6 +375,11 @@ TEST_CASE("fragment_string tests", "[string]") {
         REQUIRE(4 == fs.find('b', 2));
         REQUIRE(6 == fs.find('b', 5));
       }
+
+      SECTION("returns std::string::npos if start position is out of bounds") {
+        const auto fs = fragment_string{"aaa"} + "aa" + "aaa";
+        REQUIRE(std::string::npos == fs.find('a', 8));
+      }
     }
   }
 }
