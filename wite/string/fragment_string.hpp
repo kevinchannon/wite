@@ -433,11 +433,21 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
     auto length_of_checked_fragments = size_type{0};
+    auto fragment = _fragments.begin();
 
-    for (const auto& f : _fragments) {
-      const auto position = f.find(ch);
+    if (pos > 0) {
+      for (; length_of_checked_fragments <= pos; ++fragment) {
+        length_of_checked_fragments += fragment->length();
+      }
+
+      --fragment;
+      length_of_checked_fragments -= fragment->length();
+    }
+
+    for (; fragment < _fragments.end(); ++fragment) {
+      const auto position = fragment->find(ch);
       if (std::basic_string_view<Char_T>::npos == position) {
-        length_of_checked_fragments += f.length();
+        length_of_checked_fragments += fragment->length();
       } else {
         return length_of_checked_fragments + position;
       }
