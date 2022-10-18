@@ -351,16 +351,21 @@ TEST_CASE("fragment_string tests", "[string]") {
   }
 
   SECTION("find()") {
-    const auto fs = fragment_string{"ab"} + "cd" + "ef";
-    
     SECTION("find single character in first fragment") {
+      const auto fs = fragment_string{"ab"} + "cd" + "ef";
       REQUIRE(1 == fs.find('b'));
     }
 
     SECTION("find single character in any fragment") {
+      const auto fs = fragment_string{"ab"} + "cd" + "ef";
       const auto [to_find, expected_position] = GENERATE(table<char, size_t>({{'a', 0}, {'b', 1}, {'c', 2}, {'d', 3}, {'e', 4}, {'f', 5}}));
 
       REQUIRE(expected_position == fs.find(to_find));
+    }
+
+    SECTION("finds the first character if there are multiple options") {
+      const auto fs = fragment_string{"ab"} + "cdb" + "ebf";
+      REQUIRE(1 == fs.find('b'));
     }
   }
 }
