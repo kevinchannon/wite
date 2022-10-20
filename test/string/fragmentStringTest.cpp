@@ -397,8 +397,11 @@ TEST_CASE("fragment_string tests", "[string]") {
         SECTION(std::string{to_find}) {
           REQUIRE(expected_position == fs.find(to_find));
         }
+      }
 
-        REQUIRE(4 == fs.find("ef"));
+      SECTION("returns std::string:npos if the sequence is not found") {
+        const auto fs = fragment_string{"abcde"} + "fghijkl" + "mnopq";
+        REQUIRE(std::string::npos == fs.find("aabcd"));
       }
     }
   }
