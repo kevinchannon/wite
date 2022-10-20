@@ -363,7 +363,7 @@ class basic_fragment_string {
   }
 
   [[nodiscard]] constexpr bool contains(std::basic_string_view<Char_T> sv) const noexcept {
-    return std::string::npos != find(std::move(sv));
+    return std::basic_string<Char_T>::npos != find(std::move(sv));
   }
 
   [[nodiscard]] constexpr bool contains(const Char_T* pszStr) const noexcept {
@@ -437,15 +437,26 @@ class basic_fragment_string {
 
   [[nodiscard]] constexpr size_type find(const std::basic_string_view<Char_T> sv, size_type pos = 0) const noexcept {
     const auto this_len = this->length();
+    if (pos + sv.size() > this_len) {
+      return std::basic_string<Char_T>::npos;
+    }
+
     const auto sv_len   = sv.length();
     if (sv_len > this_len) {
-      return std::string::npos;
+      return std::basic_string<Char_T>::npos;
     }
 
     const auto this_end = this->end();
-    auto out            = size_type{0};
+    auto out            = pos;
 
-    for (auto it = this->begin(), curr_end = std::next(this->begin(), sv_len);; ++it, ++curr_end, ++out) {
+    const auto [fragment, length_of_checked_fragments] = _seek_fragment_containing_position(pos);
+
+    auto start = const_iterator(fragment,
+                                _fragments.end(),
+                                std::next(fragment->begin(), pos - length_of_checked_fragments)
+                                    _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
+
+    for (auto it = start, curr_end = std::next(start, sv_len);; ++it, ++curr_end, ++out) {
       if (std::equal(sv.begin(), sv.end(), it, curr_end)) {
         return out;
       }
@@ -455,7 +466,7 @@ class basic_fragment_string {
       }
     }
 
-    return std::string::npos;
+    return std::basic_string<Char_T>::npos;
   }
 
  private:

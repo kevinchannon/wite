@@ -403,6 +403,17 @@ TEST_CASE("fragment_string tests", "[string]") {
         const auto fs = fragment_string{"abcde"} + "fghijkl" + "mnopq";
         REQUIRE(std::string::npos == fs.find("aabcd"));
       }
+
+      SECTION("returns std::string::npos if start position is out of bounds") {
+        const auto fs = fragment_string{"abcde"} + "fghijkl" + "mnopq";
+        REQUIRE(std::string::npos == fs.find("bcd", 18));
+      }
+
+      SECTION("finds from the right position") {
+        const auto fs = fragment_string{"abcde"} + "abcde" + "abcde";
+        REQUIRE(6 == fs.find("bcd", 2));
+        REQUIRE(11 == fs.find("bcd", 7));
+      }
     }
   }
 }
