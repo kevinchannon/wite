@@ -384,11 +384,6 @@ TEST_CASE("fragment_string tests", "[string]") {
     }
 
     SECTION("a string-view") {
-      SECTION("find in first fragment") {
-        const auto fs = fragment_string{"abcde"} + "fghijkl" + "mnopq";
-        REQUIRE(1 == fs.find("bcd"));
-      }
-
       SECTION("find in any fragment") {
         const auto fs = fragment_string{"ab"} + "cd" + "ef";
         const auto [to_find, expected_position] =
@@ -406,7 +401,7 @@ TEST_CASE("fragment_string tests", "[string]") {
 
       SECTION("returns std::string::npos if start position is out of bounds") {
         const auto fs = fragment_string{"abcde"} + "fghijkl" + "mnopq";
-        REQUIRE(std::string::npos == fs.find("bcd", 18));
+        REQUIRE(std::string::npos == fs.find("bcd", 17));
       }
 
       SECTION("finds from the right position") {
