@@ -573,6 +573,19 @@ basic_fragment_string<Char_T, LEFT_FRAG_COUNT + RIGHT_FRAG_COUNT> operator+(
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <ostream>
+
+template<typename Char_T, size_t FRAGMENT_COUNT>
+std::ostream& operator<<(std::ostream& os, const wite::basic_fragment_string<Char_T, FRAGMENT_COUNT>& fs) {
+  for (const auto& f : fs.fragments()) {
+    os << f;
+  }
+
+  return os;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 #undef _WITE_FRAG_STR_DEBUG_ARG
 
 ///////////////////////////////////////////////////////////////////////////////

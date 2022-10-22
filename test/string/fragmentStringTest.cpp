@@ -413,6 +413,14 @@ TEST_CASE("fragment_string tests", "[string]") {
   }
 }
 
+TEST_CASE("Fragment string ostream output") {
+  const auto fs = fragment_string{"abcd"} + "efgh" + "i" + "jk";
+  std::stringstream ss;
+  ss << fs;
+
+  REQUIRE("abcdefghijk" == ss.str());
+}
+
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";
   const char* s2 = "second fragment";
