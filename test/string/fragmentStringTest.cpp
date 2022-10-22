@@ -433,7 +433,7 @@ TEST_CASE("Fragment string stream insertion") {
 }
 
 TEST_CASE("String literals") {
-  using namespace wite::literals;
+  using namespace wite::string_literals;
 
   SECTION("narrow characters") {
     const auto fs = "some narrow chars"_fs;

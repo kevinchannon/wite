@@ -3,7 +3,6 @@
 ## IO
 
 ## String
-* Add `fragment_string`
 * Add exmples
 
 ## Collections

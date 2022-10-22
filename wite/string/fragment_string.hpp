@@ -569,7 +569,7 @@ basic_fragment_string<Char_T, LEFT_FRAG_COUNT + RIGHT_FRAG_COUNT> operator+(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace literals {
+namespace string_literals {
   constexpr basic_fragment_string<char, 1> operator""_fs(const char* str, std::size_t len) {
     return fragment_string{str};
   }

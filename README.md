@@ -219,3 +219,29 @@ const auto long_lived_values = { "1.618,2.718,3.142" };
 const auto views_of_pieces = ws::split_to<std::vector<std::string_view>>(long_lived_values, ',');
 ```
 In this case, no additional memory allocation happens for the strings in the split result, the string_views are just pointers into the original strings.
+
+# fragment_string
+
+`#include <wite/string/fragment_string.hpp>`
+
+`wite::basic_fragment_string<Char_T, FRAGMENT_COUNT>` is a part of the wite strings library.  It allows you to compose literal strings into something that apppears to be a single string. The interface is pretty much the same as the non-mutating parts of std::string. Some examples:
+
+```
+const auto fs_1 = fragment_string{"Hello"};
+
+const auto fs_2 = fs_1 + ", world!";
+
+// Prints "Hello, World!"
+std::cout << fs_2 << std::endl;
+```
+
+You can also use `wite::fragment_wstring` for wide chars.
+
+There is also a user-defined string literal in the `wite::literals` namespace:
+
+```
+using wite::string_literals;
+
+const auto fs = "first fragment"_fs;
+const auto wfs = L"wide fragment string"_wfs;
+```
