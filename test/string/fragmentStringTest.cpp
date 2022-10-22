@@ -413,12 +413,21 @@ TEST_CASE("fragment_string tests", "[string]") {
   }
 }
 
-TEST_CASE("Fragment string ostream output") {
-  const auto fs = fragment_string{"abcd"} + "efgh" + "i" + "jk";
-  std::stringstream ss;
-  ss << fs;
+TEST_CASE("Fragment string stream insertion") {
+  SECTION("write to output stream") {
+    const auto fs = fragment_string{"abcd"} + "efgh" + "i" + "jk";
+    std::stringstream ss;
+    ss << fs;
 
-  REQUIRE("abcdefghijk" == ss.str());
+    REQUIRE("abcdefghijk" == ss.str());
+  }
+
+  SECTION("Empty strings output to empty stream") {
+    std::stringstream ss;
+    ss << fragment_string{""} + "";
+
+    REQUIRE(ss.str().empty());
+  }
 }
 
 TEST_CASE("fragment_string iterator", "[string]") {
