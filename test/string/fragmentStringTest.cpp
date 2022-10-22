@@ -430,6 +430,15 @@ TEST_CASE("Fragment string stream insertion") {
   }
 }
 
+TEST_CASE("String literals") {
+  using namespace wite::literals;
+
+  SECTION("narrow characters") {
+    const auto fs = "some narrow chars"_fs;
+    REQUIRE("some narrow chars" == fs.to_str());
+  }
+}
+
 TEST_CASE("fragment_string iterator", "[string]") {
   const char* s1 = "first fragment";
   const char* s2 = "second fragment";
