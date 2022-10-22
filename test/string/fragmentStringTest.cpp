@@ -3,6 +3,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <sstream>
+
 using namespace wite;
 
 TEST_CASE("fragment_string tests", "[string]") {
