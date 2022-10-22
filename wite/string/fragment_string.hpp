@@ -573,6 +573,10 @@ namespace literals {
   constexpr basic_fragment_string<char, 1> operator""_fs(const char* str, std::size_t len) {
     return fragment_string{str};
   }
+
+  constexpr basic_fragment_string<wchar_t, 1> operator""_wfs(const wchar_t* str, std::size_t len) {
+    return fragment_wstring{str};
+  }
 }  // namespace literals
 
 ///////////////////////////////////////////////////////////////////////////////

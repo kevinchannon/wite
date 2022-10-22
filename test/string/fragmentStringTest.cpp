@@ -437,6 +437,11 @@ TEST_CASE("String literals") {
     const auto fs = "some narrow chars"_fs;
     REQUIRE("some narrow chars" == fs.to_str());
   }
+
+  SECTION("wide characters") {
+    const auto fs = L"some wide chars"_wfs;
+    REQUIRE(L"some wide chars" == fs.to_str());
+  }
 }
 
 TEST_CASE("fragment_string iterator", "[string]") {
