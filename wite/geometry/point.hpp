@@ -19,4 +19,13 @@ class point {
   _storage_type _value;
 };
 
+template<typename Value_T>
+using point_2d = point<Value_T, 2>;
+
+template<typename Value_T>
+using point_3d = point<Value_T, 3>;
+
+template<typename Value_T>
+using point_4d = point<Value_T, 4>;
+
 }

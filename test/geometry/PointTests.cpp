@@ -8,12 +8,12 @@ using namespace wite::geometry;
 TEST_CASE("Point Tests", "[geometry]") {
   SECTION("dimensions() returns the correct value") {
     SECTION("2D")
-      REQUIRE(size_t{2} == point<double, 2>{}.dimensions());
+      REQUIRE(size_t{2} == point_2d<double>{}.dimensions());
     
     SECTION("3D")
-      REQUIRE(size_t{3} == point<double, 3>{}.dimensions());
+      REQUIRE(size_t{3} == point_3d<int>{}.dimensions());
     
     SECTION("4D")
-      REQUIRE(size_t{4} == point<double, 4>{}.dimensions());
+      REQUIRE(size_t{4} == point_4d<float>{}.dimensions());
   }
 }
