@@ -1,10 +1,15 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
+
+#ifndef WITE_DEFAULT_POINT_TYPE
+#define WITE_DEFAULT_POINT_TYPE double
+#endif
 
 namespace wite::geometry {
 
-template<typename Value_T, size_t DIMENSION_COUNT>
+template <size_t DIMENSION_COUNT, typename Value_T = WITE_DEFAULT_POINT_TYPE>
 class point {
   using _storage_type = std::array<Value_T, DIMENSION_COUNT>;
 
@@ -19,13 +24,13 @@ class point {
   _storage_type _value;
 };
 
-template<typename Value_T>
-using point_2d = point<Value_T, 2>;
+template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
+using point_2d = point<2, Value_T>;
 
-template<typename Value_T>
-using point_3d = point<Value_T, 3>;
+template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
+using point_3d = point<3, Value_T>;
 
-template<typename Value_T>
-using point_4d = point<Value_T, 4>;
+template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
+using point_4d = point<4, Value_T>;
 
 }
