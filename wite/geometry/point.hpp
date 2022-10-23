@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <type_traits>
+#include <initializer_list>
 
 #ifndef WITE_DEFAULT_POINT_TYPE
 #define WITE_DEFAULT_POINT_TYPE double
@@ -21,6 +23,8 @@ class point {
  public:
   using value_type = Value_T;
   using size_type  = typename _storage_type::size_type;
+
+  static_assert(std::is_arithmetic_v<value_type>, "points should have numeric value types");
 
   WITE_DEFAULT_CONSTRUCTORS(point);
 
@@ -43,6 +47,9 @@ class point {
  private:
   _storage_type _value;
 };
+
+template<size_t DIM, typename Value_T>
+point(std::initializer_list<Value_T>) -> point<DIM, Value_T>;
 
 template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
 using point_2d = point<2, Value_T>;

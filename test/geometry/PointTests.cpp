@@ -24,7 +24,7 @@ TEST_CASE("Point Tests", "[geometry]") {
   }
 
   SECTION("construct from initializer list") {
-    const auto p = point_4d{1.1, 2.2, 3.3, 4.4}; 
+    const auto p = point_4d{{1.1, 2.2, 3.3, 4.4}}; 
 
     REQUIRE(1.1 == p.get<dim::x>());
     REQUIRE(2.2 == p.get<dim::y>());
@@ -40,9 +40,9 @@ TEST_CASE("Point Tests", "[geometry]") {
     }
 
     SECTION("returns the expected value for each dimension") {
-      REQUIRE(1.23 == point_3d{1.23, 3.14, 2.72}.get<dim::x>());
-      REQUIRE(3.14 == point_3d{1.23, 3.14, 2.72}.get<dim::y>());
-      REQUIRE(2.72 == point_3d{1.23, 3.14, 2.72}.get<dim::z>());
+      REQUIRE(1.23 == point_3d{{1.23, 3.14, 2.72}}.get<dim::x>());
+      REQUIRE(3.14 == point_3d{{1.23, 3.14, 2.72}}.get<dim::y>());
+      REQUIRE(2.72 == point_3d{{1.23, 3.14, 2.72}}.get<dim::z>());
     }
   }
 }
