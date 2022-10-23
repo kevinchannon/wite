@@ -1,5 +1,15 @@
 # wite
 Wite stands for "Why isn't this easy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
+
+## Prerequisites
+Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet).
+
+## Download
+If you're planning to just use Wite in your project, then you don't really need to manually download it; it should be acquired by some kind of package management solution. If you do want to download the source, then you can do by going to the [Releases](https://github.com/kevinchannon/wite/releases) section and downloading the "wite-src.zip" file for the version of your choice.
+
+## Installation
+Wite is header only, so you can do something as simple as downloading the code and copying the "wite" directory into your source tree.  The preferred way to consume Wite is _via_ CMake's FetchContent.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository
+
 # Collections
 ### `stack_vector`
 ```
@@ -235,9 +245,9 @@ const auto fs_2 = fs_1 + ", world!";
 std::cout << fs_2 << std::endl;
 ```
 
-You can also use `wite::fragment_wstring` for wide chars.
+You can use `wite::fragment_wstring` for wide chars.
 
-There is also a user-defined string literal in the `wite::literals` namespace:
+There is also a user-defined string literal in the `wite::string_literals` namespace:
 
 ```
 using wite::string_literals;
