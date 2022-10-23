@@ -430,6 +430,14 @@ TEST_CASE("Fragment string stream insertion") {
 
     REQUIRE(ss.str().empty());
   }
+
+  SECTION("write to wide output stream") {
+    const auto fs = fragment_wstring{L"abcd"} + L"efgh" + L"i" + L"jk";
+    std::wstringstream wss;
+    wss << fs;
+
+    REQUIRE(L"abcdefghijk" == wss.str());
+  }
 }
 
 TEST_CASE("String literals") {

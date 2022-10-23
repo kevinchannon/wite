@@ -37,10 +37,14 @@ struct assertion_error : public std::logic_error {
 #else
 #include <cassert>
 #define _WITE_DEBUG_ASSERT(pred, msg) assert(pred)
+
+#undef _WITE_RELEASE_NOEXCEPT
 #define _WITE_RELEASE_NOEXCEPT noexcept
 #endif
 #else
 #define _WITE_DEBUG_ASSERT(pred, msg)
+
+#undef _WITE_RELEASE_NOEXCEPT
 #define _WITE_RELEASE_NOEXCEPT noexcept
 #endif
 
