@@ -26,23 +26,23 @@ TEST_CASE("Point Tests", "[geometry]") {
   SECTION("construct from initializer list") {
     const auto p = point_4d{1.1, 2.2, 3.3, 4.4}; 
 
-    REQUIRE(1.1 == p.get<0>());
-    REQUIRE(2.2 == p.get<1>());
-    REQUIRE(3.3 == p.get<2>());
-    REQUIRE(4.4 == p.get<3>());
+    REQUIRE(1.1 == p.get<dim::x>());
+    REQUIRE(2.2 == p.get<dim::y>());
+    REQUIRE(3.3 == p.get<dim::z>());
+    REQUIRE(4.4 == p.get<dim::t>());
   }
 
   SECTION("get()") {
     SECTION("values are default-constructed") {
-      REQUIRE(WITE_DEFAULT_POINT_TYPE{} == point_3d{}.get<0>());
-      REQUIRE(WITE_DEFAULT_POINT_TYPE{} == point_3d{}.get<1>());
-      REQUIRE(WITE_DEFAULT_POINT_TYPE{} == point_3d{}.get<2>());
+      REQUIRE(WITE_DEFAULT_POINT_TYPE{} == point_3d{}.get<dim::x>());
+      REQUIRE(WITE_DEFAULT_POINT_TYPE{} == point_3d{}.get<dim::y>());
+      REQUIRE(WITE_DEFAULT_POINT_TYPE{} == point_3d{}.get<dim::z>());
     }
 
     SECTION("returns the expected value for each dimension") {
-      REQUIRE(1.23 == point_3d{1.23, 3.14, 2.72}.get<0>());
-      REQUIRE(3.14 == point_3d{1.23, 3.14, 2.72}.get<1>());
-      REQUIRE(2.72 == point_3d{1.23, 3.14, 2.72}.get<2>());
+      REQUIRE(1.23 == point_3d{1.23, 3.14, 2.72}.get<dim::x>());
+      REQUIRE(3.14 == point_3d{1.23, 3.14, 2.72}.get<dim::y>());
+      REQUIRE(2.72 == point_3d{1.23, 3.14, 2.72}.get<dim::z>());
     }
   }
 }

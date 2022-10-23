@@ -12,6 +12,8 @@
 
 namespace wite::geometry {
 
+enum class dim { x = 0, y = 1, z = 2, t = 3 };
+
 template <size_t DIMENSION_COUNT, typename Value_T = WITE_DEFAULT_POINT_TYPE>
 class point {
   using _storage_type = std::array<Value_T, DIMENSION_COUNT>;
@@ -31,6 +33,11 @@ class point {
   template <size_t DIM>
   [[nodiscard]] constexpr const value_type& get() const noexcept {
     return _value[DIM];
+  }
+
+  template <dim DIM>
+  [[nodiscard]] constexpr const value_type& get() const noexcept {
+    return _value[static_cast<uint32_t>(DIM)];
   }
 
  private:
