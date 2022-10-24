@@ -10,7 +10,12 @@
 * Add exmples
 
 ## Geometry
-* Add `point` classes (from AdventOfCode repo)
+* Add `line` class (from AdventOfCode repo), as `direction` template
+* Add point arithmetic:
+  * point - point = direction
+  * point + direction = point
+  * direction + direction = direction
+  * direction - direction = direction
 
 ## Maths
 * Add `inerval` classes
