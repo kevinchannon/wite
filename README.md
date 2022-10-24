@@ -255,3 +255,68 @@ using wite::string_literals;
 const auto fs = "first fragment"_fs;
 const auto wfs = L"wide fragment string"_wfs;
 ```
+
+# Geometry
+
+`#include <wite/geometry.hpp>`
+
+Some basic geometry things; points, lines, shapes, that sort of thing.
+
+## point
+
+`#include <wite/geometry/point.hpp>`
+
+`point` is a template that represents a point in an N-dimensional space:
+```
+using namespace wite::geometry;
+
+const auto p = point<2, int>{1, 2};
+
+// Access the dimensions of the point by templated 'get', or a square-bracket operator.
+const auto x = p.get<dim::x>();
+const auto y = p[1];
+```
+
+Compare points:
+```
+const auto p = point<3, double>{1.5, 2.0, 2.5};
+
+const auto q = point<3, double>{1.5, 2.0, 2.5};
+const auto r = point<3, double>{1.5, 2.0, 2.4};
+const auto s = point<3, double>{1.5, 2.1, 2.5};
+
+std::cout << "p == q: " << std::boolalpha << p == q << std::endl;
+std::cout << "p != r: " << std::boolalpha << p != r << std::endl;
+std::cout << "p  < r: " << std::boolalpha << p  < r << std::endl;
+std::cout << "p  < s: " << std::boolalpha << p  < s << std::endl;
+```
+Initializer-lists:
+```
+auto p = point<4, uint8_t>;
+
+...
+
+p = {0x02, 0x03, 0x04};
+```
+
+### Specializations
+Some kinds of point are very common, so there are specializations for those:
+```
+point_2d<T> ==> point<2, T>
+point_3d<T> ==> point<3, T>
+point_4d<T> ==> point<4, T>
+```
+So, you can do thins like:
+```
+const auto p = point_2d{10, 100};
+```
+which is nice and concise. This is using class type-deduction to work out the type of the values in the point.
+
+### IO
+`#include <wite/geometry/io.hpp>`
+
+If you want to output a point to a stream easily, then include `geometry/io.hpp`:
+```
+std::cout << "p = " << point_2d{2.718, 3.142} << std::endl;
+```
+will print `[ 2.718, 3.142 ]`.
