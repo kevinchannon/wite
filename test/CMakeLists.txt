@@ -28,7 +28,7 @@ add_executable(wite_test
 	"io/byteBufferReadTests_noExceptions.cpp"
 	"io/encodingTests.cpp"
 	"string/fragmentStringTest.cpp"
-	"geometry/PointTests.cpp" "geometry/IoTests.cpp")
+	"geometry/PointTests.cpp" "geometry/IoTests.cpp" "maths/boundsTests.cpp")
 
 target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}
