@@ -46,6 +46,30 @@ TEST_CASE("Point Tests", "[geometry]") {
     }
   }
 
+  SECTION("set()") {
+    auto p = point_3d<int>{};
+
+    SECTION("using enum dims") {
+      p.set<dim::x>(1);
+      p.set<dim::y>(2);
+      p.set<dim::z>(3);
+
+      REQUIRE(1 == p.get<dim::x>());
+      REQUIRE(2 == p.get<dim::y>());
+      REQUIRE(3 == p.get<dim::z>());
+    }
+
+    SECTION("using int dims") {
+      p.set<0>(1);
+      p.set<1>(2);
+      p.set<2>(3);
+
+      REQUIRE(1 == p.get<0>());
+      REQUIRE(2 == p.get<1>());
+      REQUIRE(3 == p.get<2>());
+    }
+  }
+
   SECTION("operator[]") {
     SECTION("non-mutating") {
       const auto p = point_4d{0.2, 1.2, 2.2, 3.2};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <wite/env/environment.hpp>
 #include <wite/common/constructor_macros.hpp>
 
 #include <algorithm>
@@ -46,14 +47,26 @@ class point {
 
   [[nodiscard]] constexpr size_type dimensions() const noexcept { return _value.size(); }
 
-  template <size_t DIM>
+#ifndef _WITE_COMPILER_MSVC
+  template <size_type DIM>
   [[nodiscard]] constexpr const value_type& get() const noexcept {
     return _value[DIM];
   }
 
+  template <size_type DIM>
+  constexpr void set(value_type val) noexcept {
+    _value[DIM] = val;
+  }
+#endif
+
   template <dim DIM>
   [[nodiscard]] constexpr const value_type& get() const noexcept {
-    return _value[static_cast<uint32_t>(DIM)];
+    return _value[static_cast<size_type>(DIM)];
+  }
+
+  template <dim DIM>
+  constexpr void set(value_type val) noexcept {
+    _value[static_cast<size_type>(DIM)] = val;
   }
 
   [[nodiscard]] constexpr const value_type& operator[](size_type dim) const noexcept { return _value[dim]; }
