@@ -32,6 +32,8 @@ class point {
 
   constexpr point(std::initializer_list<value_type> init) { std::ranges::copy(init, _value.begin()); }
 
+  [[nodiscard]] constexpr auto operator<=>(const point&) const noexcept = default;
+
   [[nodiscard]] constexpr size_type dimensions() const noexcept { return _value.size(); }
 
   template <size_t DIM>

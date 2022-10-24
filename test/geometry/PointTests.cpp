@@ -45,4 +45,37 @@ TEST_CASE("Point Tests", "[geometry]") {
       REQUIRE(2.72 == point_3d{{1.23, 3.14, 2.72}}.get<dim::z>());
     }
   }
+
+  SECTION("comparison") {
+    SECTION("equal") {
+      REQUIRE(point_2d{{1.2, 3.4}} == point_2d{{1.2, 3.4}});
+    }
+
+    SECTION("not equal") {
+      REQUIRE(point_2d{{1.2, 3.4}} != point_2d{{1.2, 3.5}});
+      REQUIRE(point_2d{{1.2, 3.4}} != point_2d{{1.3, 3.4}});
+    }
+
+    SECTION("less-than") {
+      REQUIRE(point_2d{{1.2, 3.4}} < point_2d{{1.2, 3.5}});
+      REQUIRE(point_2d{{1.2, 3.4}} < point_2d{{1.3, 3.4}});
+    }
+
+    SECTION("less-than-or-equal-to") {
+      REQUIRE(point_2d{{1.2, 3.4}} <= point_2d{{1.2, 3.4}});
+      REQUIRE(point_2d{{1.2, 3.4}} <= point_2d{{1.2, 3.5}});
+      REQUIRE(point_2d{{1.2, 3.4}} <= point_2d{{1.3, 3.4}});
+    }
+
+    SECTION("greater-than") {
+      REQUIRE(point_2d{{1.2, 3.5}} > point_2d{{1.2, 3.4}});
+      REQUIRE(point_2d{{1.3, 3.4}} > point_2d{{1.2, 3.4}});
+    }
+
+    SECTION("greater-than-or-equal-to") {
+      REQUIRE(point_2d{{1.2, 3.4}} >= point_2d{{1.2, 3.4}});
+      REQUIRE(point_2d{{1.2, 3.5}} >= point_2d{{1.2, 3.4}});
+      REQUIRE(point_2d{{1.3, 3.4}} >= point_2d{{1.2, 3.4}});
+    }
+  }
 }
