@@ -70,6 +70,7 @@ class point {
   }
 
   [[nodiscard]] constexpr const value_type& operator[](size_type dim) const noexcept { return _value[dim]; }
+  [[nodiscard]] constexpr value_type& operator[](size_type dim) noexcept { return _value[dim]; }
 
  private:
   template <size_t IDX, typename V, typename... OtherValue_Ts>

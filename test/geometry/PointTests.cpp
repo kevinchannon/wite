@@ -71,13 +71,25 @@ TEST_CASE("Point Tests", "[geometry]") {
   }
 
   SECTION("operator[]") {
-    SECTION("non-mutating") {
-      const auto p = point_4d{0.2, 1.2, 2.2, 3.2};
+    auto p = point_4d{0.2, 1.2, 2.2, 3.2};
 
+    SECTION("non-mutating") {
       REQUIRE(0.2 == p[0]);
       REQUIRE(1.2 == p[1]);
       REQUIRE(2.2 == p[2]);
       REQUIRE(3.2 == p[3]);
+    }
+
+    SECTION("mutating") {
+      p[0] = 1000.0;
+      p[1] = 1001.0;
+      p[2] = 1002.0;
+      p[3] = 1003.0;
+
+      REQUIRE(1000.0 == p[0]);
+      REQUIRE(1001.0 == p[1]);
+      REQUIRE(1002.0 == p[2]);
+      REQUIRE(1003.0 == p[3]);
     }
   }
 
