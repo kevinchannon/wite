@@ -11,20 +11,21 @@ TEST_CASE("Point Tests", "[geometry]") {
       REQUIRE(size_t{2} == point_2d<double>{}.dimensions());
       REQUIRE(size_t{2} == point_2d{}.dimensions());
     }
-    
+
     SECTION("3D") {
       REQUIRE(size_t{3} == point_3d<int>{}.dimensions());
       REQUIRE(size_t{3} == point_3d{}.dimensions());
     }
-    
+
     SECTION("4D") {
       REQUIRE(size_t{4} == point_4d<float>{}.dimensions());
       REQUIRE(size_t{4} == point_4d{}.dimensions());
     }
   }
 
-  SECTION("construct from initializer list") {
-    const auto p = point_4d{{1.1, 2.2, 3.3, 4.4}}; 
+  SECTION("assign from initializer list") {
+    auto p = point_4d<>{};
+    p      = {1.1, 2.2, 3.3, 4.4};
 
     REQUIRE(1.1 == p.get<dim::x>());
     REQUIRE(2.2 == p.get<dim::y>());
