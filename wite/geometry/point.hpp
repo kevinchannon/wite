@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <type_traits>
 #include <initializer_list>
+#include <type_traits>
 
 #ifndef WITE_DEFAULT_POINT_TYPE
 #define WITE_DEFAULT_POINT_TYPE double
@@ -24,13 +24,21 @@ class point {
   using value_type = Value_T;
   using size_type  = typename _storage_type::size_type;
 
+  static constexpr size_type dimensions_v = DIMENSION_COUNT;
+
   static_assert(std::is_arithmetic_v<value_type>, "points should have numeric value types");
 
   WITE_DEFAULT_CONSTRUCTORS(point);
 
-  constexpr point(_storage_type val) : _value{std::move(val)} {}
+  constexpr point(_storage_type val) noexcept : _value{std::move(val)} {}
 
-  constexpr point(std::initializer_list<value_type> init) { std::ranges::copy(init, _value.begin()); }
+  constexpr point(std::initializer_list<value_type> init) noexcept { std::ranges::copy(init, _value.begin()); }
+
+  template <typename... Value_Ts>
+    requires(DIMENSION_COUNT == sizeof...(Value_Ts))
+  constexpr point(Value_Ts... vals) noexcept {
+    _init<0>(vals...);
+  }
 
   [[nodiscard]] constexpr auto operator<=>(const point&) const noexcept = default;
 
@@ -47,11 +55,18 @@ class point {
   }
 
  private:
+  template <size_t IDX, typename V, typename... OtherValue_Ts>
+    requires std::is_same_v<V, value_type>
+  constexpr void _init(V val, OtherValue_Ts... other_vals) noexcept {
+    _value[IDX] = val;
+
+    if constexpr (0 != sizeof...(OtherValue_Ts)) {
+      _init<IDX + 1>(other_vals...);
+    }
+  }
+
   _storage_type _value;
 };
-
-template<size_t DIM, typename Value_T>
-point(std::initializer_list<Value_T>) -> point<DIM, Value_T>;
 
 template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
 using point_2d = point<2, Value_T>;
