@@ -1,7 +1,6 @@
 #include <wite/geometry/point.hpp>
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
 
 using namespace wite::geometry;
 
@@ -44,6 +43,17 @@ TEST_CASE("Point Tests", "[geometry]") {
       REQUIRE(3.14 == point_3d{1.23, 3.14, 2.72}.get<dim::y>());
       REQUIRE(1.23 == point_3d{1.23, 3.14, 2.72}.get<dim::x>());
       REQUIRE(2.72 == point_3d{1.23, 3.14, 2.72}.get<dim::z>());
+    }
+  }
+
+  SECTION("operator[]") {
+    SECTION("non-mutating") {
+      const auto p = point_4d{0.2, 1.2, 2.2, 3.2};
+
+      REQUIRE(0.2 == p[0]);
+      REQUIRE(1.2 == p[1]);
+      REQUIRE(2.2 == p[2]);
+      REQUIRE(3.2 == p[3]);
     }
   }
 

@@ -17,7 +17,9 @@ namespace wite::geometry {
 enum class dim { x = 0, y = 1, z = 2, t = 3 };
 
 template <size_t DIMENSION_COUNT, typename Value_T = WITE_DEFAULT_POINT_TYPE>
+  requires(DIMENSION_COUNT > 0)
 class point {
+ protected:
   using _storage_type = std::array<Value_T, DIMENSION_COUNT>;
 
  public:
@@ -54,6 +56,8 @@ class point {
     return _value[static_cast<uint32_t>(DIM)];
   }
 
+  [[nodiscard]] constexpr const value_type& operator[](size_type dim) const noexcept { return _value[dim]; }
+
  private:
   template <size_t IDX, typename V, typename... OtherValue_Ts>
     requires std::is_same_v<V, value_type>
@@ -68,13 +72,27 @@ class point {
   _storage_type _value;
 };
 
-template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
-using point_2d = point<2, Value_T>;
+#define _WITE_DEFN_POINT_ND(N)                                                                              \
+  template <typename Value_T = WITE_DEFAULT_POINT_TYPE>                                                     \
+  class point_##N##d : public point<N, Value_T> {                                                           \
+    using _base_type = point<N, Value_T>;                                                                   \
+                                                                                                            \
+   public:                                                                                                  \
+    WITE_DEFAULT_CONSTRUCTORS(point_##N##d);                                                                \
+                                                                                                            \
+    constexpr point_##N##d(typename _base_type::_storage_type val) noexcept : _base_type{std::move(val)} {} \
+                                                                                                            \
+    constexpr point_##N##d(std::initializer_list<Value_T> init) noexcept : _base_type{std::move(init)} {}   \
+                                                                                                            \
+    template <typename... Value_Ts>                                                                         \
+      requires(N == sizeof...(Value_Ts))                                                                    \
+    constexpr point_##N##d(Value_Ts... vals) noexcept : _base_type{std::forward<Value_Ts>(vals)...} {}      \
+  }
 
-template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
-using point_3d = point<3, Value_T>;
+_WITE_DEFN_POINT_ND(2);
+_WITE_DEFN_POINT_ND(3);
+_WITE_DEFN_POINT_ND(4);
 
-template <typename Value_T = WITE_DEFAULT_POINT_TYPE>
-using point_4d = point<4, Value_T>;
+#undef _WITE_DEFN_POINT_ND
 
 }  // namespace wite::geometry
