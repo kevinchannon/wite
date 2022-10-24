@@ -317,6 +317,10 @@ which is nice and concise. This is using class type-deduction to work out the ty
 
 If you want to output a point to a stream easily, then include `geometry/io.hpp`:
 ```
-std::cout << "p = " << point_2d{2.718, 3.142} << std::endl;
+const auto p = point_2d{2.718, 3.142};
+
+...
+
+std::cout << "p = " << p << std::endl;
 ```
 will print `[ 2.718, 3.142 ]`.
