@@ -33,7 +33,7 @@ namespace detail {
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename Char_T>
-  [[nodiscard]] constexpr size_t string_length(const Char_T* psz) noexcept {
+  _WITE_NODISCARD constexpr size_t string_length(const Char_T* psz) noexcept {
     if constexpr (std::is_same_v<Char_T, char>) {
       return std::strlen(psz);
     } else if constexpr (std::is_same_v<Char_T, wchar_t>) {
@@ -65,7 +65,7 @@ class basic_fragment_string {
       const typename basic_fragment_string::storage_type::const_iterator debug_fragment_range_begin;
 #endif
 
-      [[nodiscard]] constexpr auto operator<=>(const _data_type&) const noexcept = default;
+      _WITE_NODISCARD constexpr auto operator<=>(const _data_type&) const noexcept = default;
     } _data;
 
    public:
@@ -84,7 +84,7 @@ class basic_fragment_string {
                  _WITE_FRAG_STR_DEBUG_ARG(typename basic_fragment_string::storage_type::const_iterator fragment_range_begin))
         : _data{begin_fragment, end_fragment, current _WITE_FRAG_STR_DEBUG_ARG(fragment_range_begin)} {}
 
-    [[nodiscard]] constexpr auto operator<=>(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
+    _WITE_NODISCARD constexpr auto operator<=>(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
       _debug_verify_integrity(other);
 #endif
@@ -92,7 +92,7 @@ class basic_fragment_string {
       return _data <=> other._data;
     }
 
-    [[nodiscard]] constexpr bool operator==(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
+    _WITE_NODISCARD constexpr bool operator==(const iterator& other) const _WITE_RELEASE_NOEXCEPT {
 #ifdef _WITE_CONFIG_DEBUG
       _debug_verify_integrity(other);
 #endif
@@ -100,7 +100,7 @@ class basic_fragment_string {
       return _data == other._data;
     }
 
-    [[nodiscard]] constexpr const_reference operator*() const { return *_data.current; }
+    _WITE_NODISCARD constexpr const_reference operator*() const { return *_data.current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT_FALSE(
@@ -221,7 +221,7 @@ class basic_fragment_string {
       return std::accumulate(begin, end, size_type{}, [](auto&& len, auto&& fragment) { return len += fragment.length(); });
     }
 
-    [[nodiscard]] static constexpr difference_type _distance(auto low_frag,
+    _WITE_NODISCARD static constexpr difference_type _distance(auto low_frag,
                                                              auto low_current,
                                                              auto high_frag,
                                                              auto high_current) noexcept {
@@ -255,7 +255,7 @@ class basic_fragment_string {
     std::copy(right.fragments().begin(), right.fragments().end(), it);
   }
 
-  [[nodiscard]] std::basic_string<value_type> to_str() const {
+  _WITE_NODISCARD std::basic_string<value_type> to_str() const {
     auto out = std::basic_string<value_type>{};
     out.reserve(length());
     out = std::accumulate(_fragments.cbegin(), _fragments.cend(), std::move(out), [](auto&& str, const auto& fragment) {
@@ -264,33 +264,33 @@ class basic_fragment_string {
     return out;
   }
 
-  [[nodiscard]] constexpr const storage_type& fragments() const noexcept { return _fragments; }
+  _WITE_NODISCARD constexpr const storage_type& fragments() const noexcept { return _fragments; }
 
-  [[nodiscard]] constexpr auto length() const noexcept {
+  _WITE_NODISCARD constexpr auto length() const noexcept {
     return std::accumulate(
         _fragments.begin(), _fragments.end(), size_t{}, [](auto&& len, auto&& fragment) { return len += fragment.length(); });
   }
 
-  [[nodiscard]] constexpr auto size() const noexcept { return length(); }
-  [[nodiscard]] constexpr auto max_size() const noexcept { return length(); }
-  [[nodiscard]] constexpr auto capacity() const noexcept { return length(); }
+  _WITE_NODISCARD constexpr auto size() const noexcept { return length(); }
+  _WITE_NODISCARD constexpr auto max_size() const noexcept { return length(); }
+  _WITE_NODISCARD constexpr auto capacity() const noexcept { return length(); }
 
-  [[nodiscard]] constexpr auto cbegin() const noexcept {
+  _WITE_NODISCARD constexpr auto cbegin() const noexcept {
     return iterator(
         _fragments.begin(), _fragments.end(), _fragments.front().begin() _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
   }
-  [[nodiscard]] constexpr auto begin() const noexcept { return cbegin(); }
-  [[nodiscard]] constexpr auto cend() const noexcept {
+  _WITE_NODISCARD constexpr auto begin() const noexcept { return cbegin(); }
+  _WITE_NODISCARD constexpr auto cend() const noexcept {
     return iterator(
         std::prev(_fragments.end()), _fragments.end(), _fragments.back().end() _WITE_FRAG_STR_DEBUG_ARG(_fragments.begin()));
   }
-  [[nodiscard]] constexpr auto end() const noexcept { return cend(); }
-  [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator{this->end()}; }
-  [[nodiscard]] constexpr auto rbegin() const noexcept { return crbegin(); }
-  [[nodiscard]] constexpr auto crend() const noexcept { return const_reverse_iterator{this->begin()}; }
-  [[nodiscard]] constexpr auto rend() const noexcept { return crend(); }
+  _WITE_NODISCARD constexpr auto end() const noexcept { return cend(); }
+  _WITE_NODISCARD constexpr auto crbegin() const noexcept { return const_reverse_iterator{this->end()}; }
+  _WITE_NODISCARD constexpr auto rbegin() const noexcept { return crbegin(); }
+  _WITE_NODISCARD constexpr auto crend() const noexcept { return const_reverse_iterator{this->begin()}; }
+  _WITE_NODISCARD constexpr auto rend() const noexcept { return crend(); }
 
-  [[nodiscard]] constexpr const_reference at(size_type pos) const {
+  _WITE_NODISCARD constexpr const_reference at(size_type pos) const {
     if (pos >= length()) {
       throw std::out_of_range{"Error: accessing fragment_string beyond end of string"};
     }
@@ -298,80 +298,80 @@ class basic_fragment_string {
     return this->operator[](pos);
   }
 
-  [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept { return *std::next(begin(), pos); }
+  _WITE_NODISCARD constexpr const_reference operator[](size_type pos) const noexcept { return *std::next(begin(), pos); }
 
-  [[nodiscard]] constexpr const_reference front() const _WITE_RELEASE_NOEXCEPT {
+  _WITE_NODISCARD constexpr const_reference front() const _WITE_RELEASE_NOEXCEPT {
     _WITE_DEBUG_ASSERT(length() > 0, "accessing fragment_string beyond end of string");
 
     return _fragments.front().front();
   }
 
-  [[nodiscard]] constexpr const_reference back() const _WITE_RELEASE_NOEXCEPT {
+  _WITE_NODISCARD constexpr const_reference back() const _WITE_RELEASE_NOEXCEPT {
     _WITE_DEBUG_ASSERT(length() > 0, "accessing fragment_string beyond end of string");
 
     return _fragments.back().back();
   }
 
-  [[nodiscard]] constexpr bool empty() const noexcept { return 0 == length(); }
+  _WITE_NODISCARD constexpr bool empty() const noexcept { return 0 == length(); }
 
-  [[nodiscard]] constexpr int compare(const std::string_view& other) const _WITE_RELEASE_NOEXCEPT {
+  _WITE_NODISCARD constexpr int compare(const std::string_view& other) const _WITE_RELEASE_NOEXCEPT {
     return _compare(other.begin(), other.end());
   }
-  [[nodiscard]] constexpr int compare(const std::string& other) const _WITE_RELEASE_NOEXCEPT {
+  _WITE_NODISCARD constexpr int compare(const std::string& other) const _WITE_RELEASE_NOEXCEPT {
     return _compare(other.begin(), other.end());
   }
-  [[nodiscard]] constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT { return compare(std::string_view{other}); }
+  _WITE_NODISCARD constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT { return compare(std::string_view{other}); }
 
   template<size_t OTHER_FRAG_COUNT>
-  [[nodiscard]] constexpr int compare(const basic_fragment_string<value_type, OTHER_FRAG_COUNT>& other) const
+  _WITE_NODISCARD constexpr int compare(const basic_fragment_string<value_type, OTHER_FRAG_COUNT>& other) const
       _WITE_RELEASE_NOEXCEPT {
     return _compare(other.begin(), other.end());
   }
 
-  [[nodiscard]] constexpr bool starts_with(value_type c) const noexcept { return length() > 0 ? front() == c : false; }
+  _WITE_NODISCARD constexpr bool starts_with(value_type c) const noexcept { return length() > 0 ? front() == c : false; }
 
-  [[nodiscard]] constexpr bool starts_with(std::basic_string_view<value_type> sv) const noexcept {
+  _WITE_NODISCARD constexpr bool starts_with(std::basic_string_view<value_type> sv) const noexcept {
     return _match_substring(this->begin(), this->length(), sv.begin(), sv.end(), sv.length());
   }
 
-  [[nodiscard]] constexpr bool starts_with(const Char_T* pszStr) const noexcept {
+  _WITE_NODISCARD constexpr bool starts_with(const Char_T* pszStr) const noexcept {
     return starts_with(std::basic_string_view<value_type>(pszStr));
   }
 
   template<size_t OTHER_FRAG_COUNT>
-  [[nodiscard]] constexpr bool starts_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
+  _WITE_NODISCARD constexpr bool starts_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
     return _match_substring(this->begin(), this->length(), other.begin(), other.end(), other.length());
   }
 
-  [[nodiscard]] constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
+  _WITE_NODISCARD constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
 
-  [[nodiscard]] constexpr bool ends_with(std::basic_string_view<value_type> sv) const noexcept {
+  _WITE_NODISCARD constexpr bool ends_with(std::basic_string_view<value_type> sv) const noexcept {
     return _match_substring(this->rbegin(), this->length(), sv.rbegin(), sv.rend(), sv.length());
   }
 
-  [[nodiscard]] constexpr bool ends_with(const Char_T* pszStr) const noexcept {
+  _WITE_NODISCARD constexpr bool ends_with(const Char_T* pszStr) const noexcept {
     return ends_with(std::basic_string_view<value_type>(pszStr));
   }
 
   template <size_t OTHER_FRAG_COUNT>
-  [[nodiscard]] constexpr bool ends_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
+  _WITE_NODISCARD constexpr bool ends_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
     return _match_substring(this->rbegin(), this->length(), other.rbegin(), other.rend(), other.length());
   }
 
-  [[nodiscard]] constexpr bool contains(value_type c) const noexcept {
+  _WITE_NODISCARD constexpr bool contains(value_type c) const noexcept {
     return std::ranges::any_of(_fragments, [c](const auto& f) { return _fragment_type::npos != f.find(c); });
   }
 
-  [[nodiscard]] constexpr bool contains(std::basic_string_view<Char_T> sv) const noexcept {
+  _WITE_NODISCARD constexpr bool contains(std::basic_string_view<Char_T> sv) const noexcept {
     return std::basic_string<Char_T>::npos != find(std::move(sv));
   }
 
-  [[nodiscard]] constexpr bool contains(const Char_T* pszStr) const noexcept {
+  _WITE_NODISCARD constexpr bool contains(const Char_T* pszStr) const noexcept {
     return contains(std::basic_string_view<value_type>(pszStr));
   }
 
   template<size_t OTHER_FRAG_COUNT>
-  [[nodiscard]] constexpr bool contains(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
+  _WITE_NODISCARD constexpr bool contains(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
     const auto this_len = this->length();
     const auto other_len   = other.length();
     if (other_len > this_len) {
@@ -392,7 +392,7 @@ class basic_fragment_string {
     return false;
   }
 
-  [[nodiscard]] constexpr std::basic_string<Char_T> substr(size_type pos   = 0,
+  _WITE_NODISCARD constexpr std::basic_string<Char_T> substr(size_type pos   = 0,
                                                            size_type count = std::basic_string<Char_T>::npos) const {
     const auto len    = length();
     if (pos >= len) {
@@ -403,7 +403,7 @@ class basic_fragment_string {
     return std::basic_string<Char_T>(std::next(this->begin(), pos), it_end);
   }
 
-  [[nodiscard]] constexpr size_type copy(Char_T* dest, size_type count, size_type pos = 0) const {
+  _WITE_NODISCARD constexpr size_type copy(Char_T* dest, size_type count, size_type pos = 0) const {
     const auto len = length();
     if (pos >= len) {
       throw std::out_of_range{"fragment_string: copy start out of range"};
@@ -416,7 +416,7 @@ class basic_fragment_string {
     return count;
   }
 
-  [[nodiscard]] constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
+  _WITE_NODISCARD constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
     if (pos >= length()) {
       return std::basic_string<Char_T>::npos;
     } 
@@ -435,7 +435,7 @@ class basic_fragment_string {
     return std::basic_string<Char_T>::npos;
   }
 
-  [[nodiscard]] constexpr size_type find(const std::basic_string_view<Char_T> sv, size_type pos = 0) const noexcept {
+  _WITE_NODISCARD constexpr size_type find(const std::basic_string_view<Char_T> sv, size_type pos = 0) const noexcept {
     const auto this_len = this->length();
     if (pos + sv.size() > this_len) {
       return std::basic_string<Char_T>::npos;
@@ -471,7 +471,7 @@ class basic_fragment_string {
 
  private:
   template <typename ThisIter_T, typename OtherIter_T>
-  [[nodiscard]] static constexpr bool _match_substring(ThisIter_T this_begin,
+  _WITE_NODISCARD static constexpr bool _match_substring(ThisIter_T this_begin,
                                                        size_type this_length,
                                                        OtherIter_T other_begin,
                                                        OtherIter_T other_end,

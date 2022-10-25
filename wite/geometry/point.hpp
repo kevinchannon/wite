@@ -43,13 +43,13 @@ class point {
     _init<0>(vals...);
   }
 
-  [[nodiscard]] constexpr auto operator<=>(const point&) const noexcept = default;
+  _WITE_NODISCARD constexpr auto operator<=>(const point&) const noexcept = default;
 
-  [[nodiscard]] constexpr size_type dimensions() const noexcept { return _value.size(); }
+  _WITE_NODISCARD constexpr size_type dimensions() const noexcept { return _value.size(); }
 
 #ifndef _WITE_COMPILER_MSVC
   template <size_type DIM>
-  [[nodiscard]] constexpr const value_type& get() const noexcept {
+  _WITE_NODISCARD constexpr const value_type& get() const noexcept {
     return _value[DIM];
   }
 
@@ -60,7 +60,7 @@ class point {
 #endif
 
   template <dim DIM>
-  [[nodiscard]] constexpr const value_type& get() const noexcept {
+  _WITE_NODISCARD constexpr const value_type& get() const noexcept {
     return _value[static_cast<size_type>(DIM)];
   }
 
@@ -69,8 +69,8 @@ class point {
     _value[static_cast<size_type>(DIM)] = val;
   }
 
-  [[nodiscard]] constexpr const value_type& operator[](size_type dim) const noexcept { return _value[dim]; }
-  [[nodiscard]] constexpr value_type& operator[](size_type dim) noexcept { return _value[dim]; }
+  _WITE_NODISCARD constexpr const value_type& operator[](size_type dim) const noexcept { return _value[dim]; }
+  _WITE_NODISCARD constexpr value_type& operator[](size_type dim) noexcept { return _value[dim]; }
 
  private:
   template <size_t IDX, typename V, typename... OtherValue_Ts>
