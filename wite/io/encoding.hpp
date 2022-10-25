@@ -20,9 +20,15 @@ enum class endian { little = 0, big = 1, native = little };
 #endif
 
 #ifdef WITE_LITTLE_ENDIAN
+#ifdef WITE_BIG_ENDIAN
+#error "Specify only one of WITE_LITTLE_ENDIAN, or WITE_BIG_ENDIAN"
+#endif
 constexpr auto system_native_endianness = endian::little;
 #else
 #ifdef WITE_BIG_ENDIAN
+#ifdef WITE_LITTLE_ENDIAN
+#error "Specify only one of WITE_LITTLE_ENDIAN, or WITE_BIG_ENDIAN"
+#endif
 constexpr auto system_native_endianness = endian::big;
 #else
 constexpr auto system_native_endianness = endian::native;

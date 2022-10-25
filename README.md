@@ -10,6 +10,9 @@ If you're planning to just use Wite in your project, then you don't really need 
 ## Installation
 Wite is header only, so you can do something as simple as downloading the code and copying the "wite" directory into your source tree.  The preferred way to consume Wite is _via_ CMake's FetchContent.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository
 
+## Macros
+Some of the features of Wite are tunable by the user at compilation time. For a list of the macros that you can define as command-line parameters to the compiler, see the Compiler Macros section at the end of this readme.
+
 # Collections
 ### `stack_vector`
 ```
@@ -144,7 +147,7 @@ const auto str = binascii::hexlify(bytes);
 ```
 If you're `bytes` vector is `[ 0x01, 0x02, 0xFE, 0xFF ]`, then the resulting `str` would be "0102FEFF". The input just has to be a range containing bytes, so it could be a `std::list`, or `std::array`, or whatever you have.
 
-`unhexlify` does the opposite of `hexlify`. `unhexlify` takes a `std::string_view` and returns a `wite::io::dynamic_byte_buffer`, which is basically a `std::vector` of `std::byte` values.
+`unhexlify` does the opposite of `hexlify`. `unhexlify` takes a `std::string_view` and returns a `wite::io::dynamic_byte_buffer`, which is basically a `std::vector` of `wite::io::byte` values.
 
 # String
 A small collection of string functions.  The aim is that the most common use case is the simplest thing to do and just does what you want without too much fuss. It might not be the most efficient way to do it, but it should be good enough for 99% of use cases. If you want to do something a bit more fancy, then there might be a way to do that using this library, or there might not.
@@ -336,3 +339,30 @@ const auto p = point_2d{2.718, 3.142};
 std::cout << "p = " << p << std::endl;
 ```
 will print `[ 2.718, 3.142 ]`.
+
+# Compiler Macros
+You might want to do things a bit differently, so here are some build-time specializations that you can make.
+
+## Global
+
+### `WITE_NO_NODISCARD`
+Many of the functions in Wite are marked with the `[[nodiscard]]` attribute, if the compiler supports it, because it makes code safer.  If your compiler does support `[[nodiscard]]` but you don't want it, for some reason, then compile with `WITE_NO_NODISCARD` defined.
+
+## IO 
+### `WITE_USER_DEFINED_BYTE_TYPE_`
+By default, and if the compiler supports it, Wite will use `std::byte` as its native byte type for IO. If your compiler doesn't support `std::byte`, then WIte will detect this at build time and use `unsigned char` as its native byte type. If you have a bunch of pre-existing code that uses some other type for bytes, then you can choose some other options at compile-time.
+* `WITE_USER_DEFINED_BYTE_TYPE_CHAR` - sets the byte type to `char`
+* `WITE_USER_DEFINED_BYTE_TYPE_U8` - sets the byte type to `std::uint8_t`
+* `WITE_USER_DEFINED_BYTE_TYPE_I8` - sets the byte type to `std::int8_t`3
+
+It is an error to specify more than one of these options. 
+
+### `WITE_LITTLE_ENDIAN` and `WITE_BIG_ENDIAN`
+By default, Wite will try to use the system's native endianness (if `std::endian` is available in your compiler). If `std::endian` is not available, then the default endianness will default to little-endian.  If you want to override what Wite considers to be the native system endianness, then you can specify `WITE_BIG_ENDIAN`, or `WITE_LITTLE_ENDIAN` to the compiler.
+
+It is an error to specify both of these options at the same time.
+
+## Geommetry
+
+### `WITE_DEFAULT_POINT_TYPE`
+If you're using `wite::geometry::point`, then the default default value type for points is `double`.  If you're concerned mainly with pixel positions, or something, and you want the default type for points to be some integer type, then you can use `WITE_DEFAULT_POINT_TYPE` to define the default type.

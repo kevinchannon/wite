@@ -18,6 +18,9 @@
 #define _WITE_CONCEPT      constexpr bool
 #endif
 
+#ifdef WITE_NO_NODISCARD
+#define _WITE_NODISCARD
+#else
 #ifndef _WITE_FEATURE_USE_NODISCARD
 #ifndef __has_cpp_attribute
 #define _WITE_FEATURE_USE_NODISCARD 0
@@ -29,6 +32,7 @@
 #define _WITE_FEATURE_USE_NODISCARD 0
 #endif
 #endif  // _WITE_FEATURE_USE_NODISCARD
+#endif  // WITE_NO_NODISCARD
 
 #ifndef _WITE_FEATURE_USE_STD_FORMAT
 #ifdef __cpp_lib_format
@@ -60,6 +64,22 @@
 #endif  // __cpp_consteval
 #endif  // _WITE_FEATURE_USE_CONSTEVAL
 
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8 || WITE_USER_DEFINED_BYTE_TYPE_I8
+#error "It is an error to specify multiple byte types"
+#endif
+#define WITE_BYTE char
+#elif WITE_USER_DEFINED_BYTE_TYPE_U8
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR || WITE_USER_DEFINED_BYTE_TYPE_I8
+#error "It is an error to specify multiple byte types"
+#endif
+#define WITE_BYTE std::uint8_t
+#elif WITE_USER_DEFINED_BYTE_TYPE_I8
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8 || WITE_USER_DEFINED_BYTE_TYPE_CHAR
+#error "It is an error to specify multiple byte types"
+#endif
+#define WITE_BYTE std::int8_t
+#else
 #ifndef _WITE_FEATURE_USE_STD_BYTE
 #ifdef __cpp_lib_byte
 #define _WITE_FEATURE_USE_STD_BYTE 1
@@ -69,6 +89,7 @@
 #define WITE_BYTE                 unsigned char
 #endif  // __cpp_lib_byte
 #endif  // _WITE_FEATURE_USE_STD_BYTE
+#endif  // WITE_USER_DEFINED_BYTE_TYPE
 
 #ifndef _WITE_FEATURE_HAS_THREE_WAY_COMPARE
 #if __cpp_impl_three_way_comparison >= 201711
