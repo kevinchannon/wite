@@ -38,22 +38,22 @@ namespace detail {
 
   io::byte low_nibble(char c){
     switch(c) {
-      case '0': return io::byte{0x00};
-      case '1': return io::byte{0x01};
-      case '2': return io::byte{0x02};
-      case '3': return io::byte{0x03};
-      case '4': return io::byte{0x04};
-      case '5': return io::byte{0x05};
-      case '6': return io::byte{0x06};
-      case '7': return io::byte{0x07};
-      case '8': return io::byte{0x08};
-      case '9': return io::byte{0x09};
-      case 'A': case 'a': return io::byte{0x0A};
-      case 'B': case 'b': return io::byte{0x0B};
-      case 'C': case 'c': return io::byte{0x0C};
-      case 'D': case 'd': return io::byte{0x0D};
-      case 'E': case 'e': return io::byte{0x0E};
-      case 'F': case 'f': return io::byte{0x0F};
+      case '0': return io::byte(0x00);
+      case '1': return io::byte(0x01);
+      case '2': return io::byte(0x02);
+      case '3': return io::byte(0x03);
+      case '4': return io::byte(0x04);
+      case '5': return io::byte(0x05);
+      case '6': return io::byte(0x06);
+      case '7': return io::byte(0x07);
+      case '8': return io::byte(0x08);
+      case '9': return io::byte(0x09);
+      case 'A': case 'a': return io::byte(0x0A);
+      case 'B': case 'b': return io::byte(0x0B);
+      case 'C': case 'c': return io::byte(0x0C);
+      case 'D': case 'd': return io::byte(0x0D);
+      case 'E': case 'e': return io::byte(0x0E);
+      case 'F': case 'f': return io::byte(0x0F);
       default:
         throw std::invalid_argument{"Invalid hex char"};
     }
@@ -61,22 +61,22 @@ namespace detail {
 
   io::byte high_nibble(char c){
     switch(c) {
-      case '0': return io::byte{0x00};
-      case '1': return io::byte{0x10};
-      case '2': return io::byte{0x20};
-      case '3': return io::byte{0x30};
-      case '4': return io::byte{0x40};
-      case '5': return io::byte{0x50};
-      case '6': return io::byte{0x60};
-      case '7': return io::byte{0x70};
-      case '8': return io::byte{0x80};
-      case '9': return io::byte{0x90};
-      case 'A': case 'a': return io::byte{0xA0};
-      case 'B': case 'b': return io::byte{0xB0};
-      case 'C': case 'c': return io::byte{0xC0};
-      case 'D': case 'd': return io::byte{0xD0};
-      case 'E': case 'e': return io::byte{0xE0};
-      case 'F': case 'f': return io::byte{0xF0};
+      case '0': return io::byte(0x00);
+      case '1': return io::byte(0x10);
+      case '2': return io::byte(0x20);
+      case '3': return io::byte(0x30);
+      case '4': return io::byte(0x40);
+      case '5': return io::byte(0x50);
+      case '6': return io::byte(0x60);
+      case '7': return io::byte(0x70);
+      case '8': return io::byte(0x80);
+      case '9': return io::byte(0x90);
+      case 'A': case 'a': return io::byte(0xA0);
+      case 'B': case 'b': return io::byte(0xB0);
+      case 'C': case 'c': return io::byte(0xC0);
+      case 'D': case 'd': return io::byte(0xD0);
+      case 'E': case 'e': return io::byte(0xE0);
+      case 'F': case 'f': return io::byte(0xF0);
       default:
         throw std::invalid_argument{"Invalid hex char"};
     }

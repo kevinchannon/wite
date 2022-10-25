@@ -27,14 +27,14 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 TEST_CASE("read from raw byte array tests", "[buffer_io]") {
   SECTION("unchecked_read") {
     SECTION("returns value and next read position", "[buffer_io]") {
-      const auto data = io::static_byte_buffer<8>{io::byte{0x67},
-                                                  io::byte{0x45},
-                                                  io::byte{0x23},
-                                                  io::byte{0x01},
-                                                  io::byte{0xEF},
-                                                  io::byte{0xCD},
-                                                  io::byte{0xAB},
-                                                  io::byte{0x89}};
+      const auto data = io::static_byte_buffer<8>{io::byte(0x67),
+                                                  io::byte(0x45),
+                                                  io::byte(0x23),
+                                                  io::byte(0x01),
+                                                  io::byte(0xEF),
+                                                  io::byte(0xCD),
+                                                  io::byte(0xAB),
+                                                  io::byte(0x89)};
 
       const io::byte* buf = data.data();
 
@@ -48,14 +48,14 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
   SECTION("read") {
     SECTION("single value") {
       SECTION("vector buffer", "[buffer_io]") {
-        const auto vec_buffer = std::vector<io::byte>{io::byte{0x67},
-                                                      io::byte{0x45},
-                                                      io::byte{0x23},
-                                                      io::byte{0x01},
-                                                      io::byte{0xEF},
-                                                      io::byte{0xCD},
-                                                      io::byte{0xAB},
-                                                      io::byte{0x89}};
+        const auto vec_buffer = std::vector<io::byte>{io::byte(0x67),
+                                                      io::byte(0x45),
+                                                      io::byte(0x23),
+                                                      io::byte(0x01),
+                                                      io::byte(0xEF),
+                                                      io::byte(0xCD),
+                                                      io::byte(0xAB),
+                                                      io::byte(0x89)};
 
         SECTION("Little-endian") {
           SECTION("Read int") {
@@ -114,14 +114,14 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
 
       SECTION("pointers to array", "[buffer_io]") {
         constexpr auto buf_size              = 8;
-        const io::byte data_buffer[buf_size] = {io::byte{0x67},
-                                                io::byte{0x45},
-                                                io::byte{0x23},
-                                                io::byte{0x01},
-                                                io::byte{0xEF},
-                                                io::byte{0xCD},
-                                                io::byte{0xAB},
-                                                io::byte{0x89}};
+        const io::byte data_buffer[buf_size] = {io::byte(0x67),
+                                                io::byte(0x45),
+                                                io::byte(0x23),
+                                                io::byte(0x01),
+                                                io::byte(0xEF),
+                                                io::byte(0xCD),
+                                                io::byte(0xAB),
+                                                io::byte(0x89)};
 
         const io::byte* buf_begin = data_buffer;
         const io::byte* buf_end   = buf_begin + buf_size;
@@ -145,11 +145,11 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
     SECTION("multiple-values") {
       // clang-format off
       const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(std::array<uint8_t, 4>) + sizeof(bool) + sizeof(uint32_t)>{
-        io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-        io::byte{0xAB}, io::byte{0xCD},
-        io::byte{0x00}, io::byte{0x01}, io::byte{0x02}, io::byte{0x03},
+        io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
+        io::byte(0xAB), io::byte(0xCD),
+        io::byte(0x00), io::byte(0x01), io::byte(0x02), io::byte(0x03),
         io::byte{true},
-        io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+        io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
       };
       // clang-format on
 
@@ -175,7 +175,7 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
   SECTION("try_read") {
     SECTION("single value") {
       SECTION("returns value on good read") {
-        const auto data = io::static_byte_buffer<4>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}, io::byte{0xFF}};
+        const auto data = io::static_byte_buffer<4>{io::byte(0x67), io::byte(0x45), io::byte(0xAB), io::byte(0xFF)};
 
         SECTION("with default endianness") {
           const auto val = io::try_read<uint32_t>(data);
@@ -197,7 +197,7 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
       }
 
       SECTION("returns error on bad read") {
-        const auto data = io::static_byte_buffer<3>{io::byte{0x67}, io::byte{0x45}, io::byte{0xAB}};
+        const auto data = io::static_byte_buffer<3>{io::byte(0x67), io::byte(0x45), io::byte(0xAB)};
 
         SECTION("for scalar values") {
           const auto val = io::try_read<uint32_t>(data);
@@ -217,10 +217,10 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
       SECTION("read from bufffer succeeds") {
         // clang-format off
         const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-          io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-          io::byte{0xAB}, io::byte{0xCD},
+          io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
+          io::byte(0xAB), io::byte(0xCD),
           io::byte{true},
-          io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+          io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
         };
         // clang-format on
 
@@ -242,8 +242,8 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
       SECTION("inserts errors if the buffer is too small") {
         // clang-format off
         const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t)>{
-          io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-          io::byte{0xAB}, io::byte{0xCD}
+          io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
+          io::byte(0xAB), io::byte(0xCD)
         };
         // clang-format on
         const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
@@ -265,14 +265,14 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
 
   SECTION("read_at") {
     SECTION("single value") {
-      const auto data = io::dynamic_byte_buffer{io::byte{0x67},
-                                                io::byte{0x45},
-                                                io::byte{0x23},
-                                                io::byte{0x01},
-                                                io::byte{0xEF},
-                                                io::byte{0xCD},
-                                                io::byte{0xAB},
-                                                io::byte{0x89}};
+      const auto data = io::dynamic_byte_buffer{io::byte(0x67),
+                                                io::byte(0x45),
+                                                io::byte(0x23),
+                                                io::byte(0x01),
+                                                io::byte(0xEF),
+                                                io::byte(0xCD),
+                                                io::byte(0xAB),
+                                                io::byte(0x89)};
 
       SECTION("scalar value"){
         SECTION("reads at the correct offset") {
@@ -316,10 +316,10 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
     SECTION("multiple values") {
       // clang-format off
       const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-        io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-        io::byte{0xAB}, io::byte{0xCD},
+        io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
+        io::byte(0xAB), io::byte(0xCD),
         io::byte{true},
-        io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+        io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
       };
       // clang-format on
 
@@ -344,14 +344,14 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
 
   SECTION("try_read_at") {
     SECTION("single value") {
-      const auto data = io::static_byte_buffer<8>{io::byte{0x67},
-                                                  io::byte{0x45},
-                                                  io::byte{0xAB},
-                                                  io::byte{0xFF},
-                                                  io::byte{0x01},
-                                                  io::byte{0x23},
-                                                  io::byte{0x45},
-                                                  io::byte{0x67}};
+      const auto data = io::static_byte_buffer<8>{io::byte(0x67),
+                                                  io::byte(0x45),
+                                                  io::byte(0xAB),
+                                                  io::byte(0xFF),
+                                                  io::byte(0x01),
+                                                  io::byte(0x23),
+                                                  io::byte(0x45),
+                                                  io::byte(0x67)};
 
       SECTION("scalar value") {
         SECTION("returns value on good read") {
@@ -418,10 +418,10 @@ TEST_CASE("read from raw byte array tests", "[buffer_io]") {
     SECTION("multiple values") {
       // clang-format off
       const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-        io::byte{0x78}, io::byte{0x56}, io::byte{0x34}, io::byte{0x12},
-        io::byte{0xAB}, io::byte{0xCD},
+        io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
+        io::byte(0xAB), io::byte(0xCD),
         io::byte{true},
-        io::byte{0x98}, io::byte{0xBA}, io::byte{0xDC}, io::byte{0xFE}
+        io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
       };
       // clang-format on
 

@@ -10,7 +10,7 @@ using namespace wite;
 using namespace std::string_literals;
 
 #define WITE_MAKE_BYTE_TEST_TUPLE(val) \
-  { io::byte{0x##val}, #val }
+  { io::byte(0x##val), #val }
 
 TEST_CASE("Hexlify and unhexlify") {
   SECTION("converts a byte into the correct char pair") {
@@ -102,14 +102,14 @@ TEST_CASE("Hexlify and unhexlify") {
         {"lower-case", "0123456789abcdef"}
     }));
 
-    const auto expected = io::static_byte_buffer<8>{io::byte{0x01},
-                                                    io::byte{0x23},
-                                                    io::byte{0x45},
-                                                    io::byte{0x67},
-                                                    io::byte{0x89},
-                                                    io::byte{0xAB},
-                                                    io::byte{0xCD},
-                                                    io::byte{0xEF}};
+    const auto expected = io::static_byte_buffer<8>{io::byte(0x01),
+                                                    io::byte(0x23),
+                                                    io::byte(0x45),
+                                                    io::byte(0x67),
+                                                    io::byte(0x89),
+                                                    io::byte(0xAB),
+                                                    io::byte(0xCD),
+                                                    io::byte(0xEF)};
 
     SECTION(test_name) {
       const auto bytes = binascii::unhexlify(str);

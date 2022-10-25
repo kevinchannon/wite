@@ -65,17 +65,26 @@
 #endif  // _WITE_FEATURE_USE_CONSTEVAL
 
 #ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8 || WITE_USER_DEFINED_BYTE_TYPE_I8
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
+#error "It is an error to specify multiple byte types"
+#endif
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_I8
 #error "It is an error to specify multiple byte types"
 #endif
 #define WITE_BYTE char
 #elif WITE_USER_DEFINED_BYTE_TYPE_U8
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR || WITE_USER_DEFINED_BYTE_TYPE_I8
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
+#error "It is an error to specify multiple byte types"
+#endif
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_I8
 #error "It is an error to specify multiple byte types"
 #endif
 #define WITE_BYTE std::uint8_t
 #elif WITE_USER_DEFINED_BYTE_TYPE_I8
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8 || WITE_USER_DEFINED_BYTE_TYPE_CHAR
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
+#error "It is an error to specify multiple byte types"
+#endif
+#ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
 #error "It is an error to specify multiple byte types"
 #endif
 #define WITE_BYTE std::int8_t

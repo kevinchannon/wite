@@ -183,16 +183,16 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
           const auto val_3 = int16_t{0x7D04};
           REQUIRE(sizeof(uint16_t) == write_buffer.write(val_3));
 
-          REQUIRE(std::ranges::equal(io::static_byte_buffer<10>{io::byte{0x67},
-                                                                io::byte{0x45},
-                                                                io::byte{0x23},
-                                                                io::byte{0x01},
-                                                                io::byte{0x89},
-                                                                io::byte{0xAB},
-                                                                io::byte{0xCD},
-                                                                io::byte{0xEF},
-                                                                io::byte{0x04},
-                                                                io::byte{0x7D}},
+          REQUIRE(std::ranges::equal(io::static_byte_buffer<10>{io::byte(0x67),
+                                                                io::byte(0x45),
+                                                                io::byte(0x23),
+                                                                io::byte(0x01),
+                                                                io::byte(0x89),
+                                                                io::byte(0xAB),
+                                                                io::byte(0xCD),
+                                                                io::byte(0xEF),
+                                                                io::byte(0x04),
+                                                                io::byte(0x7D)},
                                      raw_buffer));
         }
       }
@@ -273,7 +273,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
           REQUIRE(result.ok());
           REQUIRE(sizeof(val) == result.value());
           REQUIRE(4 == buffer.write_position());
-          REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte{0x23}, io::byte{0xCD}, io::byte{0x01}, io::byte{0xFE}},
+          REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte(0x23), io::byte(0xCD), io::byte(0x01), io::byte(0xFE)},
                                      data));
         }
 
@@ -284,7 +284,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
           REQUIRE(result.ok());
           REQUIRE(sizeof(val) == result.value());
           REQUIRE(4 == buffer.write_position());
-            REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte{0x23}, io::byte{0xCD}, io::byte{0x01}, io::byte{0xFE}},
+            REQUIRE(std::ranges::equal(io::static_byte_buffer<4>{io::byte(0x23), io::byte(0xCD), io::byte(0x01), io::byte(0xFE)},
                                      data));
         }
       }
