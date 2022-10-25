@@ -26,5 +26,11 @@ TEST_CASE("bounds tests", "[maths]") {
       REQUIRE_FALSE(bounds{123, 456} == bounds{123, 457});
       REQUIRE_FALSE(bounds{123, 456} == bounds{124, 456});
     }
+
+    SECTION("bounds are not equal") {
+      REQUIRE_FALSE(bounds{123, 456} != bounds{123, 456});
+      REQUIRE(bounds{123, 456} != bounds{123, 457});
+      REQUIRE(bounds{123, 456} != bounds{124, 456});
+    }
   }
 }
