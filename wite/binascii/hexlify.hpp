@@ -9,6 +9,7 @@
 
 #include <array>
 #include <string>
+#include <string_view>
 #include <stdexcept>
 
 namespace wite::binascii {
@@ -99,7 +100,7 @@ _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
   return out;
 }
 
-_WITE_NODISCARD io::dynamic_byte_buffer unhexlify(const std::string& str) {
+_WITE_NODISCARD io::dynamic_byte_buffer unhexlify(const std::string_view str) {
   auto out = io::dynamic_byte_buffer(str.length() / 2, io::byte{});
   auto read_pos = str.begin();
 

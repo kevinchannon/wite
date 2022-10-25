@@ -133,6 +133,18 @@ If you only know the endianness at runtime, for some reason, then you can provid
 ```
 const auto my_int = wite::io::read<int>(buffer, std::endian::little);
 ```
+# Binascii
+`#include <wite/binascii/hexlify.hpp>`
+
+This component is basically two functions, `hexlify` and `unhexlify` that are based on the [Python functions of the same name](https://docs.python.org/3/library/binascii.html). `hexlify` takes a range containing byte values and returns a `std::string` with the hexadecimal values of the bytes in it:
+```
+const auto bytes = std::vector<std::byte>{ ... };
+
+const auto str = binascii::hexlify(bytes);
+```
+If you're `bytes` vector is `[ 0x01, 0x02, 0xFE, 0xFF ]`, then the resulting `str` would be "0102FEFF". The input just has to be a range containing bytes, so it could be a `std::list`, or `std::array`, or whatever you have.
+
+`unhexlify` does the opposite of `hexlify`. `unhexlify` takes a `std::string_view` and returns a `wite::io::dynamic_byte_buffer`, which is basically a `std::vector` of `std::byte` values.
 
 # String
 A small collection of string functions.  The aim is that the most common use case is the simplest thing to do and just does what you want without too much fuss. It might not be the most efficient way to do it, but it should be good enough for 99% of use cases. If you want to do something a bit more fancy, then there might be a way to do that using this library, or there might not.
