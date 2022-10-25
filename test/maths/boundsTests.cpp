@@ -19,4 +19,12 @@ TEST_CASE("bounds tests", "[maths]") {
       REQUIRE(10.0 == b.max);
     }
   }
+
+  SECTION("comparison") {
+    SECTION("bounds are equal") {
+      REQUIRE(bounds{123, 456} == bounds{123, 456});
+      REQUIRE_FALSE(bounds{123, 456} == bounds{123, 457});
+      REQUIRE_FALSE(bounds{123, 456} == bounds{124, 456});
+    }
+  }
 }
