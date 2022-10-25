@@ -10,6 +10,7 @@ struct bounds {
 
   _WITE_NODISCARD constexpr bool operator==(const bounds& other) const noexcept { return min == other.min and max == other.max; }
   _WITE_NODISCARD constexpr bool operator!=(const bounds& other) const noexcept { return not (*this == other); }
+  _WITE_NODISCARD constexpr bool operator<(const bounds& other) const noexcept { return max < other.min; }
 
   value_type min;
   value_type max;

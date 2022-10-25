@@ -32,5 +32,13 @@ TEST_CASE("bounds tests", "[maths]") {
       REQUIRE(bounds{123, 456} != bounds{123, 457});
       REQUIRE(bounds{123, 456} != bounds{124, 456});
     }
+
+    SECTION("bounds are 'less' than another bounds") {
+      REQUIRE(bounds{0, 1} < bounds{2, 3});
+      REQUIRE_FALSE(bounds{0, 1} < bounds{1, 2});
+      REQUIRE_FALSE(bounds{0, 1} < bounds{0, 1});
+      REQUIRE_FALSE(bounds{0, 1} < bounds{-1, 2});
+      REQUIRE_FALSE(bounds{0, 1} < bounds{-2, -1});
+    }
   }
 }
