@@ -2,6 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/catch_approx.hpp>
 
 using namespace wite::maths;
 
@@ -48,5 +49,10 @@ TEST_CASE("value_range tests", "[maths]") {
       REQUIRE_FALSE(value_range{-1, 2} > value_range{0, 1});
       REQUIRE_FALSE(value_range{-2,-1} > value_range{0, 1});
     }
+  }
+
+  SECTION("size()") {
+    REQUIRE(10 == value_range{10, 20}.size());
+    REQUIRE(10.0 == Catch::Approx(value_range{100.0, 110.0}.size()).epsilon(0.0));
   }
 }

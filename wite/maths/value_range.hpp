@@ -15,6 +15,8 @@ struct value_range {
   _WITE_NODISCARD constexpr bool operator<(const value_range& other) const noexcept { return max < other.min; }
   _WITE_NODISCARD constexpr bool operator>(const value_range& other) const noexcept { return min > other.max; }
 
+  _WITE_NODISCARD constexpr value_type size() const noexcept { return max - min; }
+
   value_type min;
   value_type max;
 };
