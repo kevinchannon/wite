@@ -55,4 +55,14 @@ TEST_CASE("value_range tests", "[maths]") {
     REQUIRE(10 == value_range{10, 20}.size());
     REQUIRE(10.0 == Catch::Approx(value_range{100.0, 110.0}.size()).epsilon(0.0));
   }
+
+  SECTION("overlap()") {
+    SECTION("Low-side overlap") {
+      REQUIRE(value_range{0, 3} == value_range{0, 10}.overlap(value_range{-3, 3}));
+    }
+
+    SECTION("high-side overlap") {
+      REQUIRE(value_range{6, 10} == value_range{0, 10}.overlap(value_range{6, 1000}));
+    }
+  }
 }
