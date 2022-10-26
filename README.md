@@ -348,6 +348,9 @@ You might want to do things a bit differently, so here are some build-time speci
 ### `WITE_NO_NODISCARD`
 Many of the functions in Wite are marked with the `[[nodiscard]]` attribute, if the compiler supports it, because it makes code safer.  If your compiler does support `[[nodiscard]]` but you don't want it, for some reason, then compile with `WITE_NO_NODISCARD` defined.
 
+### `WITE_NO_EXCEPTIONS`
+In general, things that go wrong throw exceptions in Wite. However, if you don't want exceptions being thrown from Wite code in your project, then define this command line variable in compilation. It doesn't guarantee that no exceptions will be emitted, but it does guarantee that Wite won't throw any. If you define this value, some features of the library will not be available to you.
+
 ## IO 
 ### `WITE_USER_DEFINED_BYTE_TYPE_`
 By default, and if the compiler supports it, Wite will use `std::byte` as its native byte type for IO. If your compiler doesn't support `std::byte`, then WIte will detect this at build time and use `unsigned char` as its native byte type. If you have a bunch of pre-existing code that uses some other type for bytes, then you can choose some other options at compile-time.
