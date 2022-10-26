@@ -33,12 +33,20 @@ TEST_CASE("bounds tests", "[maths]") {
       REQUIRE(bounds{123, 456} != bounds{124, 456});
     }
 
-    SECTION("bounds are 'less' than another bounds") {
+    SECTION("bounds are 'less-than' than another bounds") {
       REQUIRE(bounds{0, 1} < bounds{2, 3});
-      REQUIRE_FALSE(bounds{0, 1} < bounds{1, 2});
-      REQUIRE_FALSE(bounds{0, 1} < bounds{0, 1});
+      REQUIRE_FALSE(bounds{0, 1} < bounds{ 1, 2});
+      REQUIRE_FALSE(bounds{0, 1} < bounds{ 0, 1});
       REQUIRE_FALSE(bounds{0, 1} < bounds{-1, 2});
-      REQUIRE_FALSE(bounds{0, 1} < bounds{-2, -1});
+      REQUIRE_FALSE(bounds{0, 1} < bounds{-2,-1});
+    }
+
+    SECTION("bounds are 'greater-than' than another bounds") {
+      REQUIRE(bounds{2, 3} > bounds{0, 1});
+      REQUIRE_FALSE(bounds{ 1, 2} > bounds{0, 1});
+      REQUIRE_FALSE(bounds{ 0, 1} > bounds{0, 1});
+      REQUIRE_FALSE(bounds{-1, 2} > bounds{0, 1});
+      REQUIRE_FALSE(bounds{-2,-1} > bounds{0, 1});
     }
   }
 }
