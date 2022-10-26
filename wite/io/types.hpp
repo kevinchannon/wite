@@ -6,6 +6,8 @@
 #include <array>
 #include <cstddef>
 #include <vector>
+#include <type_traits>
+#include <limits>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -14,11 +16,20 @@ namespace wite::io {
 using byte = WITE_BYTE;
 
 template <typename Result_T>
+  requires std::is_unsigned_v<Result_T>
 _WITE_NODISCARD Result_T to_integer(wite::io::byte b) {
 #if _WITE_FEATURE_USE_STD_BYTE
   return std::to_integer<Result_T>(b);
 #else
-  return static_cast<Result_T>(b);
+  if constexpr (std::is_unsigned_v<wite::io::byte>) {
+    return static_cast<Result_T>(b);
+  } else {
+    if (b >= 0) {
+      return static_cast<Result_T>(b);
+    } else {
+      return static_cast<Result_T>(b) + std::numeric_limits<std::make_unsigned_t<wite::io::byte>>::max() + 1;
+    }
+  }
 #endif
 }
 
