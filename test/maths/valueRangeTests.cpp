@@ -81,4 +81,14 @@ TEST_CASE("value_range tests", "[maths]") {
       REQUIRE(std::nullopt == value_range{0, 10}.overlap(value_range{11, 20}));
     }
   }
+
+  SECTION("empty()") {
+    SECTION("default-constructed range is empty") {
+      REQUIRE(value_range<double>{}.empty());
+    }
+
+    SECTION("when min and max are equal") {
+      REQUIRE(value_range{7.0, 7.0}.empty());
+    }
+  }
 }

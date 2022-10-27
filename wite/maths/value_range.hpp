@@ -18,6 +18,7 @@ struct value_range {
   _WITE_NODISCARD constexpr bool operator>(const value_range& other) const noexcept { return min > other.max; }
 
   _WITE_NODISCARD constexpr value_type size() const noexcept { return max - min; }
+  _WITE_NODISCARD constexpr bool empty() const noexcept { return min == max; }
 
   _WITE_NODISCARD constexpr std::optional<value_range> overlap(const value_range& other) const noexcept {
     if (min > other.max or max < other.min) {
