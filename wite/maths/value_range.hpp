@@ -20,11 +20,11 @@ struct value_range {
   _WITE_NODISCARD constexpr value_type size() const noexcept { return max - min; }
 
   _WITE_NODISCARD constexpr std::optional<value_range> overlap(const value_range& other) const noexcept {
-    if (min < other.max and max > other.max) {
-      return value_range{min, other.max};
-    } else {
-      return value_range{other.min, max};
+    if (min > other.max or max < other.min) {
+      return {};
     }
+
+    return value_range{std::max(min, other.min), std::min(max, other.max)};
   }
 
   value_type min;

@@ -57,12 +57,28 @@ TEST_CASE("value_range tests", "[maths]") {
   }
 
   SECTION("overlap()") {
+    SECTION("low-side no overlap") {
+      REQUIRE(std::nullopt == value_range{2, 3}.overlap(value_range{0, 1}));
+    }
+
     SECTION("Low-side overlap") {
       REQUIRE(value_range{0, 3} == value_range{0, 10}.overlap(value_range{-3, 3}));
     }
 
+    SECTION("sub-range") {
+      REQUIRE(value_range{0, 3} == value_range{-10, 10}.overlap(value_range{0, 3}));
+    }
+
+    SECTION("super-range") {
+      REQUIRE(value_range{1.0, 5.0} == value_range{1.0, 5.0}.overlap(value_range{-100.0, 100.0}));
+    }
+
     SECTION("high-side overlap") {
       REQUIRE(value_range{6, 10} == value_range{0, 10}.overlap(value_range{6, 1000}));
+    }
+
+    SECTION("high-side, no overlap") {
+      REQUIRE(std::nullopt == value_range{0, 10}.overlap(value_range{11, 20}));
     }
   }
 }
