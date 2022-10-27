@@ -4,6 +4,8 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/catch_approx.hpp>
 
+#include <limits>
+
 using namespace wite::maths;
 
 TEST_CASE("value_range tests", "[maths]") {
@@ -89,6 +91,46 @@ TEST_CASE("value_range tests", "[maths]") {
 
     SECTION("when min and max are equal") {
       REQUIRE(value_range{7.0, 7.0}.empty());
+    }
+  }
+
+  SECTION("below_min()") {
+    SECTION("open range") {
+      REQUIRE(open_value_range{0.0, 1.0}.below_min(0.0));
+      REQUIRE_FALSE(open_value_range{0.0, 1.0}.below_min(0.0 + std::numeric_limits<double>::epsilon()));
+    }
+
+    SECTION("closed range") {
+      REQUIRE_FALSE(closed_value_range{0.0, 1.0}.below_min(0.0));
+      REQUIRE(closed_value_range{0.0, 1.0}.below_min(0.0 - std::numeric_limits<double>::epsilon()));
+    }
+  }
+
+  SECTION("above_max()") {
+    SECTION("open range") {
+      REQUIRE(open_value_range{0.0, 1.0}.above_max(1.0));
+      REQUIRE_FALSE(open_value_range{0.0, 1.0}.above_max(1.0 - std::numeric_limits<double>::epsilon()));
+    }
+
+    SECTION("closed range") {
+      REQUIRE_FALSE(closed_value_range{0.0, 1.0}.above_max(1.0));
+      REQUIRE(closed_value_range{0.0, 1.0}.above_max(1.0 + std::numeric_limits<double>::epsilon()));
+    }
+  }
+
+  SECTION("contains()") {
+    SECTION("open range") {
+      REQUIRE_FALSE(open_value_range{0.0, 1.0}.contains(0.0));
+      REQUIRE(open_value_range{0.0, 1.0}.contains(0.0 + std::numeric_limits<double>::epsilon()));
+      REQUIRE(open_value_range{0.0, 1.0}.contains(1.0 - std::numeric_limits<double>::epsilon()));
+      REQUIRE_FALSE(open_value_range{0.0, 1.0}.contains(1.0));
+    }
+
+    SECTION("closed range") {
+      REQUIRE(closed_value_range{0.0, 1.0}.contains(0.0));
+      REQUIRE_FALSE(closed_value_range{0.0, 1.0}.contains(0.0 - std::numeric_limits<double>::epsilon()));
+      REQUIRE_FALSE(closed_value_range{0.0, 1.0}.contains(1.0 + std::numeric_limits<double>::epsilon()));
+      REQUIRE(closed_value_range{0.0, 1.0}.contains(1.0));
     }
   }
 }

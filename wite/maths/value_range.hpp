@@ -2,14 +2,25 @@
 
 #include <wite/env/environment.hpp>
 
-#include <optional>
 #include <algorithm>
+#include <optional>
+
+///////////////////////////////////////////////////////////////////////////////
 
 namespace wite::maths {
 
-template <typename T>
+///////////////////////////////////////////////////////////////////////////////
+
+enum class range_boundary { closed, open };
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename T, range_boundary LBOUND = range_boundary::closed, range_boundary HBOUND = range_boundary::closed>
 struct value_range {
   using value_type = T;
+
+  static constexpr auto low_bound  = LBOUND;
+  static constexpr auto high_bound = HBOUND;
 
   _WITE_NODISCARD constexpr bool operator==(const value_range& other) const noexcept {
     return min == other.min and max == other.max;
@@ -29,8 +40,38 @@ struct value_range {
     return value_range{std::max(min, other.min), std::min(max, other.max)};
   }
 
+  _WITE_NODISCARD constexpr bool contains(value_type val) const noexcept { return not(below_min(val) or above_max(val)); }
+
+  _WITE_NODISCARD constexpr bool below_min(value_type val) const noexcept {
+    if constexpr (range_boundary::closed == low_bound) {
+      return val < min;
+    } else {
+      return val <= min;
+    }
+  }
+
+  _WITE_NODISCARD constexpr bool above_max(value_type val) const noexcept {
+    if constexpr (range_boundary::closed == high_bound) {
+      return val > max;
+    } else {
+      return val >= max;
+    }
+  }
+
   value_type min;
   value_type max;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+using open_value_range = value_range<Value_T, range_boundary::open, range_boundary::open>;
+
+template<typename Value_T>
+using closed_value_range = value_range<Value_T, range_boundary::closed, range_boundary::closed>;
+
+///////////////////////////////////////////////////////////////////////////////
+
 }  // namespace wite::maths
+
+///////////////////////////////////////////////////////////////////////////////
