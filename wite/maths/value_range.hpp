@@ -3,6 +3,7 @@
 #include <wite/env/environment.hpp>
 
 #include <optional>
+#include <algorithm>
 
 namespace wite::maths {
 
