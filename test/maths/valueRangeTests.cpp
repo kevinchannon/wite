@@ -25,31 +25,31 @@ TEST_CASE("value_range tests", "[maths]") {
 
   SECTION("comparison") {
     SECTION("value ranges are equal") {
-      REQUIRE(value_range{123, 456} == value_range{123, 456});
-      REQUIRE_FALSE(value_range{123, 456} == value_range{123, 457});
-      REQUIRE_FALSE(value_range{123, 456} == value_range{124, 456});
+      REQUIRE(open_value_range{123, 456} == open_value_range{123, 456});
+      REQUIRE_FALSE(open_value_range{123, 456} == open_value_range{123, 457});
+      REQUIRE_FALSE(open_value_range{123, 456} == open_value_range{124, 456});
     }
 
     SECTION("value ranges are not equal") {
-      REQUIRE_FALSE(value_range{123, 456} != value_range{123, 456});
-      REQUIRE(value_range{123, 456} != value_range{123, 457});
-      REQUIRE(value_range{123, 456} != value_range{124, 456});
+      REQUIRE_FALSE(open_value_range{123, 456} != open_value_range{123, 456});
+      REQUIRE(open_value_range{123, 456} != open_value_range{123, 457});
+      REQUIRE(open_value_range{123, 456} != open_value_range{124, 456});
     }
 
-    SECTION("value ranges are 'less-than' than another value_range") {
-      REQUIRE(value_range{0, 1} < value_range{2, 3});
-      REQUIRE_FALSE(value_range{0, 1} < value_range{ 1, 2});
-      REQUIRE_FALSE(value_range{0, 1} < value_range{ 0, 1});
-      REQUIRE_FALSE(value_range{0, 1} < value_range{-1, 2});
-      REQUIRE_FALSE(value_range{0, 1} < value_range{-2,-1});
+    SECTION("value ranges are 'less-than' than another open_value_range") {
+      REQUIRE(open_value_range{0, 1} < open_value_range{2, 3});
+      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{ 1, 2});
+      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{ 0, 1});
+      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{-1, 2});
+      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{-2,-1});
     }
 
-    SECTION("value ranges are 'greater-than' than another value_range") {
-      REQUIRE(value_range{2, 3} > value_range{0, 1});
-      REQUIRE_FALSE(value_range{ 1, 2} > value_range{0, 1});
-      REQUIRE_FALSE(value_range{ 0, 1} > value_range{0, 1});
-      REQUIRE_FALSE(value_range{-1, 2} > value_range{0, 1});
-      REQUIRE_FALSE(value_range{-2,-1} > value_range{0, 1});
+    SECTION("value ranges are 'greater-than' than another open_value_range") {
+      REQUIRE(open_value_range{2, 3} > open_value_range{0, 1});
+      REQUIRE_FALSE(open_value_range{ 1, 2} > open_value_range{0, 1});
+      REQUIRE_FALSE(open_value_range{ 0, 1} > open_value_range{0, 1});
+      REQUIRE_FALSE(open_value_range{-1, 2} > open_value_range{0, 1});
+      REQUIRE_FALSE(open_value_range{-2,-1} > open_value_range{0, 1});
     }
   }
 

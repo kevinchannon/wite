@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wite/env/environment.hpp>
+#include <wite/common/constructor_macros.hpp>
 
 #include <algorithm>
 #include <optional>
@@ -65,10 +66,18 @@ struct value_range {
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-using open_value_range = value_range<Value_T, range_boundary::open, range_boundary::open>;
+struct open_value_range : public value_range<Value_T, range_boundary::open, range_boundary::open> {
+  open_value_range(Value_T min, Value_T max) : value_range<Value_T, range_boundary::open, range_boundary::open>{min, max} {}
+
+  WITE_DEFAULT_CONSTRUCTORS(open_value_range);
+};
 
 template<typename Value_T>
-using closed_value_range = value_range<Value_T, range_boundary::closed, range_boundary::closed>;
+struct closed_value_range : public value_range<Value_T, range_boundary::closed, range_boundary::closed> {
+  closed_value_range(Value_T min, Value_T max) : value_range<Value_T, range_boundary::closed, range_boundary::closed>{min, max} {}
+
+  WITE_DEFAULT_CONSTRUCTORS(closed_value_range);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
