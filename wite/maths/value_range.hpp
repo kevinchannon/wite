@@ -59,6 +59,8 @@ struct value_range {
     }
   }
 
+  _WITE_NODISCARD constexpr value_type mid() const noexcept { return max - size() / 2; }
+
   value_type min;
   value_type max;
 };

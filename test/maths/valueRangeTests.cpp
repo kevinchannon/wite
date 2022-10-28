@@ -1,4 +1,5 @@
 #include <wite/maths/value_range.hpp>
+#include <wite/maths/io.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -25,31 +26,31 @@ TEST_CASE("value_range tests", "[maths]") {
 
   SECTION("comparison") {
     SECTION("value ranges are equal") {
-      REQUIRE(open_value_range{123, 456} == open_value_range{123, 456});
-      REQUIRE_FALSE(open_value_range{123, 456} == open_value_range{123, 457});
-      REQUIRE_FALSE(open_value_range{123, 456} == open_value_range{124, 456});
+      REQUIRE(closed_value_range{123, 456} == closed_value_range{123, 456});
+      REQUIRE_FALSE(closed_value_range{123, 456} == closed_value_range{123, 457});
+      REQUIRE_FALSE(closed_value_range{123, 456} == closed_value_range{124, 456});
     }
 
     SECTION("value ranges are not equal") {
-      REQUIRE_FALSE(open_value_range{123, 456} != open_value_range{123, 456});
-      REQUIRE(open_value_range{123, 456} != open_value_range{123, 457});
-      REQUIRE(open_value_range{123, 456} != open_value_range{124, 456});
+      REQUIRE_FALSE(closed_value_range{123, 456} != closed_value_range{123, 456});
+      REQUIRE(closed_value_range{123, 456} != closed_value_range{123, 457});
+      REQUIRE(closed_value_range{123, 456} != closed_value_range{124, 456});
     }
 
-    SECTION("value ranges are 'less-than' than another open_value_range") {
-      REQUIRE(open_value_range{0, 1} < open_value_range{2, 3});
-      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{ 1, 2});
-      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{ 0, 1});
-      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{-1, 2});
-      REQUIRE_FALSE(open_value_range{0, 1} < open_value_range{-2,-1});
+    SECTION("value ranges are 'less-than' than another closed_value_range") {
+      REQUIRE(closed_value_range{0, 1} < closed_value_range{2, 3});
+      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{ 1, 2});
+      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{ 0, 1});
+      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{-1, 2});
+      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{-2,-1});
     }
 
-    SECTION("value ranges are 'greater-than' than another open_value_range") {
-      REQUIRE(open_value_range{2, 3} > open_value_range{0, 1});
-      REQUIRE_FALSE(open_value_range{ 1, 2} > open_value_range{0, 1});
-      REQUIRE_FALSE(open_value_range{ 0, 1} > open_value_range{0, 1});
-      REQUIRE_FALSE(open_value_range{-1, 2} > open_value_range{0, 1});
-      REQUIRE_FALSE(open_value_range{-2,-1} > open_value_range{0, 1});
+    SECTION("value ranges are 'greater-than' than another closed_value_range") {
+      REQUIRE(closed_value_range{2, 3} > closed_value_range{0, 1});
+      REQUIRE_FALSE(closed_value_range{ 1, 2} > closed_value_range{0, 1});
+      REQUIRE_FALSE(closed_value_range{ 0, 1} > closed_value_range{0, 1});
+      REQUIRE_FALSE(closed_value_range{-1, 2} > closed_value_range{0, 1});
+      REQUIRE_FALSE(closed_value_range{-2,-1} > closed_value_range{0, 1});
     }
   }
 
@@ -132,5 +133,13 @@ TEST_CASE("value_range tests", "[maths]") {
       REQUIRE_FALSE(closed_value_range{0.0, 1.0}.contains(1.0 + std::numeric_limits<double>::epsilon()));
       REQUIRE(closed_value_range{0.0, 1.0}.contains(1.0));
     }
+  }
+
+  SECTION("mid()") {
+    REQUIRE(0.5 == value_range{0.0, 1.0}.mid());
+    REQUIRE(10.0 == value_range{10.0, 10.0}.mid());
+
+    REQUIRE(2 == value_range{0, 3}.mid());
+    REQUIRE(2 == value_range{0, 4}.mid());
   }
 }
