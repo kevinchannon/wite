@@ -20,6 +20,10 @@ template <typename T, range_boundary LBOUND = range_boundary::closed, range_boun
 struct value_range {
   using value_type = T;
 
+  value_range(value_type min, value_type max) : min{std::min(min, max)}, max{std::max(min, max)} {}
+
+  WITE_DEFAULT_CONSTRUCTORS(value_range);
+
   static constexpr auto low_bound  = LBOUND;
   static constexpr auto high_bound = HBOUND;
 

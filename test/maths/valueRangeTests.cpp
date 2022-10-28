@@ -15,12 +15,24 @@ TEST_CASE("value_range tests", "[maths]") {
       const auto b = value_range{0, 10};
       REQUIRE(0 == b.min);
       REQUIRE(10 == b.max);
+
+      SECTION("ensure that range is always well-formed") {
+        const auto b = value_range{1, 0};
+        REQUIRE(0 == b.min);
+        REQUIRE(1 == b.max);
+      }
     }
 
     SECTION("double value range") {
       const auto b = value_range{0.0, 10.0};
       REQUIRE(0.0 == b.min);
       REQUIRE(10.0 == b.max);
+
+      SECTION("ensure that range is always well-formed") {
+        const auto b = value_range{11.0, 10.0};
+        REQUIRE(10.0 == b.min);
+        REQUIRE(11.0 == b.max);
+      }
     }
   }
 
