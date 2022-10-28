@@ -6,6 +6,10 @@
 
 #ifdef _DEBUG
 #define _WITE_CONFIG_DEBUG
+#else
+#ifdef NDEBUG
+#define _WITE_CONFIG_DEBUG
+#endif
 #endif
 
 #undef _WITE_CONFIG_WORD_SIZE_32

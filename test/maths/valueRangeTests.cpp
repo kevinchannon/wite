@@ -6,6 +6,7 @@
 #include <catch2/catch_approx.hpp>
 
 #include <limits>
+#include <type_traits>
 
 using namespace wite::maths;
 
@@ -13,26 +14,30 @@ TEST_CASE("value_range tests", "[maths]") {
   SECTION("construct value range") {
     SECTION("int value range") {
       const auto b = value_range{0, 10};
+      static_assert(std::is_same_v<decltype(b)::value_type, int>, "value_range type is incorrectly inferred");
+
       REQUIRE(0 == b.min());
       REQUIRE(10 == b.max());
 
-      SECTION("ensure that range is always well-formed") {
-        const auto b = value_range{1, 0};
-        REQUIRE(0 == b.min());
-        REQUIRE(1 == b.max());
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if max < min") {
+        REQUIRE_THROWS_AS(value_range(1, 0), wite::assertion_error);
       }
+#endif
     }
 
     SECTION("double value range") {
       const auto b = value_range{0.0, 10.0};
+      static_assert(std::is_same_v<decltype(b)::value_type, double>, "value_range type is incorrectly inferred");
+
       REQUIRE(0.0 == b.min());
       REQUIRE(10.0 == b.max());
 
-      SECTION("ensure that range is always well-formed") {
-        const auto b = value_range{11.0, 10.0};
-        REQUIRE(10.0 == b.min());
-        REQUIRE(11.0 == b.max());
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if max < min") {
+        REQUIRE_THROWS_AS(value_range(10.0, 10.0 * (1.0 - std::numeric_limits<double>::epsilon())), wite::assertion_error);
       }
+#endif
     }
   }
 

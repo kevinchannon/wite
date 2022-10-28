@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wite/common/constructor_macros.hpp>
+#include <wite/core/assert.hpp>
 #include <wite/env/environment.hpp>
 
 #include <algorithm>
@@ -20,7 +21,9 @@ template <typename T, range_boundary LBOUND = range_boundary::closed, range_boun
 struct value_range {
   using value_type = T;
 
-  value_range(value_type min, value_type max) : _min{std::min(min, max)}, _max{std::max(min, max)} {}
+  value_range(value_type min, value_type max) _WITE_RELEASE_NOEXCEPT : _min{min}, _max{max} {
+    _WITE_DEBUG_ASSERT(_min <= _max, "value_range min should be <= max");
+  }
 
   WITE_DEFAULT_CONSTRUCTORS(value_range);
 
@@ -68,7 +71,7 @@ struct value_range {
 
   _WITE_NODISCARD constexpr value_type mid() const noexcept { return _max - size() / 2; }
 
-private:
+ private:
   value_type _min;
   value_type _max;
 };

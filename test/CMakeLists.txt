@@ -37,7 +37,10 @@ target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}
 )
 
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+add_compile_definitions(NDEBUG)
 add_compile_definitions(_WITE_ASSERT_WITH_EXCEPTION)
+ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 target_link_libraries(wite_test PRIVATE Catch2::Catch2WithMain)
 

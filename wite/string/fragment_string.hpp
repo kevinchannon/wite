@@ -409,6 +409,7 @@ class basic_fragment_string {
       throw std::out_of_range{"fragment_string: copy start out of range"};
     }
 
+    // TODO: Figure out why this doesnt protect us in GCC.
     count = std::min(count, len - pos);
 
     std::copy_n(std::next(begin(), pos), count, dest);
