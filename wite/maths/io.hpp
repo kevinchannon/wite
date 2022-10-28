@@ -13,7 +13,7 @@ std::ostream& operator<<(std::ostream& os, const wite::maths::value_range<Value_
     os << "( ";
   }
 
-  os << rng.min << ", " << rng.max;
+  os << rng.min() << ", " << rng.max();
 
   if constexpr (wite::maths::range_boundary::closed == HBOUND) {
     os << " ]";
@@ -32,7 +32,7 @@ std::wostream& operator<<(std::wostream& os, const wite::maths::value_range<Valu
     os << L"( ";
   }
 
-  os << rng.min << L", " << rng.max;
+  os << rng.min() << L", " << rng.max();
 
   if constexpr (wite::maths::range_boundary::closed == HBOUND) {
     os << L" ]";
