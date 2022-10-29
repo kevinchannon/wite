@@ -1,13 +1,16 @@
 #pragma once
 
 #include <wite/env/platform.hpp>
+#include <wite/env/compiler.hpp>
 
 #undef _WITE_CONFIG_DEBUG
 
+#if !defined(_WITE_COMPILER_GCC) 
 #ifdef _DEBUG
 #define _WITE_CONFIG_DEBUG
+#endif
 #else
-#ifdef NDEBUG
+#ifndef NDEBUG
 #define _WITE_CONFIG_DEBUG
 #endif
 #endif

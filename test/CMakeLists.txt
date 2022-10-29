@@ -38,7 +38,6 @@ target_include_directories(wite_test PUBLIC
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
-add_compile_definitions(NDEBUG)
 add_compile_definitions(_WITE_ASSERT_WITH_EXCEPTION)
 ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
