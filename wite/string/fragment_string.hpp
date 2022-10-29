@@ -190,7 +190,7 @@ class basic_fragment_string {
           return;
         }
 
-        _WITE_DEBUG_ASSERT(_data.fragment != std::prev(_data.fragment_end),
+        _WITE_DEBUG_ASSERT((_data.fragment != std::prev(_data.fragment_end)) or (_data.fragment == std::prev(_data.fragment_end) and offset == dist_to_fragment_end),
                            "fragment_string::_seek_forward: trying to seek beyond end of range");
         ++_data.fragment;
         _data.current = _data.fragment->begin();
@@ -199,7 +199,6 @@ class basic_fragment_string {
     }
 
     void _seek_backward(size_type offset) {
-
       while (offset > 0) {
         const auto idx = static_cast<size_type>(std::distance(_data.fragment->begin(), _data.current));
         if (offset <= idx) {

@@ -570,7 +570,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("increment outside string asserts in debug") {
-        REQUIRE_THROWS_AS(it += direction * 30, wite::assertion_error);
+        REQUIRE_THROWS_AS(it += direction * 31, wite::assertion_error);
       }
 #endif
     }
@@ -641,7 +641,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
   #ifdef _WITE_CONFIG_DEBUG
     SECTION("increment outside string asserts in debug") {
-      REQUIRE_THROWS_AS(fs.begin() + 30, wite::assertion_error);
+      REQUIRE_THROWS_AS(fs.begin() + 31, wite::assertion_error);
     }
   #endif
   }
@@ -667,7 +667,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
   #ifdef _WITE_CONFIG_DEBUG
     SECTION("increment outside string asserts in debug") {
-      REQUIRE_THROWS_AS(fs.end() - 31, wite::assertion_error);
+      REQUIRE_THROWS_AS(fs.end() - 30, wite::assertion_error);
     }
   #endif
   }

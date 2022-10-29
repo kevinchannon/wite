@@ -31,7 +31,8 @@ add_executable(wite_test
 	"geometry/PointTests.cpp"
 	"geometry/IoTests.cpp"
 	"maths/valueRangeTests.cpp"
- "maths/ioTests.cpp")
+	"maths/ioTests.cpp"
+)
 
 target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}
