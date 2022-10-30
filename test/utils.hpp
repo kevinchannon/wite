@@ -3,9 +3,19 @@
 #include <wite/env/features.hpp>
 
 #include <wite/io/types.hpp>
+#include <wite/core/assert.hpp>
+
+#include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_exception.hpp>
 
 #include <algorithm>
 #include <type_traits>
+
+#define WITE_REQ_THROWS(expr, ex_type, msg) \
+  REQUIRE_THROWS_MATCHES(expr, ex_type, Catch::Matchers::ExceptionMessageMatcher(msg))
+
+#define WITE_REQUIRE_ASSERTS_WITH(expr, msg) \
+  REQUIRE_THROWS_MATCHES(expr, wite::assertion_error, Catch::Matchers::Message("Assertion error: " msg))
 
 namespace wite::test {
 

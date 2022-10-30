@@ -104,7 +104,7 @@ class basic_fragment_string {
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT_FALSE(
-          _data.fragment == std::prev(_data.fragment_end) and _data.current == std::prev(_data.fragment_end)->end(),
+          _data.fragment == std::prev(_data.fragment_end) and _data.current == _data.fragment->end(),
           "fragment_string::operator++: already at end");
 
       ++_data.current;
@@ -170,7 +170,7 @@ class basic_fragment_string {
 #ifdef _WITE_CONFIG_DEBUG
     void _debug_verify_integrity(const iterator& other) const {
       _WITE_DEBUG_ASSERT_FALSE(&(*other._data.debug_fragment_range_begin) != &(*_data.debug_fragment_range_begin),
-                               "ERROR: Iterators point to different parent objects");
+                               "fragment_string: Iterators point to different parent objects");
     }
 #endif
 
@@ -193,7 +193,12 @@ class basic_fragment_string {
         _WITE_DEBUG_ASSERT((_data.fragment != std::prev(_data.fragment_end)) or (_data.fragment == std::prev(_data.fragment_end) and offset == dist_to_fragment_end),
                            "fragment_string::_seek_forward: trying to seek beyond end of range");
         ++_data.fragment;
-        _data.current = _data.fragment->begin();
+        if (_data.fragment == _data.fragment_end) {
+          ++_data.current;
+        } else {
+          _data.current = _data.fragment->begin();
+        }
+
         offset -= dist_to_fragment_end;
       }
     }

@@ -1,5 +1,7 @@
 #include <wite/string/fragment_string.hpp>
 
+#include <test/utils.hpp>
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -103,7 +105,7 @@ TEST_CASE("fragment_string tests", "[string]") {
     }
 
     SECTION("at() throws out of range if requested element is beyond the end of the string") {
-      REQUIRE_THROWS_AS(fs.at(26), std::out_of_range);
+      WITE_REQ_THROWS(fs.at(26), std::out_of_range, "Error: accessing fragment_string beyond end of string");
     }
 
     SECTION("front() returns the first character") {
@@ -112,7 +114,7 @@ TEST_CASE("fragment_string tests", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("front() asserts if the string has zero length") {
-      REQUIRE_THROWS_AS(fragment_string("").front(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(fragment_string("").front(), "accessing fragment_string beyond end of string");
     }
 #endif
 
@@ -122,7 +124,7 @@ TEST_CASE("fragment_string tests", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("back() asserts if the string has zero length") {
-      REQUIRE_THROWS_AS(fragment_string("").back(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(fragment_string("").back(), "accessing fragment_string beyond end of string");
     }
 #endif
   }
@@ -316,7 +318,7 @@ TEST_CASE("fragment_string tests", "[string]") {
     }
 
     SECTION("throw std::out_of_range when position is beyond the end of the string") {
-      REQUIRE_THROWS_AS(fs.substr(20), std::out_of_range);
+      WITE_REQ_THROWS(fs.substr(20), std::out_of_range, "fragment_string: substring start out of range");
     }
 
     SECTION("clips substring length to length of string") {
@@ -344,7 +346,7 @@ TEST_CASE("fragment_string tests", "[string]") {
     }
 
     SECTION("throw std::out_of_range when position is beyond the end of the string") {
-      REQUIRE_THROWS_AS(fs.copy(dest.data(), 1, 26), std::out_of_range);
+      WITE_REQ_THROWS(fs.copy(dest.data(), 1, 26), std::out_of_range, "fragment_string: copy start out of range");
     }
 
     SECTION("clips substring length to length of string") {
@@ -494,7 +496,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
         SECTION("incrementing out past the end asserts in debug") {
-          REQUIRE_THROWS_AS(++it, wite::assertion_error);
+          WITE_REQUIRE_ASSERTS_WITH(++it, "fragment_string::operator++: already at end");
         }
 #endif
       }
@@ -525,7 +527,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
         SECTION("decrementing past the beginning asserts in debug") {
-          REQUIRE_THROWS_AS(--it, wite::assertion_error);
+          WITE_REQUIRE_ASSERTS_WITH(--it, "fragment_string::operator--: already at beginning");
         }
 #endif
       }
@@ -570,7 +572,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("increment outside string asserts in debug") {
-        REQUIRE_THROWS_AS(it += direction * 31, wite::assertion_error);
+        if (direction > 0) {
+          WITE_REQUIRE_ASSERTS_WITH(it += direction * 31, "fragment_string::_seek_forward: trying to seek beyond end of range");
+        }
+        else {
+          WITE_REQUIRE_ASSERTS_WITH(it += direction * 31, "fragment_string::_seek_backward: trying to seek to before start of range");
+        }
       }
 #endif
     }
@@ -614,7 +621,14 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("increment outside string asserts in debug") {
-        REQUIRE_THROWS_AS(it -= direction * 30, wite::assertion_error);
+        if (direction > 0) {
+          WITE_REQUIRE_ASSERTS_WITH(it -= direction * 30,
+                                    "fragment_string::_seek_backward: trying to seek to before start of range");
+        }
+        else {
+          WITE_REQUIRE_ASSERTS_WITH(it -= direction * 31,
+                                    "fragment_string::_seek_forward: trying to seek beyond end of range");
+        }
       }
 #endif
     }
@@ -641,7 +655,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
   #ifdef _WITE_CONFIG_DEBUG
     SECTION("increment outside string asserts in debug") {
-      REQUIRE_THROWS_AS(fs.begin() + 31, wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(
+          fs.begin() + 31, "fragment_string::_seek_forward: trying to seek beyond end of range");
     }
   #endif
   }
@@ -667,7 +682,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
   #ifdef _WITE_CONFIG_DEBUG
     SECTION("increment outside string asserts in debug") {
-      REQUIRE_THROWS_AS(fs.end() - 30, wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(
+          fs.end() - 31, "fragment_string::_seek_backward: trying to seek to before start of range");
     }
   #endif
   }
@@ -696,7 +712,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("asserts when comparing iterators from different strings in debug") {
-      REQUIRE_THROWS_AS(fs.begin() - fs2.begin(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(
+          fs.begin() - fs2.begin(), "fragment_string: Iterators point to different parent objects");
     }
 #endif
   }
@@ -708,7 +725,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() == fs2.begin(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(
+          fs.begin() == fs2.begin(), "fragment_string: Iterators point to different parent objects");
       }
 #endif
     }
@@ -719,7 +737,8 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() != fs2.begin(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(
+          fs.begin() != fs2.begin(), "fragment_string: Iterators point to different parent objects");
       }
 #endif
     }
@@ -731,7 +750,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() < fs2.begin(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(fs.begin() < fs2.begin(), "fragment_string: Iterators point to different parent objects");
       }
 #endif
     }
@@ -743,7 +762,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() <= fs2.begin(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(fs.begin() <= fs2.begin(), "fragment_string: Iterators point to different parent objects");
       }
 #endif
     }
@@ -755,7 +774,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() > fs2.begin(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(fs.begin() > fs2.begin(), "fragment_string: Iterators point to different parent objects");
       }
 #endif
     }
@@ -767,7 +786,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts when comparing iterators from different strings in debug") {
-        REQUIRE_THROWS_AS(fs.begin() >= fs2.begin(), wite::assertion_error);
+      WITE_REQUIRE_ASSERTS_WITH(fs.begin() >= fs2.begin(), "fragment_string: Iterators point to different parent objects");
       }
 #endif
     }
