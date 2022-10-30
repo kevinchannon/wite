@@ -349,10 +349,12 @@ TEST_CASE("fragment_string tests", "[string]") {
       WITE_REQ_THROWS(fs.copy(dest.data(), 1, 26), std::out_of_range, "fragment_string: copy start out of range");
     }
 
+#if !defined(_WITE_COMPILER_GCC)
     SECTION("clips substring length to length of string") {
       REQUIRE(6 == fs.copy(dest.data(), 10, 20));
       REQUIRE(0 == std::strcmp("uvwxyz", dest.data()));
     }
+#endif
   }
 
   SECTION("find()") {
@@ -481,7 +483,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
         ++it;
       }
 
-      SECTION("and then traverses across fagments...") {
+      SECTION("and then traverses across fragments...") {
         REQUIRE(' ' == *it);
         ++it;
 
@@ -494,10 +496,12 @@ TEST_CASE("fragment_string iterator", "[string]") {
           REQUIRE(fs.end() == it);
         }
 
+#if !defined(_WITE_COMPILER_GCC)
 #ifdef _WITE_CONFIG_DEBUG
         SECTION("incrementing out past the end asserts in debug") {
           WITE_REQUIRE_ASSERTS_WITH(++it, "fragment_string::operator++: already at end");
         }
+#endif
 #endif
       }
     }
@@ -512,7 +516,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
         REQUIRE(s2[i] == *it);
       }
 
-      SECTION("and then traverses across fagments...") {
+      SECTION("and then traverses across fragments...") {
         --it;
         REQUIRE(' ' == *it);
 

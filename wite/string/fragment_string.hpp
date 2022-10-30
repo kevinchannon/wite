@@ -100,15 +100,22 @@ class basic_fragment_string {
       return _data == other._data;
     }
 
+
+    //TODO: The should assert on the position being in range
     _WITE_NODISCARD constexpr const_reference operator*() const { return *_data.current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT_FALSE(
-          _data.fragment == std::prev(_data.fragment_end) and _data.current == _data.fragment->end(),
-          "fragment_string::operator++: already at end");
+#if !defined(_WITE_COMPILER_GCC)
+      _WITE_DEBUG_ASSERT_FALSE(std::prev(_data.fragment_end) == _data.fragment and _data.fragment->end() == _data.current,
+                               "fragment_string::operator++: already at end");
+#else
+      _WITE_DEBUG_ASSERT_FALSE(_data.fragment_end == _data.fragment,
+                               "fragment_string::operator++: already at end");
+#endif
 
       ++_data.current;
-      if (_data.fragment->end() == _data.current and _data.fragment != std::prev(_data.fragment_end)) {
+
+      if (_data.fragment->end() == _data.current and std::prev(_data.fragment_end) != _data.fragment) {
         ++_data.fragment;
         _data.current = _data.fragment->begin();
       }
@@ -190,7 +197,8 @@ class basic_fragment_string {
           return;
         }
 
-        _WITE_DEBUG_ASSERT((_data.fragment != std::prev(_data.fragment_end)) or (_data.fragment == std::prev(_data.fragment_end) and offset == dist_to_fragment_end),
+        _WITE_DEBUG_ASSERT((_data.fragment != std::prev(_data.fragment_end)) or
+                               (_data.fragment == std::prev(_data.fragment_end) and offset == dist_to_fragment_end),
                            "fragment_string::_seek_forward: trying to seek beyond end of range");
         ++_data.fragment;
         if (_data.fragment == _data.fragment_end) {
@@ -226,9 +234,9 @@ class basic_fragment_string {
     }
 
     _WITE_NODISCARD static constexpr difference_type _distance(auto low_frag,
-                                                             auto low_current,
-                                                             auto high_frag,
-                                                             auto high_current) noexcept {
+                                                               auto low_current,
+                                                               auto high_frag,
+                                                               auto high_current) noexcept {
       return _sublength(low_frag, high_frag) - std::distance(low_frag->begin(), low_current) +
              std::distance(high_frag->begin(), high_current);
     }
@@ -324,9 +332,11 @@ class basic_fragment_string {
   _WITE_NODISCARD constexpr int compare(const std::string& other) const _WITE_RELEASE_NOEXCEPT {
     return _compare(other.begin(), other.end());
   }
-  _WITE_NODISCARD constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT { return compare(std::string_view{other}); }
+  _WITE_NODISCARD constexpr int compare(const char* other) const _WITE_RELEASE_NOEXCEPT {
+    return compare(std::string_view{other});
+  }
 
-  template<size_t OTHER_FRAG_COUNT>
+  template <size_t OTHER_FRAG_COUNT>
   _WITE_NODISCARD constexpr int compare(const basic_fragment_string<value_type, OTHER_FRAG_COUNT>& other) const
       _WITE_RELEASE_NOEXCEPT {
     return _compare(other.begin(), other.end());
@@ -342,7 +352,7 @@ class basic_fragment_string {
     return starts_with(std::basic_string_view<value_type>(pszStr));
   }
 
-  template<size_t OTHER_FRAG_COUNT>
+  template <size_t OTHER_FRAG_COUNT>
   _WITE_NODISCARD constexpr bool starts_with(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
     return _match_substring(this->begin(), this->length(), other.begin(), other.end(), other.length());
   }
@@ -374,18 +384,18 @@ class basic_fragment_string {
     return contains(std::basic_string_view<value_type>(pszStr));
   }
 
-  template<size_t OTHER_FRAG_COUNT>
+  template <size_t OTHER_FRAG_COUNT>
   _WITE_NODISCARD constexpr bool contains(basic_fragment_string<value_type, OTHER_FRAG_COUNT> other) const noexcept {
-    const auto this_len = this->length();
-    const auto other_len   = other.length();
+    const auto this_len  = this->length();
+    const auto other_len = other.length();
     if (other_len > this_len) {
       return false;
     }
 
     const auto other_begin = other.begin();
     const auto other_end   = other.end();
-    const auto this_end = std::next(this->begin(), this_len - other_len);
-    auto effective_len  = this_len;
+    const auto this_end    = std::next(this->begin(), this_len - other_len);
+    auto effective_len     = this_len;
 
     for (auto it = this->begin(); it != this_end and effective_len != 0; ++it, --effective_len) {
       if (std::equal(other_begin, other_end, it, std::next(it, other_len))) {
@@ -397,13 +407,15 @@ class basic_fragment_string {
   }
 
   _WITE_NODISCARD constexpr std::basic_string<Char_T> substr(size_type pos   = 0,
-                                                           size_type count = std::basic_string<Char_T>::npos) const {
-    const auto len    = length();
+                                                             size_type count = std::basic_string<Char_T>::npos) const {
+    const auto len = length();
     if (pos >= len) {
       throw std::out_of_range{"fragment_string: substring start out of range"};
     }
 
-    const auto it_end = ((count == std::basic_string<Char_T>::npos) or (pos + count >= len)) ? this->end() : std::next(this->begin(), pos + count);
+    const auto it_end = ((count == std::basic_string<Char_T>::npos) or (pos + count >= len))
+                            ? this->end()
+                            : std::next(this->begin(), pos + count);
     return std::basic_string<Char_T>(std::next(this->begin(), pos), it_end);
   }
 
@@ -424,7 +436,7 @@ class basic_fragment_string {
   _WITE_NODISCARD constexpr size_type find(Char_T ch, size_type pos = 0) const noexcept {
     if (pos >= length()) {
       return std::basic_string<Char_T>::npos;
-    } 
+    }
 
     auto [fragment, length_of_checked_fragments] = _seek_fragment_containing_position(pos);
 
@@ -446,7 +458,7 @@ class basic_fragment_string {
       return std::basic_string<Char_T>::npos;
     }
 
-    const auto sv_len   = sv.length();
+    const auto sv_len = sv.length();
     if (sv_len > this_len) {
       return std::basic_string<Char_T>::npos;
     }
@@ -477,24 +489,24 @@ class basic_fragment_string {
  private:
   template <typename ThisIter_T, typename OtherIter_T>
   _WITE_NODISCARD static constexpr bool _match_substring(ThisIter_T this_begin,
-                                                       size_type this_length,
-                                                       OtherIter_T other_begin,
-                                                       OtherIter_T other_end,
-                                                       size_type other_length) noexcept {
+                                                         size_type this_length,
+                                                         OtherIter_T other_begin,
+                                                         OtherIter_T other_end,
+                                                         size_type other_length) noexcept {
     if (this_length == 0) {
-       return false;
+      return false;
     }
 
     if (this_length < other_length) {
-       return false;
+      return false;
     }
 
     return std::equal(other_begin, other_end, this_begin, std::next(this_begin, other_length));
   }
 
-  template<typename Iter_T>
+  template <typename Iter_T>
   constexpr int _compare(Iter_T begin, Iter_T end) const _WITE_RELEASE_NOEXCEPT {
-    auto it_this  = this->begin();
+    auto it_this        = this->begin();
     const auto end_this = this->end();
 
     for (; it_this != end_this and begin != end; ++it_this, ++begin) {
@@ -510,8 +522,7 @@ class basic_fragment_string {
     if (begin == end) {
       if (it_this == end_this) {
         return 0;
-      }
-      else {
+      } else {
         return 1;
       }
     }
@@ -527,7 +538,7 @@ class basic_fragment_string {
     }
 
     auto length_of_checked_fragments = size_type{0};
-    auto fragment = _fragments.begin();
+    auto fragment                    = _fragments.begin();
 
     for (; length_of_checked_fragments <= pos; ++fragment) {
       length_of_checked_fragments += fragment->length();
@@ -582,7 +593,7 @@ namespace string_literals {
   constexpr basic_fragment_string<wchar_t, 1> operator""_wfs(const wchar_t* str, std::size_t len) {
     return fragment_wstring{str};
   }
-}  // namespace literals
+}  // namespace string_literals
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -592,7 +603,7 @@ namespace string_literals {
 
 #include <ostream>
 
-template<typename Char_T, size_t FRAGMENT_COUNT>
+template <typename Char_T, size_t FRAGMENT_COUNT>
 std::ostream& operator<<(std::ostream& os, const wite::basic_fragment_string<Char_T, FRAGMENT_COUNT>& fs) {
   for (const auto& f : fs.fragments()) {
     os << f;
