@@ -12,9 +12,6 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
-#include <sstream>
-#include <vector>
 
 using namespace wite;
 
