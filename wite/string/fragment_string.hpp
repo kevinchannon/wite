@@ -28,24 +28,6 @@ namespace wite {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail {
-
-  ///////////////////////////////////////////////////////////////////////////////
-
-  template <typename Char_T>
-  _WITE_NODISCARD constexpr size_t string_length(const Char_T* psz) noexcept {
-    if constexpr (std::is_same_v<Char_T, char>) {
-      return std::strlen(psz);
-    } else if constexpr (std::is_same_v<Char_T, wchar_t>) {
-      return std::wcslen(psz);
-    } else {
-      static_assert(std::bool_constant<std::is_same_v<Char_T, char>>::value, "Invalid char type");
-    }
-  }
-}  // namespace detail
-
-///////////////////////////////////////////////////////////////////////////////
-
 template <typename Char_T, size_t FRAGMENT_COUNT = 1>
 class basic_fragment_string {
   using _fragment_type = std::basic_string_view<Char_T>;
@@ -105,19 +87,14 @@ class basic_fragment_string {
     _WITE_NODISCARD constexpr const_reference operator*() const { return *_data.current; }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
-#if !defined(_WITE_COMPILER_GCC)
-      _WITE_DEBUG_ASSERT_FALSE(std::prev(_data.fragment_end) == _data.fragment and _data.fragment->end() == _data.current,
+      _WITE_DEBUG_ASSERT_FALSE(_data.fragment == std::prev(_data.fragment_end) and _data.current == _data.fragment->end(),
                                "fragment_string::operator++: already at end");
-#else
-      _WITE_DEBUG_ASSERT_FALSE(_data.fragment_end == _data.fragment,
-                               "fragment_string::operator++: already at end");
-#endif
-
       ++_data.current;
 
-      if (_data.fragment->end() == _data.current and std::prev(_data.fragment_end) != _data.fragment) {
+      if (_data.current == _data.fragment->end()) {
         ++_data.fragment;
-        _data.current = _data.fragment->begin();
+        _data.current =
+            _data.fragment == _data.fragment_end ? (--_data.fragment)->end() : _data.current = _data.fragment->begin();
       }
 
       return *this;
@@ -127,12 +104,12 @@ class basic_fragment_string {
       _WITE_DEBUG_ASSERT_FALSE(_data.fragment == _data.debug_fragment_range_begin and _data.current == _data.fragment->begin(),
                                "fragment_string::operator--: already at beginning");
 
-      if (_data.current == _data.fragment->begin()) {
-        --_data.fragment;
-        _data.current = _data.fragment->end();
+      if (_data.current == _data.fragment->begin()){
+        _data.current = (--_data.fragment)->end();
       }
 
       --_data.current;
+
       return *this;
     }
 
@@ -200,9 +177,11 @@ class basic_fragment_string {
         _WITE_DEBUG_ASSERT((_data.fragment != std::prev(_data.fragment_end)) or
                                (_data.fragment == std::prev(_data.fragment_end) and offset == dist_to_fragment_end),
                            "fragment_string::_seek_forward: trying to seek beyond end of range");
+
         ++_data.fragment;
         if (_data.fragment == _data.fragment_end) {
-          ++_data.current;
+          --_data.fragment;
+          _data.current = _data.fragment->end();
         } else {
           _data.current = _data.fragment->begin();
         }
@@ -255,10 +234,10 @@ class basic_fragment_string {
 
   WITE_DEFAULT_CONSTRUCTORS(basic_fragment_string);
 
-  constexpr basic_fragment_string(pointer str) : _fragments{{{str}}} {}
+  constexpr explicit basic_fragment_string(pointer str) : _fragments{{{str}}} {}
 
   template <size_t STR_LEN>
-  constexpr basic_fragment_string(value_type psz[STR_LEN]) noexcept : _fragments{{{psz}}} {}
+  constexpr explicit basic_fragment_string(value_type psz[STR_LEN]) noexcept : _fragments{{{psz}}} {}
 
   template <size_t LEFT_FRAG_COUNT, size_t RIGHT_FRAG_COUNT>
   constexpr basic_fragment_string(const basic_fragment_string<value_type, LEFT_FRAG_COUNT>& left,
@@ -342,7 +321,7 @@ class basic_fragment_string {
     return _compare(other.begin(), other.end());
   }
 
-  _WITE_NODISCARD constexpr bool starts_with(value_type c) const noexcept { return length() > 0 ? front() == c : false; }
+  _WITE_NODISCARD constexpr bool starts_with(value_type c) const noexcept { return not empty() and front() == c; }
 
   _WITE_NODISCARD constexpr bool starts_with(std::basic_string_view<value_type> sv) const noexcept {
     return _match_substring(this->begin(), this->length(), sv.begin(), sv.end(), sv.length());
@@ -357,7 +336,7 @@ class basic_fragment_string {
     return _match_substring(this->begin(), this->length(), other.begin(), other.end(), other.length());
   }
 
-  _WITE_NODISCARD constexpr bool ends_with(Char_T c) const noexcept { return length() > 0 ? back() == c : false; }
+  _WITE_NODISCARD constexpr bool ends_with(Char_T c) const noexcept { return not empty() and back() == c; }
 
   _WITE_NODISCARD constexpr bool ends_with(std::basic_string_view<value_type> sv) const noexcept {
     return _match_substring(this->rbegin(), this->length(), sv.rbegin(), sv.rend(), sv.length());
