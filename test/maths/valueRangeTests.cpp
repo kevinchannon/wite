@@ -1,6 +1,8 @@
 #include <wite/maths/value_range.hpp>
 #include <wite/maths/io.hpp>
 
+#include <test/utils.hpp>
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/catch_approx.hpp>
@@ -21,7 +23,7 @@ TEST_CASE("value_range tests", "[maths]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if max < min") {
-        REQUIRE_THROWS_AS(value_range(1, 0), wite::assertion_error);
+        WITE_REQUIRE_ASSERTS_WITH(value_range(1, 0), "value_range min should be <= max");
       }
 #endif
     }
@@ -35,7 +37,7 @@ TEST_CASE("value_range tests", "[maths]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if max < min") {
-        REQUIRE_THROWS_AS(value_range(10.0, 10.0 * (1.0 - std::numeric_limits<double>::epsilon())), wite::assertion_error);
+        WITE_REQUIRE_ASSERTS_WITH(value_range(10.0, 10.0 * (1.0 - std::numeric_limits<double>::epsilon())), "value_range min should be <= max");
       }
 #endif
     }
