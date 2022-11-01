@@ -82,8 +82,6 @@ class basic_fragment_string {
       return _data == other._data;
     }
 
-
-    //TODO: The should assert on the position being in range
     _WITE_NODISCARD constexpr const_reference operator*() const {
       _WITE_DEBUG_ASSERT(_data.fragment >= _data.debug_fragment_range_begin and _data.fragment < _data.fragment_end and
                              _data.current >= _data.fragment->begin() and _data.current < _data.fragment->end(),
