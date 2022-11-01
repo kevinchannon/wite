@@ -484,7 +484,7 @@ class basic_fragment_string {
   }
 
   template <typename Iter_T>
-  constexpr int _compare(Iter_T begin, Iter_T end) const _WITE_RELEASE_NOEXCEPT {
+  _WITE_NODISCARD constexpr int _compare(Iter_T begin, Iter_T end) const _WITE_RELEASE_NOEXCEPT {
     auto it_this        = this->begin();
     const auto end_this = this->end();
 
@@ -511,7 +511,7 @@ class basic_fragment_string {
     return -1;
   }
 
-  std::pair<typename storage_type::const_iterator, size_type> _seek_fragment_containing_position(size_type pos) const noexcept {
+  _WITE_NODISCARD std::pair<typename storage_type::const_iterator, size_type> _seek_fragment_containing_position(size_type pos) const noexcept {
     if (pos == 0) {
       return {_fragments.begin(), 0};
     }
@@ -565,11 +565,11 @@ basic_fragment_string<Char_T, LEFT_FRAG_COUNT + RIGHT_FRAG_COUNT> operator+(
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace string_literals {
-  constexpr basic_fragment_string<char, 1> operator""_fs(const char* str, std::size_t len) {
+  constexpr basic_fragment_string<char, 1> operator""_fs(const char* str, std::size_t) {
     return fragment_string{str};
   }
 
-  constexpr basic_fragment_string<wchar_t, 1> operator""_wfs(const wchar_t* str, std::size_t len) {
+  constexpr basic_fragment_string<wchar_t, 1> operator""_wfs(const wchar_t* str, std::size_t) {
     return fragment_wstring{str};
   }
 }  // namespace string_literals
