@@ -349,12 +349,10 @@ TEST_CASE("fragment_string tests", "[string]") {
       WITE_REQ_THROWS(fs.copy(dest.data(), 1, 26), std::out_of_range, "fragment_string: copy start out of range");
     }
 
-//#if !defined(_WITE_COMPILER_GCC)
     SECTION("clips substring length to length of string") {
       REQUIRE(6 == fs.copy(dest.data(), 10, 20));
       REQUIRE(0 == std::strcmp("uvwxyz", dest.data()));
     }
-//#endif
   }
 
   SECTION("find()") {
@@ -419,7 +417,7 @@ TEST_CASE("fragment_string tests", "[string]") {
   }
 }
 
-TEST_CASE("Fragment string stream insertion") {
+TEST_CASE("Fragment string stream insertion", "[string]") {
   SECTION("write to output stream") {
     const auto fs = fragment_string{"abcd"} + "efgh" + "i" + "jk";
     std::stringstream ss;
@@ -444,7 +442,7 @@ TEST_CASE("Fragment string stream insertion") {
   }
 }
 
-TEST_CASE("String literals") {
+TEST_CASE("String literals", "[string]") {
   using namespace wite::string_literals;
 
   SECTION("narrow characters") {
@@ -465,13 +463,22 @@ TEST_CASE("fragment_string iterator", "[string]") {
   const auto fs = fragment_string{s1} + " " + s2;
   const auto fs2 = fragment_string{"A second string"} + "parts to get" + "correct fragment count";
 
-  SECTION("get begin") {
-    REQUIRE('f' == *fs.begin());
-  }
+  SECTION("dereference") {
+    SECTION("get begin") {
+      REQUIRE('f' == *fs.begin());
+    }
 
-  SECTION("end points to the null char at the end of the last fragment") {
-    auto end = fs.end();
-    REQUIRE(s2 + std::strlen(s2) == (&(*(--end)) + 1));
+    SECTION("end points to the null char at the end of the last fragment") {
+      auto end = fs.end();
+      REQUIRE(s2 + std::strlen(s2) == (&(*(--end)) + 1));
+    }
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("dereferencing out-of-range asserts") {
+      WITE_REQUIRE_ASSERTS_WITH(std::ignore = *fs.end(), "fragment_string: dereference iterator out-of-range");
+      WITE_REQUIRE_ASSERTS_WITH(std::ignore = *fragment_string("").begin(), "fragment_string: dereference iterator out-of-range");
+    }
+#endif
   }
 
   SECTION("operator++") {

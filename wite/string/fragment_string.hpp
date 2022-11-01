@@ -84,7 +84,13 @@ class basic_fragment_string {
 
 
     //TODO: The should assert on the position being in range
-    _WITE_NODISCARD constexpr const_reference operator*() const { return *_data.current; }
+    _WITE_NODISCARD constexpr const_reference operator*() const {
+      _WITE_DEBUG_ASSERT(_data.fragment >= _data.debug_fragment_range_begin and _data.fragment < _data.fragment_end and
+                             _data.current >= _data.fragment->begin() and _data.current < _data.fragment->end(),
+                         "fragment_string: dereference iterator out-of-range");
+
+      return *_data.current;
+    }
 
     iterator& operator++() _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT_FALSE(_data.fragment == std::prev(_data.fragment_end) and _data.current == _data.fragment->end(),
