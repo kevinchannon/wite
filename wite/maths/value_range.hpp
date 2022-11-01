@@ -40,10 +40,17 @@ struct value_range {
   _WITE_NODISCARD constexpr value_type min() const noexcept { return _min; }
   _WITE_NODISCARD constexpr value_type max() const noexcept { return _max; }
 
-  _WITE_NODISCARD constexpr value_type size() const noexcept { return _max - _min; }
+  _WITE_NODISCARD constexpr value_type size() const _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(_min <= _max, "value_range min should be <= max");
+    return _max - _min; 
+  }
+
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _min == _max; }
 
-  _WITE_NODISCARD constexpr std::optional<value_range> overlap(const value_range& other) const noexcept {
+  _WITE_NODISCARD constexpr std::optional<value_range> overlap(const value_range& other) const _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(_min <= _max, "value_range min should be <= max");
+    _WITE_DEBUG_ASSERT(other._min <= other._max, "value_range min should be <= max");
+
     if (_min > other._max or _max < other._min) {
       return {};
     }
