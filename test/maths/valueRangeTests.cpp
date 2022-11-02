@@ -163,11 +163,25 @@ TEST_CASE("value_range tests", "[maths]") {
   }
 
   SECTION("set min") {
-    auto r = value_range {10, 20};
+    auto r = value_range{10, 20};
     REQUIRE(10 == r.min());
 
-    r.min(12);
-    REQUIRE(12 == r.min());
-    REQUIRE(20 == r.max());
+    SECTION("new value is less than max") {
+      r.min(12);
+      REQUIRE(12 == r.min());
+      REQUIRE(20 == r.max());
+    }
+
+    SECTION("new value is equal to max") {
+      r.min(20);
+      REQUIRE(20 == r.min());
+      REQUIRE(20 == r.max());
+    }
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("asserts in debug if min > max") {
+      WITE_REQUIRE_ASSERTS_WITH(r.min(21), "value_range setting min > max");
+    }
+#endif
   }
 }
