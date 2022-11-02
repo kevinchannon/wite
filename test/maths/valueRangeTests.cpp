@@ -161,4 +161,13 @@ TEST_CASE("value_range tests", "[maths]") {
     REQUIRE(2 == value_range{0, 3}.mid());
     REQUIRE(2 == value_range{0, 4}.mid());
   }
+
+  SECTION("set min") {
+    auto r = value_range {10, 20};
+    REQUIRE(10 == r.min());
+
+    r.min(12);
+    REQUIRE(12 == r.min());
+    REQUIRE(20 == r.max());
+  }
 }
