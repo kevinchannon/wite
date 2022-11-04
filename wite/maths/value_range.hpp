@@ -39,13 +39,17 @@ struct value_range {
 
   _WITE_NODISCARD constexpr value_type min() const noexcept { return _min; }
   void min(value_type x) _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(x <= _max, "value_range setting min > max");
+    if constexpr (low_bound == range_boundary::closed) {
+      _WITE_DEBUG_ASSERT(not above_max(x), "value_range setting min > max");
+    } else {
+      _WITE_DEBUG_ASSERT(not above_max(x), "value_range setting min > max");
+    }
     _min = x;
   }
 
   _WITE_NODISCARD constexpr value_type max() const noexcept { return _max; }
   void max(value_type x) _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(x >= _min, "value_range setting max < min");
+    _WITE_DEBUG_ASSERT(not below_min(x), "value_range setting max < min");
     _max = x;
   }
 

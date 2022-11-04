@@ -173,9 +173,19 @@ TEST_CASE("value_range tests", "[maths]") {
     }
 
     SECTION("new value is equal to max") {
-      r.min(20);
-      REQUIRE(20 == r.min());
-      REQUIRE(20 == r.max());
+
+      SECTION("closed range is OK"){
+        r.min(20);
+        REQUIRE(20 == r.min());
+        REQUIRE(20 == r.max());
+      }
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("open range asserts in debug") {
+        auto open_min_rng = value_range<int, range_boundary::open, range_boundary::closed>{};
+        WITE_REQUIRE_ASSERTS_WITH(open_min_rng.min(20), "value_range setting min > max");
+      }
+#endif
     }
 
 #ifdef _WITE_CONFIG_DEBUG
@@ -196,9 +206,18 @@ TEST_CASE("value_range tests", "[maths]") {
     }
 
     SECTION("new value is equal to min") {
-      r.max(10);
-      REQUIRE(10 == r.min());
-      REQUIRE(10 == r.max());
+      SECTION("closed range is OK") {
+        r.max(10);
+        REQUIRE(10 == r.min());
+        REQUIRE(10 == r.max());
+      }
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("open range asserts in debug") {
+        auto open_max_rng = value_range<int, range_boundary::closed, range_boundary::open>{};
+        WITE_REQUIRE_ASSERTS_WITH(open_max_rng.max(10), "value_range setting max < min");
+      }
+#endif
     }
 
 #ifdef _WITE_CONFIG_DEBUG

@@ -36,7 +36,7 @@ namespace detail {
   };
   // clang-format on
 
-  io::byte low_nibble(char c){
+  inline io::byte low_nibble(char c){
     switch(c) {
       case '0': return io::byte(0x00);
       case '1': return io::byte(0x01);
@@ -59,7 +59,7 @@ namespace detail {
     }
   }
 
-  io::byte high_nibble(char c){
+  inline io::byte high_nibble(char c){
     switch(c) {
       case '0': return io::byte(0x00);
       case '1': return io::byte(0x10);
@@ -100,7 +100,7 @@ _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
   return out;
 }
 
-_WITE_NODISCARD io::dynamic_byte_buffer unhexlify(const std::string_view str) {
+_WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view str) {
   auto out = io::dynamic_byte_buffer(str.length() / 2, io::byte{});
   auto read_pos = str.begin();
 
