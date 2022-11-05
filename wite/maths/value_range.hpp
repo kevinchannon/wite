@@ -3,6 +3,7 @@
 #include <wite/common/constructor_macros.hpp>
 #include <wite/core/assert.hpp>
 #include <wite/env/environment.hpp>
+#include <wite/maths/numeric.hpp>
 
 #include <algorithm>
 #include <optional>
@@ -42,14 +43,18 @@ struct value_range {
     if constexpr (low_bound == range_boundary::closed) {
       _WITE_DEBUG_ASSERT(not above_max(x), "value_range setting min > max");
     } else {
-      _WITE_DEBUG_ASSERT(not above_max(x), "value_range setting min > max");
+      _WITE_DEBUG_ASSERT(not above_max(maths::next_value(x)), "value_range setting min > max");
     }
     _min = x;
   }
 
   _WITE_NODISCARD constexpr value_type max() const noexcept { return _max; }
   void max(value_type x) _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(not below_min(x), "value_range setting max < min");
+    if constexpr (high_bound == range_boundary::closed) {
+      _WITE_DEBUG_ASSERT(not below_min(x), "value_range setting max < min");
+    } else {
+      _WITE_DEBUG_ASSERT(not below_min(maths::prev_value(x)), "value_range setting max < min");
+    }
     _max = x;
   }
 

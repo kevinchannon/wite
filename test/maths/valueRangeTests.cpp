@@ -182,7 +182,7 @@ TEST_CASE("value_range tests", "[maths]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("open range asserts in debug") {
-        auto open_min_rng = value_range<int, range_boundary::open, range_boundary::closed>{};
+        auto open_min_rng = value_range<int, range_boundary::open, range_boundary::closed>{10, 20};
         WITE_REQUIRE_ASSERTS_WITH(open_min_rng.min(20), "value_range setting min > max");
       }
 #endif
@@ -214,7 +214,7 @@ TEST_CASE("value_range tests", "[maths]") {
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("open range asserts in debug") {
-        auto open_max_rng = value_range<int, range_boundary::closed, range_boundary::open>{};
+        auto open_max_rng = value_range<int, range_boundary::closed, range_boundary::open>{10, 20};
         WITE_REQUIRE_ASSERTS_WITH(open_max_rng.max(10), "value_range setting max < min");
       }
 #endif
