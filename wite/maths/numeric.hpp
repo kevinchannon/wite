@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <limits>
+#include <utility>
 
 namespace wite::maths {
 
@@ -48,6 +49,26 @@ _WITE_NODISCARD FirstValue_T max(FirstValue_T first_value, OtherValue_Ts... othe
     return std::max(first_value, other_values...);
   } else {
     return std::max(first_value, max(other_values...));
+  }
+}
+
+template<typename Value_T>
+requires (not common::is_pod_like<Value_T>)
+_WITE_NODISCARD std::pair<const Value_T&, const Value_T&> min_max(Value_T&& left, Value_T&& right) noexcept {
+  if (left <= right) {
+    return {std::forward<Value_T>(left), std::forward<Value_T>(right)};
+  } else {
+    return {std::forward<Value_T>(right), std::forward<Value_T>(left)};
+  }
+}
+
+template <typename Value_T>
+  requires common::is_pod_like<Value_T>
+_WITE_NODISCARD std::pair<Value_T, Value_T> min_max(Value_T left, Value_T right) noexcept {
+  if (left <= right) {
+    return {left, right};
+  } else {
+    return {right, left};
   }
 }
 
