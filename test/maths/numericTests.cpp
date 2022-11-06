@@ -56,3 +56,13 @@ TEST_CASE("prev_value tests", "[maths]") {
     }
   }
 }
+
+TEST_CASE("min tests", "[maths]") {
+  SECTION("integer values") {
+    REQUIRE(10 == wite::maths::min(10, 20, 11, 30, 100));
+  }
+
+  SECTION("floating-point values") {
+    REQUIRE(-123.45 == wite::maths::min(10.0, 100.0, 0.0, -123.45, -100.0));
+  }
+}

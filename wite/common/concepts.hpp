@@ -43,6 +43,24 @@ struct is_sized_range<T,
 template <typename T>
 _WITE_CONCEPT is_sized_range_v = is_sized_range<T>::value;
 
+template<typename... Condition_Ts>
+struct and_type : std::true_type {};
+
+template <typename Condition_T, typename... Condition_Ts>
+struct and_type<Condition_T, Condition_Ts...>
+    : std::conditional<Condition_T::value, and_type<Condition_Ts...>, std::false_type>::type {};
+
+template<typename T, typename... Ts>
+struct all_types_are_the_same : public and_type<std::is_same<Ts, T>...> {
+  using type = T;
+};
+
+template <typename... Ts>
+_WITE_CONCEPT all_types_are_the_same_v = all_types_are_the_same<Ts...>::value;
+
+template <typename... Ts>
+using common_type_t = all_types_are_the_same<Ts...>::type;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace wite::common
