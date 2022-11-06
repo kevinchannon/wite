@@ -66,3 +66,13 @@ TEST_CASE("min tests", "[maths]") {
     REQUIRE(-123.45 == wite::maths::min(10.0, 100.0, 0.0, -123.45, -100.0));
   }
 }
+
+TEST_CASE("max tests", "[maths]") {
+  SECTION("integer values") {
+    REQUIRE(100 == wite::maths::max(10, 20, 11, 30, 100));
+  }
+
+  SECTION("floating-point values") {
+    REQUIRE(100.0 == wite::maths::max(10.0, 100.0, 0.0, -123.45, -100.0));
+  }
+}

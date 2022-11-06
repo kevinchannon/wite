@@ -26,7 +26,6 @@ _WITE_NODISCARD T prev_value(T value) noexcept {
   }
 }
 
-
 template <typename FirstValue_T, typename... OtherValue_Ts>
   requires(sizeof...(OtherValue_Ts) > 0)
 _WITE_NODISCARD FirstValue_T min(FirstValue_T first_value, OtherValue_Ts... other_values) noexcept {
@@ -36,6 +35,19 @@ _WITE_NODISCARD FirstValue_T min(FirstValue_T first_value, OtherValue_Ts... othe
     return std::min(first_value, other_values...);
   } else {
     return std::min(first_value, min(other_values...));
+  }
+}
+
+template <typename FirstValue_T, typename... OtherValue_Ts>
+  requires(sizeof...(OtherValue_Ts) > 0)
+_WITE_NODISCARD FirstValue_T max(FirstValue_T first_value, OtherValue_Ts... other_values) noexcept {
+  static_assert(common::all_types_are_the_same_v<FirstValue_T, OtherValue_Ts...>,
+                "All arguments to wite::common::max should have the same type");
+
+  if constexpr (sizeof...(OtherValue_Ts) == 1) {
+    return std::max(first_value, other_values...);
+  } else {
+    return std::max(first_value, max(other_values...));
   }
 }
 
