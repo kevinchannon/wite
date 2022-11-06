@@ -13,7 +13,6 @@ namespace wite::common {
 template <typename T>
 _WITE_CONCEPT is_pod_like = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
 
-
 // Adapted from https://stackoverflow.com/a/31409532
 template <typename T, typename = void>
 struct is_input_iterator : std::false_type {};
@@ -28,8 +27,6 @@ struct is_input_iterator<T,
 template <typename T>
 _WITE_CONCEPT is_iterator_v = is_input_iterator<T>::value;
 
-
-
 template <typename T, typename = void>
 struct is_sized_range : std::false_type {};
 
@@ -43,14 +40,15 @@ struct is_sized_range<T,
 template <typename T>
 _WITE_CONCEPT is_sized_range_v = is_sized_range<T>::value;
 
-template<typename... Condition_Ts>
+// This and_type and the all_types_are_the_same type are based on this SO post: https://stackoverflow.com/a/29603857
+template <typename... Condition_Ts>
 struct and_type : std::true_type {};
 
 template <typename Condition_T, typename... Condition_Ts>
 struct and_type<Condition_T, Condition_Ts...>
     : std::conditional<Condition_T::value, and_type<Condition_Ts...>, std::false_type>::type {};
 
-template<typename T, typename... Ts>
+template <typename T, typename... Ts>
 struct all_types_are_the_same : public and_type<std::is_same<Ts, T>...> {
   using type = T;
 };
