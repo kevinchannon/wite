@@ -50,14 +50,14 @@ struct and_type<Condition_T, Condition_Ts...>
 
 template <typename T, typename... Ts>
 struct all_types_are_the_same : public and_type<std::is_same<Ts, T>...> {
-  using type = T;
+  using type = std::remove_reference_t<T>;
 };
 
 template <typename... Ts>
 _WITE_CONCEPT all_types_are_the_same_v = all_types_are_the_same<Ts...>::value;
 
 template <typename... Ts>
-using common_type_t = all_types_are_the_same<Ts...>::type;
+using common_type_t = typename all_types_are_the_same<Ts...>::type;
 
 ///////////////////////////////////////////////////////////////////////////////
 
