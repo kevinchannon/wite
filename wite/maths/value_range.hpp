@@ -129,6 +129,12 @@ _WITE_NODISCARD value_range<common::common_type_t<Value_Ts...>> envelope(Value_T
   return {min, max};
 }
 
+template <typename Range_T>
+_WITE_NODISCARD value_range<typename Range_T::value_type> envelope(Range_T&& values) noexcept {
+  const auto range = std::ranges::minmax(std::forward<Range_T>(values));
+  return {range.min, range.max};
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace wite::maths

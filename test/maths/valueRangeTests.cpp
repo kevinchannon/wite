@@ -240,4 +240,10 @@ TEST_CASE("value_range from envelope tests", "[maths]") {
       REQUIRE(-4.1 == r.min());
       REQUIRE(5.0 == r.max());
   }
+
+  SECTION("a collection of values") {
+      const auto r = envelope(std::vector<double>{1.0, 2.0, 3.0, 4.0, 5.0});
+      REQUIRE(1.0 == r.min());
+      REQUIRE(5.0 == r.max());
+  }
 }
