@@ -230,20 +230,14 @@ TEST_CASE("value_range tests", "[maths]") {
 
 TEST_CASE("value_range from envelope tests", "[maths]") {
   SECTION("some integer values") {
-      const auto r = envelope(1, 2, 5, 10, -4, 12);
-      REQUIRE(-4 == r.min());
-      REQUIRE(12 == r.max());
+      REQUIRE(value_range{-4, 12} == envelope(1, 2, 5, 10, -4, 12));
   }
 
   SECTION("some floating-point values") {
-      const auto r = envelope(1.0, 0.9, 5.0, 1.0, -4.1, 1.2);
-      REQUIRE(-4.1 == r.min());
-      REQUIRE(5.0 == r.max());
+      REQUIRE(value_range{-4.1, 5.0} == envelope(1.0, 0.9, 5.0, 1.0, -4.1, 1.2));
   }
 
   SECTION("a collection of values") {
-      const auto r = envelope(std::vector<double>{1.0, 2.0, 3.0, 4.0, 5.0});
-      REQUIRE(1.0 == r.min());
-      REQUIRE(5.0 == r.max());
+      REQUIRE(value_range{1.0, 5.0} == envelope(std::vector<double>{1.0, 2.0, 3.0, 4.0, 5.0}));
   }
 }
