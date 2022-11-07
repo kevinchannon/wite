@@ -4,6 +4,7 @@
 #include <wite/core/assert.hpp>
 #include <wite/env/environment.hpp>
 #include <wite/maths/numeric.hpp>
+#include <wite/common/concepts.hpp>
 
 #include <algorithm>
 #include <optional>
@@ -118,6 +119,15 @@ class closed_value_range : public value_range<Value_T, range_boundary::closed, r
 
   WITE_DEFAULT_CONSTRUCTORS(closed_value_range);
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename... Value_Ts>
+  requires (sizeof...(Value_Ts) >= 2)
+_WITE_NODISCARD value_range<common::common_type_t<Value_Ts...>> envelope(Value_Ts... values) noexcept {
+  const auto [min, max] = maths::min_max(values...);
+  return {min, max};
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

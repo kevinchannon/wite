@@ -227,3 +227,17 @@ TEST_CASE("value_range tests", "[maths]") {
 #endif
   }
 }
+
+TEST_CASE("value_range from envelope tests", "[maths]") {
+  SECTION("some integer values") {
+      const auto r = envelope(1, 2, 5, 10, -4, 12);
+      REQUIRE(-4 == r.min());
+      REQUIRE(12 == r.max());
+  }
+
+  SECTION("some floating-point values") {
+      const auto r = envelope(1.0, 0.9, 5.0, 1.0, -4.1, 1.2);
+      REQUIRE(-4.1 == r.min());
+      REQUIRE(5.0 == r.max());
+  }
+}
