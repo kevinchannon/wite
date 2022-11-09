@@ -55,22 +55,6 @@ TEST_CASE("value_range tests", "[maths]") {
       REQUIRE(closed_value_range{123, 456} != closed_value_range{123, 457});
       REQUIRE(closed_value_range{123, 456} != closed_value_range{124, 456});
     }
-
-    SECTION("value ranges are 'less-than' than another closed_value_range") {
-      REQUIRE(closed_value_range{0, 1} < closed_value_range{2, 3});
-      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{ 1, 2});
-      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{ 0, 1});
-      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{-1, 2});
-      REQUIRE_FALSE(closed_value_range{0, 1} < closed_value_range{-2,-1});
-    }
-
-    SECTION("value ranges are 'greater-than' than another closed_value_range") {
-      REQUIRE(closed_value_range{2, 3} > closed_value_range{0, 1});
-      REQUIRE_FALSE(closed_value_range{ 1, 2} > closed_value_range{0, 1});
-      REQUIRE_FALSE(closed_value_range{ 0, 1} > closed_value_range{0, 1});
-      REQUIRE_FALSE(closed_value_range{-1, 2} > closed_value_range{0, 1});
-      REQUIRE_FALSE(closed_value_range{-2,-1} > closed_value_range{0, 1});
-    }
   }
 
   SECTION("size()") {
@@ -239,5 +223,21 @@ TEST_CASE("value_range from envelope tests", "[maths]") {
 
   SECTION("a collection of values") {
       REQUIRE(value_range{1.0, 5.0} == envelope(std::vector<double>{1.0, 2.0, 3.0, 4.0, 5.0}));
+  }
+
+  SECTION("some value_ranges") {
+      REQUIRE(value_range{-1.0, 1.0} == envelope(value_range{0.0, 1.0}, value_range{-1.0, 0.0}, value_range{-0.5, 0.5}));
+  }
+}
+
+TEST_CASE("value_range min tests", "[maths]") {
+  SECTION("floating-point value ranges") {
+      REQUIRE(-1.0 == min(value_range{0.0, 1.0}, value_range{-1.0, 0.0}, value_range{-0.5, 0.5}));
+  }
+}
+
+TEST_CASE("value_range max tests", "[maths]") {
+  SECTION("floating-point value ranges") {
+      REQUIRE(1.0 == max(value_range{0.0, 1.0}, value_range{-1.0, 0.0}, value_range{-0.5, 0.5}));
   }
 }

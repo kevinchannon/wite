@@ -7,6 +7,10 @@
 #include <limits>
 #include <utility>
 
+#ifdef _WITE_HAS_CONCEPTS
+#include <concepts>
+#endif
+
 namespace wite::maths {
 
 template <typename T>
@@ -27,7 +31,9 @@ _WITE_NODISCARD T prev_value(T value) noexcept {
   }
 }
 
-template <typename FirstValue_T, typename... OtherValue_Ts>
+#ifdef _WITE_HAS_CONCEPTS
+
+template <std::totally_ordered FirstValue_T, std::totally_ordered... OtherValue_Ts>
   requires(sizeof...(OtherValue_Ts) > 0 and common::is_pod_like<std::remove_reference_t<FirstValue_T>>)
 _WITE_NODISCARD FirstValue_T min(FirstValue_T first_value, OtherValue_Ts... other_values) noexcept {
   static_assert(common::all_types_are_the_same_v<FirstValue_T, OtherValue_Ts...>,
@@ -40,7 +46,7 @@ _WITE_NODISCARD FirstValue_T min(FirstValue_T first_value, OtherValue_Ts... othe
   }
 }
 
-template <typename FirstValue_T, typename... OtherValue_Ts>
+template <std::totally_ordered FirstValue_T, std::totally_ordered... OtherValue_Ts>
   requires(sizeof...(OtherValue_Ts) > 0 and not common::is_pod_like<std::remove_reference_t<FirstValue_T>>)
 _WITE_NODISCARD FirstValue_T min(FirstValue_T&& first_value, OtherValue_Ts&&... other_values) noexcept {
   static_assert(common::all_types_are_the_same_v<FirstValue_T, OtherValue_Ts...>,
@@ -53,7 +59,7 @@ _WITE_NODISCARD FirstValue_T min(FirstValue_T&& first_value, OtherValue_Ts&&... 
   }
 }
 
-template <typename FirstValue_T, typename... OtherValue_Ts>
+template <std::totally_ordered FirstValue_T, std::totally_ordered... OtherValue_Ts>
   requires(sizeof...(OtherValue_Ts) > 0 and not common::is_pod_like<std::remove_reference_t<FirstValue_T>>)
 _WITE_NODISCARD FirstValue_T max(FirstValue_T&& first_value, OtherValue_Ts&&... other_values) noexcept {
   static_assert(common::all_types_are_the_same_v<FirstValue_T, OtherValue_Ts...>,
@@ -66,7 +72,7 @@ _WITE_NODISCARD FirstValue_T max(FirstValue_T&& first_value, OtherValue_Ts&&... 
   }
 } 
 
-template <typename FirstValue_T, typename... OtherValue_Ts>
+template <std::totally_ordered FirstValue_T, std::totally_ordered... OtherValue_Ts>
   requires(sizeof...(OtherValue_Ts) > 0 and common::is_pod_like<std::remove_reference_t<FirstValue_T>>)
 _WITE_NODISCARD FirstValue_T max(FirstValue_T first_value, OtherValue_Ts... other_values) noexcept {
   static_assert(common::all_types_are_the_same_v<FirstValue_T, OtherValue_Ts...>,
@@ -79,7 +85,7 @@ _WITE_NODISCARD FirstValue_T max(FirstValue_T first_value, OtherValue_Ts... othe
   }
 }
 
-template <typename Value_T>
+template <std::totally_ordered Value_T>
   requires(not common::is_pod_like<Value_T>)
 _WITE_NODISCARD std::pair<const Value_T&, const Value_T&> min_max(Value_T&& left, Value_T&& right) noexcept {
   if (left <= right) {
@@ -89,7 +95,7 @@ _WITE_NODISCARD std::pair<const Value_T&, const Value_T&> min_max(Value_T&& left
   }
 }
 
-template <typename... Value_Ts>
+template <std::totally_ordered... Value_Ts>
   requires(sizeof...(Value_Ts) > 1 and common::is_pod_like<std::remove_reference_t<common::common_type_t<Value_Ts...>>>)
 _WITE_NODISCARD std::pair<typename common::common_type_t<Value_Ts...>, typename common::common_type_t<Value_Ts...>> min_max(
     Value_Ts... values) noexcept {
@@ -99,7 +105,7 @@ _WITE_NODISCARD std::pair<typename common::common_type_t<Value_Ts...>, typename 
   return {min(values...), max(values...)};
 }
 
-template <typename... Value_Ts>
+template <std::totally_ordered... Value_Ts>
   requires(sizeof...(Value_Ts) > 1 and not common::is_pod_like<std::remove_reference_t<common::common_type_t<Value_Ts...>>>)
 _WITE_NODISCARD std::pair<const typename common::common_type_t<Value_Ts...>&, const typename common::common_type_t<Value_Ts...>&> min_max(
     const Value_Ts&... values) noexcept {
@@ -108,5 +114,7 @@ _WITE_NODISCARD std::pair<const typename common::common_type_t<Value_Ts...>&, co
 
   return {min(values...), max(values...)};
 }
+
+#endif  // _WITE_HAS_CONCEPTS
 
 }  // namespace wite::maths

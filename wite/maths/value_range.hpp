@@ -15,6 +15,28 @@ namespace wite::maths {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename T, typename = void>
+struct is_value_range : std::false_type {};
+
+template <typename T>
+struct is_value_range<T,
+                      ::std::void_t<decltype(std::declval<T>().min()),   // has a minimum
+                                    decltype(std::declval<T>().max())>>  // ...and a maximum
+    : std::true_type {};
+
+template <typename T>
+constexpr bool is_value_range_v = is_value_range<T>::value;
+
+#ifdef _WITE_HAS_CONCEPTS
+template<typename T>
+concept value_range_type = requires(T& vr) {
+                             vr.min();
+                             vr.max();
+                           };
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 enum class range_boundary { closed, open };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,9 +57,7 @@ struct value_range {
   _WITE_NODISCARD constexpr bool operator==(const value_range& other) const noexcept {
     return _min == other._min and _max == other._max;
   }
-  _WITE_NODISCARD constexpr bool operator!=(const value_range& other) const noexcept { return not(*this == other); }
-  _WITE_NODISCARD constexpr bool operator<(const value_range& other) const noexcept { return _max < other._min; }
-  _WITE_NODISCARD constexpr bool operator>(const value_range& other) const noexcept { return _min > other._max; }
+  _WITE_NODISCARD constexpr bool operator!=(const value_range& other) const noexcept { return not(*this == other); } 
 
   _WITE_NODISCARD constexpr value_type min() const noexcept { return _min; }
   void min(value_type x) _WITE_RELEASE_NOEXCEPT {
@@ -122,8 +142,32 @@ class closed_value_range : public value_range<Value_T, range_boundary::closed, r
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <value_range_type RangeValue_T, value_range_type... ValueRange_Ts>
+_WITE_NODISCARD typename RangeValue_T::value_type min(RangeValue_T left, ValueRange_Ts... other_values) noexcept {
+  if constexpr (sizeof...(ValueRange_Ts) == 1) {
+    const auto val_range_min = [](const auto& vr) { return vr.min(); };
+    return std::min(left.min(), val_range_min(other_values...));
+  } else {
+    return std::min(left.min(), min(other_values...));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <value_range_type RangeValue_T, value_range_type... ValueRange_Ts>
+_WITE_NODISCARD typename RangeValue_T::value_type max(RangeValue_T left, ValueRange_Ts... other_values) noexcept {
+  if constexpr (sizeof...(ValueRange_Ts) == 1) {
+    const auto val_range_max = [](const auto& vr) { return vr.max(); };
+    return std::max(left.max(), val_range_max(other_values...));
+  } else {
+    return std::max(left.max(), max(other_values...));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template<typename... Value_Ts>
-  requires (sizeof...(Value_Ts) >= 2)
+  requires(sizeof...(Value_Ts) >= 2 and not is_value_range_v<common::common_type_t<Value_Ts...>>)
 _WITE_NODISCARD value_range<common::common_type_t<Value_Ts...>> envelope(Value_Ts... values) noexcept {
   const auto [min, max] = maths::min_max(values...);
   return {min, max};
@@ -133,6 +177,18 @@ template <typename Range_T>
 _WITE_NODISCARD value_range<typename Range_T::value_type> envelope(Range_T&& values) noexcept {
   const auto range = std::ranges::minmax(std::forward<Range_T>(values));
   return {range.min, range.max};
+}
+
+template <value_range_type... ValueRange_Ts>
+  requires(sizeof...(ValueRange_Ts) >= 2)
+_WITE_NODISCARD common::common_type_t<ValueRange_Ts...> envelope(ValueRange_Ts... values) noexcept {
+  return {min(values...), max(values...)};
+}
+
+template <std::ranges::range Range_T>
+_WITE_NODISCARD value_range<typename Range_T::value_type> envelope(Range_T&& values) noexcept {
+  const auto min_max = std::ranges::minmax(std::forward<Range_T>(values));
+  return {min_max.min, min_max.max};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
