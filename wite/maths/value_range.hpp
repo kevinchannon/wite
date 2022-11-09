@@ -142,6 +142,7 @@ class closed_value_range : public value_range<Value_T, range_boundary::closed, r
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WITE_HAS_CONCEPTS
 template <value_range_type RangeValue_T, value_range_type... ValueRange_Ts>
 _WITE_NODISCARD typename RangeValue_T::value_type min(RangeValue_T left, ValueRange_Ts... other_values) noexcept {
   if constexpr (sizeof...(ValueRange_Ts) == 1) {
@@ -190,6 +191,8 @@ _WITE_NODISCARD value_range<typename Range_T::value_type> envelope(Range_T&& val
   const auto min_max = std::ranges::minmax(std::forward<Range_T>(values));
   return {min_max.min, min_max.max};
 }
+
+#endif  // _WITE_HAS_CONCEPTS
 
 ///////////////////////////////////////////////////////////////////////////////
 
