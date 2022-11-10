@@ -351,12 +351,16 @@ std::cout << "p = " << p << std::endl;
 will print `[ 2.718, 3.142 ]`.
 
 # Maths
-`#include <wite/maths.hpp>`
+```c++
+#include <wite/maths.hpp>
+```
 
 A bunch of basic maths-y routines and classes
 
 ## `next_value`, `prev_value`
-`#include <wite/maths/numeric.hpp`
+```c++
+#include <wite/maths/numeric.hpp
+```
 
 Use these to get at the next representable value after (`next_value`) or before (`prev_value`) the specified value:
 ```c++
