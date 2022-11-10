@@ -228,6 +228,12 @@ TEST_CASE("value_range tests", "[maths]") {
       REQUIRE(1.5 == value_range{1.5, 1.5}.clamp(1.6));
     }
   }
+
+  SECTION("interpolate") {
+    SECTION("zero returns min") {
+      REQUIRE(-1.0 == value_range{-1.0, 1.0}.interpolate(0.0));
+    }
+  }
 }
 
 TEST_CASE("value_range from envelope tests", "[maths]") {

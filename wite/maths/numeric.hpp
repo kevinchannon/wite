@@ -117,4 +117,9 @@ _WITE_NODISCARD std::pair<const typename common::common_type_t<Value_Ts...>&, co
 
 #endif  // _WITE_HAS_CONCEPTS
 
+template<typename Value_T>
+_WITE_NODISCARD constexpr Value_T interpolate(double fraction, Value_T min, Value_T max) noexcept {
+  return min + fraction * (max - min);
+}
+
 }  // namespace wite::maths

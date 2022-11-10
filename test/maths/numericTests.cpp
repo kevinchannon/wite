@@ -170,3 +170,25 @@ TEST_CASE("minmax tests", "[maths]") {
     }
   }
 }
+
+TEST_CASE("interpolate tests", "[maths]") {
+  SECTION("zero returns min") {
+    REQUIRE(-1.0 == wite::maths::interpolate(0.0, -1.0, 1.0));
+  }
+
+  SECTION("one returns max") {
+    REQUIRE(1.0 == wite::maths::interpolate(1.0, -1.0, 1.0));
+  }
+
+  SECTION("zero width range returns min") {
+    REQUIRE(1.0 == wite::maths::interpolate(0.0, 1.0, 1.0));
+  }
+
+  SECTION("greater than one extrapolates range") {
+    REQUIRE(4.0 == wite::maths::interpolate(2.0, 0.0, 2.0));
+  }
+
+  SECTION("less than one extrapolates range") {
+    REQUIRE(-2.0 == wite::maths::interpolate(-1.0, 0.0, 2.0));
+  }
+}

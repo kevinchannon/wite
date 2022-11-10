@@ -119,6 +119,11 @@ struct value_range {
 
   _WITE_NODISCARD constexpr value_type clamp(value_type val) const noexcept { return std::clamp(val, _min, _max); }
 
+  _WITE_NODISCARD constexpr value_type interpolate(value_type fraction) const noexcept {
+    return maths::interpolate(fraction, _min, _max);
+  }
+
+
  private:
   value_type _min;
   value_type _max;
