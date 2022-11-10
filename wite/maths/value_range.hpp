@@ -170,7 +170,7 @@ _WITE_NODISCARD typename RangeValue_T::value_type max(RangeValue_T left, ValueRa
 template<typename... Value_Ts>
   requires(sizeof...(Value_Ts) >= 2 and not is_value_range_v<common::common_type_t<Value_Ts...>>)
 _WITE_NODISCARD value_range<common::common_type_t<Value_Ts...>> envelope(Value_Ts... values) noexcept {
-  const auto [min, max] = maths::min_max(values...);
+  const auto [min, max] = maths::minmax(values...);
   return {min, max};
 }
 

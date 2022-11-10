@@ -87,7 +87,7 @@ _WITE_NODISCARD FirstValue_T max(FirstValue_T first_value, OtherValue_Ts... othe
 
 template <std::totally_ordered Value_T>
   requires(not common::is_pod_like<Value_T>)
-_WITE_NODISCARD std::pair<const Value_T&, const Value_T&> min_max(Value_T&& left, Value_T&& right) noexcept {
+_WITE_NODISCARD std::pair<const Value_T&, const Value_T&> minmax(Value_T&& left, Value_T&& right) noexcept {
   if (left <= right) {
     return {std::forward<Value_T>(left), std::forward<Value_T>(right)};
   } else {
@@ -97,20 +97,20 @@ _WITE_NODISCARD std::pair<const Value_T&, const Value_T&> min_max(Value_T&& left
 
 template <std::totally_ordered... Value_Ts>
   requires(sizeof...(Value_Ts) > 1 and common::is_pod_like<std::remove_reference_t<common::common_type_t<Value_Ts...>>>)
-_WITE_NODISCARD std::pair<typename common::common_type_t<Value_Ts...>, typename common::common_type_t<Value_Ts...>> min_max(
+_WITE_NODISCARD std::pair<typename common::common_type_t<Value_Ts...>, typename common::common_type_t<Value_Ts...>> minmax(
     Value_Ts... values) noexcept {
   static_assert(common::all_types_are_the_same_v<Value_Ts...>,
-                "All arguments to wite::common::min_max should have the same type");
+                "All arguments to wite::common::minmax should have the same type");
 
   return {min(values...), max(values...)};
 }
 
 template <std::totally_ordered... Value_Ts>
   requires(sizeof...(Value_Ts) > 1 and not common::is_pod_like<std::remove_reference_t<common::common_type_t<Value_Ts...>>>)
-_WITE_NODISCARD std::pair<const typename common::common_type_t<Value_Ts...>&, const typename common::common_type_t<Value_Ts...>&> min_max(
+_WITE_NODISCARD std::pair<const typename common::common_type_t<Value_Ts...>&, const typename common::common_type_t<Value_Ts...>&> minmax(
     const Value_Ts&... values) noexcept {
   static_assert(common::all_types_are_the_same_v<Value_Ts...>,
-                "All arguments to wite::common::min_max should have the same type");
+                "All arguments to wite::common::minmax should have the same type");
 
   return {min(values...), max(values...)};
 }

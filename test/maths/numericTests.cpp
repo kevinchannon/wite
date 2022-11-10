@@ -116,16 +116,16 @@ TEST_CASE("max tests", "[maths]") {
   }
 }
 
-TEST_CASE("min_max tests", "[maths]") {
+TEST_CASE("minmax tests", "[maths]") {
   SECTION("non-variadic call", "[maths]") {
     SECTION("integer values") {
-      REQUIRE(std::pair{0, 1} == wite::maths::min_max(0, 1));
-      REQUIRE(std::pair{0, 1} == wite::maths::min_max(1, 0));
+      REQUIRE(std::pair{0, 1} == wite::maths::minmax(0, 1));
+      REQUIRE(std::pair{0, 1} == wite::maths::minmax(1, 0));
     }
 
     SECTION("floating-point values") {
-      REQUIRE(std::pair{100.0, 123.45} == wite::maths::min_max(100.0, 123.45));
-      REQUIRE(std::pair{100.0, 123.45} == wite::maths::min_max(123.45, 100.0));
+      REQUIRE(std::pair{100.0, 123.45} == wite::maths::minmax(100.0, 123.45));
+      REQUIRE(std::pair{100.0, 123.45} == wite::maths::minmax(123.45, 100.0));
     }
 
     SECTION("non-POD-like values are not copied") {
@@ -133,14 +133,14 @@ TEST_CASE("min_max tests", "[maths]") {
       const auto npl_2 = non_pod_like(11);
 
       SECTION("left is less") {
-        const auto [min, max] = wite::maths::min_max(npl_1, npl_2);
+        const auto [min, max] = wite::maths::minmax(npl_1, npl_2);
 
         REQUIRE(npl_1.p == min.p);
         REQUIRE(npl_2.p == max.p);
       }
 
       SECTION("right is less") {
-        const auto [min, max] = wite::maths::min_max(npl_2, npl_1);
+        const auto [min, max] = wite::maths::minmax(npl_2, npl_1);
 
         REQUIRE(npl_1.p == min.p);
         REQUIRE(npl_2.p == max.p);
@@ -150,11 +150,11 @@ TEST_CASE("min_max tests", "[maths]") {
 
   SECTION("variadic call", "[maths]") {
     SECTION("integer values") {
-      REQUIRE(std::pair{-2, 10} == wite::maths::min_max(0, 10, 5, -2, 1));
+      REQUIRE(std::pair{-2, 10} == wite::maths::minmax(0, 10, 5, -2, 1));
     }
 
     SECTION("floating-point values") {
-      REQUIRE(std::pair{-23.8, 123.45} == wite::maths::min_max(0.0, -23.8, 100.0, 123.45, 52.5));
+      REQUIRE(std::pair{-23.8, 123.45} == wite::maths::minmax(0.0, -23.8, 100.0, 123.45, 52.5));
     }
 
     SECTION("non-POD-like values are not copied") {
@@ -163,7 +163,7 @@ TEST_CASE("min_max tests", "[maths]") {
       const auto npl_3 = non_pod_like(-5);
       const auto npl_4 = non_pod_like(25);
 
-      const auto [min, max] = wite::maths::min_max(npl_1, npl_2, npl_3, npl_4);
+      const auto [min, max] = wite::maths::minmax(npl_1, npl_2, npl_3, npl_4);
 
       REQUIRE(npl_3.p == min.p);
       REQUIRE(npl_1.p == max.p);
