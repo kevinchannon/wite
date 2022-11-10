@@ -4,6 +4,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include <string>
 #include <ranges>
@@ -180,6 +181,10 @@ TEST_CASE("interpolate tests", "[maths]") {
     REQUIRE(1.0 == wite::maths::interpolate(1.0, -1.0, 1.0));
   }
 
+  SECTION("between zero and one returns expected value") {
+    REQUIRE(Catch::Approx(0.2).epsilon(1e-10) == wite::maths::interpolate(0.6, -1.0, 1.0));
+  }
+
   SECTION("zero width range returns min") {
     REQUIRE(1.0 == wite::maths::interpolate(0.0, 1.0, 1.0));
   }
@@ -190,5 +195,19 @@ TEST_CASE("interpolate tests", "[maths]") {
 
   SECTION("less than one extrapolates range") {
     REQUIRE(-2.0 == wite::maths::interpolate(-1.0, 0.0, 2.0));
+  }
+}
+
+TEST_CASE("fraction tests", "[maths]") {
+  SECTION("min returns zero") {
+    REQUIRE(0.0 == wite::maths::fraction(1.0, 1.0, std::numeric_limits<double>::max()));
+  }
+
+  SECTION("max returns one") {
+    REQUIRE(-1.0 == wite::maths::fraction(1.0, std::numeric_limits<double>::min(), -1.0));
+  }
+
+  SECTION("mid returns 0.5") {
+    REQUIRE(0.5 == wite::maths::fraction(1500, 1000, 2000));
   }
 }
