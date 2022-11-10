@@ -210,6 +210,24 @@ TEST_CASE("value_range tests", "[maths]") {
     }
 #endif
   }
+
+  SECTION("clamp") {
+    SECTION("in range returns input value") {
+      REQUIRE(1.0 == value_range{0.9, 1.5}.clamp(1.0));
+    }
+
+    SECTION("below range returns min") {
+      REQUIRE(0.9 == value_range{0.9, 1.5}.clamp(0.8));
+    }
+
+    SECTION("above range returns max") {
+      REQUIRE(1.5 == value_range{0.9, 1.5}.clamp(1.6));
+    }
+
+    SECTION("empty range returns min/max") {
+      REQUIRE(1.5 == value_range{1.5, 1.5}.clamp(1.6));
+    }
+  }
 }
 
 TEST_CASE("value_range from envelope tests", "[maths]") {

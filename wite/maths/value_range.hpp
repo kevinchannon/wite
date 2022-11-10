@@ -117,6 +117,8 @@ struct value_range {
 
   _WITE_NODISCARD constexpr value_type mid() const noexcept { return _max - size() / 2; }
 
+  _WITE_NODISCARD constexpr value_type clamp(value_type val) const noexcept { return std::clamp(val, _min, _max); }
+
  private:
   value_type _min;
   value_type _max;
