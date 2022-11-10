@@ -355,15 +355,18 @@ const auto prev = wite::maths::prev_value(1.23e45);
 ```
 These functions will take floating-point and integer types.
 
-## Variadic `min` and `max`
+## Variadic `min`, `max` and `minmax`
 
-These take arbitrary numbers of values and give you the min or max of them. Kind of obvious really.
+These take arbitrary numbers of values and give you the min or max (or both) of them. Kind of obvious really.
 ```
 // min_val <-- -1.23
 const auto min_val = wite::maths::min(1.0, 10.0, -1.23, 5.0, 1000.0);
 
 // max_val <-- 45
 const auto max_val = wite::maths::max(21, 32, 1, 0, -10, 45, 19);
+
+// a <-- -10, b <-- 45
+const auto [a, b] = wite::maths::minmax(21, 32, 1, 0, -10, 45, 19);
 ```
 These functions work with anything that is [`std::totally_ordered`](https://en.cppreference.com/w/cpp/concepts/totally_ordered).  If the input values are not trivially copyable, then they will be passed in by reference-to-const and the result will also be a reference-to-const, so watch out for that. It's a bit weird, but it mirrors the behaviour of `std::min` and `std::max`.
 
