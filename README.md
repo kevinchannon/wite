@@ -370,6 +370,101 @@ const auto [a, b] = wite::maths::minmax(21, 32, 1, 0, -10, 45, 19);
 ```
 These functions work with anything that is [`std::totally_ordered`](https://en.cppreference.com/w/cpp/concepts/totally_ordered).  If the input values are not trivially copyable, then they will be passed in by reference-to-const and the result will also be a reference-to-const, so watch out for that. It's a bit weird, but it mirrors the behaviour of `std::min` and `std::max`.
 
+## `value_range`
+
+`#include <with/maths/value_range.hpp>`
+
+A small class that expresses an interval, in the mathematical sense. You give it the min and max of the range in its constructor and the you can test where values are inside or ourside the range, etc.
+
+```
+const auto val_rng = maths::value_range{-10, 10};
+
+const auto a = val_rng.min();   // -10
+const auto b = val_rng.max();   //  10
+
+const auto width = val_rng.size();  // 20
+
+const auto mid_point = val_rng.mid();   // 0
+```
+In this example, we're relying on class template deduction to guess the type for the `value_range`. So, it's deduced as `int` in this case. We could has used `const auto val_rng = maths::value_range<int>{-10, 10}` if we wanted to be explicit. Similarly, `maths::value_range{0.0, std::numbers::pi}` would return a `double` range.
+
+To test whether points are in or out of the range, you can use `contains`:
+```
+if (val_rng.contains(5)){
+    std::cout << "5 is in range" << std::endl;
+}
+
+if (not val_rng.contains(11)) {
+    std::cout << "11 is not in range" << std::endl;
+}
+```
+
+You can get the overlap of a range with another range by using `overlap`:
+```
+// *common_rng <-- [-10, -2]
+const auto common_rng = val_rng.overlap(maths::value_range{-100, -2});
+```
+`overlap` returns an optional, because ranges aren't guaranteed to overlap. So, if there's no overlap, then the result of `overlap` is `std::nullopt`:
+```
+// no_overlap <-- std::nullopt
+const auto no_overlap = val_rng.overlap(maths::value_range{20, 40});
+```
+
+## Open and closed ranges
+
+By default, `value_range`s are closed (i.e. the min and max values are defined as being inside the range). If you need an open range, then you can specify it as a template parameter:
+```
+// These three value_ranges will all compare equal.
+// [0.0, 1.0]
+const auto closed_closed_1 = maths::value_range{0.0, 1.0};
+const auto closed_closed_2 = maths::closed_value_range{0.0, 1.0};
+const auto closed_closed_3 = maths::value_range<double, maths::range::boundary::closed, maths::range::boundary::closed>{0.0, 1.0};
+
+// These two value_ranges will both compare equal.
+// (0.0, 1.0)
+const auto open_open_1 = maths::open_value_range{0.0, 1.0};
+const auto open_open_2 = maths::value_range<double, maths::range::boundary::open, maths::range::boundary::open>{0.0, 1.0};
+
+// [0.0, 1.0)
+const auto closed_open = maths::value_range<double, maths::range::boundary::closed, maths::range::boundary::open>{0.0, 1.0};
+
+// (0.0, 1.0]
+const auto open_closed = maths::value_range<double, maths::range::boundary::open, maths::range::boundary::closed>{0.0, 1.0};
+```
+Note: there are specific classes for the common "all-open" and "all-closed" cases, `maths::open_value_range` and `maths::closed_value_range`, respectively.
+
+### IO
+
+`#include <wite/maths/io.hpp>`
+
+You can insert a `value_range` into a `std::ostream` as expected:
+```
+// "My range = [0.1,2.0]"
+std::cout << "My range = " << maths::value_range{0.1, 2.0} << std::endl;
+
+const auto rng = maths::value_range<double, maths::range::boundary::closed, maths::range::boundary::open>{0.1, 2.0};
+
+// "My range = [0.1,2.0)"
+std::cout << "My range = " << rng << std::endl;
+```
+
+### Free functions
+
+If you have a bunch of values and you want to get their range, you can use `envelope` for that:
+```
+// val_rng <-- [-4.0, 11.2]
+const auto val_rng = maths::envelope(0.0, 0.1, -1.2, 10.0, -4.0, 11.2);
+
+const auto values = std::vector<int>{0, 1, 2, 3, 4, 5, 10};
+
+// val_rng_from_collection <-- [0, 10]
+const auto val_rng_from_collection = maths::envelope(values);
+```
+`envelope` also works with value_ranges as inputs. It will return a new `value_range` the min of the range mins and the max of range maxes.
+
+`maths::min` and `maths::max` are overloaded to take `value_range`. So, if you have a bunch of `value_range`s, then you can find the min of the mins, or the max of the maxes. 
+
+
 # Compiler Macros
 You might want to do things a bit differently, so here are some build-time specializations that you can make.
 
