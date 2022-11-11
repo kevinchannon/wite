@@ -1,10 +1,10 @@
 #pragma once
 
+#include <wite/common/concepts.hpp>
 #include <wite/common/constructor_macros.hpp>
 #include <wite/core/assert.hpp>
 #include <wite/env/environment.hpp>
 #include <wite/maths/numeric.hpp>
-#include <wite/common/concepts.hpp>
 
 #include <algorithm>
 #include <optional>
@@ -28,7 +28,7 @@ template <typename T>
 constexpr bool is_value_range_v = is_value_range<T>::value;
 
 #ifdef _WITE_HAS_CONCEPTS
-template<typename T>
+template <typename T>
 concept value_range_type = requires(T& vr) {
                              vr.min();
                              vr.max();
@@ -45,7 +45,7 @@ template <typename T, range_boundary LBOUND = range_boundary::closed, range_boun
 struct value_range {
   using value_type = T;
 
-  value_range(value_type min, value_type max) _WITE_RELEASE_NOEXCEPT : _min{min}, _max{max} {
+  constexpr value_range(value_type min, value_type max) _WITE_RELEASE_NOEXCEPT : _min{min}, _max{max} {
     _WITE_DEBUG_ASSERT(_min <= _max, "value_range min should be <= max");
   }
 
@@ -57,7 +57,7 @@ struct value_range {
   _WITE_NODISCARD constexpr bool operator==(const value_range& other) const noexcept {
     return _min == other._min and _max == other._max;
   }
-  _WITE_NODISCARD constexpr bool operator!=(const value_range& other) const noexcept { return not(*this == other); } 
+  _WITE_NODISCARD constexpr bool operator!=(const value_range& other) const noexcept { return not(*this == other); }
 
   _WITE_NODISCARD constexpr value_type min() const noexcept { return _min; }
   void min(value_type x) _WITE_RELEASE_NOEXCEPT {
@@ -81,7 +81,7 @@ struct value_range {
 
   _WITE_NODISCARD constexpr value_type size() const _WITE_RELEASE_NOEXCEPT {
     _WITE_DEBUG_ASSERT(_min <= _max, "value_range min should be <= max");
-    return _max - _min; 
+    return _max - _min;
   }
 
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _min == _max; }
@@ -123,6 +123,7 @@ struct value_range {
     return maths::interpolate(fraction, _min, _max);
   }
 
+  _WITE_NODISCARD constexpr double fraction(value_type value) const noexcept { return maths::fraction(value, _min, _max); }
 
  private:
   value_type _min;
@@ -174,7 +175,7 @@ _WITE_NODISCARD typename RangeValue_T::value_type max(RangeValue_T left, ValueRa
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename... Value_Ts>
+template <typename... Value_Ts>
   requires(sizeof...(Value_Ts) >= 2 and not is_value_range_v<common::common_type_t<Value_Ts...>>)
 _WITE_NODISCARD value_range<common::common_type_t<Value_Ts...>> envelope(Value_Ts... values) noexcept {
   const auto [min, max] = maths::minmax(values...);
