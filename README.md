@@ -1,4 +1,4 @@
-# wite
+﻿# wite
 Wite stands for "Why isn't this easy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
 
 ## Prerequisites
@@ -357,10 +357,14 @@ will print `[ 2.718, 3.142 ]`.
 
 A bunch of basic maths-y routines and classes
 
-## `next_value`, `prev_value`
+## Numeric helpers
 ```c++
 #include <wite/maths/numeric.hpp
 ```
+
+Some small functions to help with basic number things...
+
+### `next_value`, `prev_value`
 
 Use these to get at the next representable value after (`next_value`) or before (`prev_value`) the specified value:
 ```c++
@@ -369,7 +373,7 @@ const auto prev = wite::maths::prev_value(1.23e45);
 ```
 These functions will take floating-point and integer types.
 
-## Variadic `min`, `max` and `minmax`
+### Variadic `min`, `max` and `minmax`
 
 These take arbitrary numbers of values and give you the min or max (or both) of them. Kind of obvious really.
 ```c++
@@ -383,6 +387,26 @@ const auto max_val = wite::maths::max(21, 32, 1, 0, -10, 45, 19);
 const auto [a, b] = wite::maths::minmax(21, 32, 1, 0, -10, 45, 19);
 ```
 These functions work with anything that is [`std::totally_ordered`](https://en.cppreference.com/w/cpp/concepts/totally_ordered).  If the input values are not trivially copyable, then they will be passed in by reference-to-const and the result will also be a reference-to-const, so watch out for that. It's a bit weird, but it mirrors the behaviour of `std::min` and `std::max`.
+
+
+### `interpolate` and `fraction`
+These allow you to calculate the value of some fraction of the distance between two end points. So, if you have two extrema, like `10` and `20`, and you want to get the number that's 35% of the way between them, you can do:
+```c++
+// x <-- 13.5
+const auto x = wite::maths::interpolate(0.35, 10.0, 20.0);
+```
+If your fraction is greater than one, or less than zero, then `interpolate` will linearly extrapolate beyond the end of the range:
+```c++
+// x <-- 35.0
+const auto x = wite::maths::interpolate(2.5, 10.0, 2.00);
+```
+`fraction` basically doe the inverse of `interpolate`; if you know the value and the extrema, then what would be the fraction through the range that gives that fraction:
+```c++
+// f <-- 0.6
+const auto f = wite::maths::fraction(16.0, 10.0, 20.0);
+```
+These functions are templated, so the result has the same type as the extrema that you pass in. So, `interpolate(0.35, 0, 10)` will return `3`.
+
 
 ## `value_range`
 
@@ -425,6 +449,28 @@ const auto common_rng = val_rng.overlap(maths::value_range{-100, -2});
 // no_overlap <-- std::nullopt
 const auto no_overlap = val_rng.overlap(maths::value_range{20, 40});
 ```
+
+If you have a value and a range and you want to clamp the value into the range, then you can use `clamp` for that:
+```c++
+const auto r = maths::value_range{0.0, std::numbers::pi};
+
+const auto x = r.clamp(-0.5);   // x <-- 0.0
+const auto y = r.clamp(1.0);    // y <-- 1.0
+const auto z = r.clamp(4.0);    // z <-- π
+```
+
+There are also `interpolate` and `fraction` methods that do the same thing as the free functions in `numeric.hpp`:
+```c++
+const auto r = maths::value_range{10.0, 20.0};
+
+// x <-- 13.5
+const auto x = r.interpolate(0.35);
+
+// f <-- 0.35
+const auto f = r.fraction(13.5)
+```
+Calculating the fraction of an empty range returns NaN.
+
 
 ## Open and closed ranges
 
