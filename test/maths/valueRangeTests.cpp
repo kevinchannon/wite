@@ -60,6 +60,11 @@ TEST_CASE("value_range tests", "[maths]") {
   SECTION("size()") {
     REQUIRE(10 == value_range{10, 20}.size());
     REQUIRE(10.0 == Catch::Approx(value_range{100.0, 110.0}.size()).epsilon(0.0));
+
+    SECTION("width and size are equal") {
+      constexpr auto r = value_range {-100.0, 100.0};
+      REQUIRE(r.size() == r.width());
+    }
   }
 
   SECTION("overlap()") {
@@ -232,6 +237,28 @@ TEST_CASE("value_range tests", "[maths]") {
   SECTION("interpolate") {
     SECTION("zero returns min") {
       REQUIRE(-1.0 == value_range{-1.0, 1.0}.interpolate(0.0));
+    }
+
+    SECTION("one returns min") {
+      REQUIRE(1.0 == value_range{-1.0, 1.0}.interpolate(1.0));
+    }
+
+    SECTION("intermediate value returns correct fraction") {
+      REQUIRE(Catch::Approx(-0.2).epsilon(1e-10) == value_range{-1.0, 1.0}.interpolate(0.4));
+    }
+  }
+
+  SECTION("fraction") {
+    SECTION("min returns zero") {
+      REQUIRE(0.0 == value_range(0, 100).fraction(0));
+    }
+
+    SECTION("max returns zero") {
+      REQUIRE(1.0 == value_range(0, 100).fraction(100));
+    }
+
+    SECTION("intermediate value is correct") {
+      REQUIRE(Catch::Approx(0.35).epsilon(1e-10) == value_range(0, 100).fraction(35));
     }
   }
 }
