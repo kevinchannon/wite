@@ -1,8 +1,29 @@
 #include <wite/maths/value_range.hpp>
+#include <wite/maths/io.hpp>
 
 #include <iostream>
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace wm = wite::maths;
+
+///////////////////////////////////////////////////////////////////////////////
+
+void simple_example() {
+
+  std::cout << "=======================================================" << std::endl;
+  std::cout << "Simple value range example" << std::endl;
+  std::cout << "=======================================================" << std::endl;
+
+  auto r = wm::value_range{0, 10};
+
+  std::cout << "Created value range " << r << std::endl;
+  std::cout << "\tRange min: " << r.min() << std::endl;
+  std::cout << "\tRange max: " << r.max() << std::endl;
+  std::cout << "\tRange width: " << r.width() << std::endl;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 /// <summary>
 ///  A simple class that uses a value_range to define a transition zone between two values.
@@ -31,16 +52,32 @@ private:
   TransitionZone_t _transition_zone{};
 };
 
-int main() {
-  //
-  // Use value ranges to blend something between two different regions.
-  //
-  constexpr auto model = BlendingModel{123.45, 678.9, {-5.0, 5.0}};
+///////////////////////////////////////////////////////////////////////////////
+
+void more_complex_example() {
+  std::cout << "=======================================================" << std::endl;
+  std::cout << "Blending model value range example" << std::endl;
+  std::cout << "=======================================================" << std::endl;
+
+  constexpr auto model       = BlendingModel{123.45, 678.9, {-5.0, 5.0}};
   constexpr auto model_width = model.extent().size();
 
   for (auto x = model.extent().min() - model_width; x < model.extent().max() + model_width; x += 3 * model_width / 30) {
-    std::cout << x << "\t" << model.get(x) << std::endl;
+   std::cout << x << "\t" << model.get(x) << std::endl;
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int main() {
+
+  simple_example();
+
+  std::cout << std::endl;
+
+  more_complex_example();
 
   return 0;
 }
+
+///////////////////////////////////////////////////////////////////////////////

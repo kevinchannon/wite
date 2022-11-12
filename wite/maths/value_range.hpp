@@ -83,6 +83,7 @@ struct value_range {
     _WITE_DEBUG_ASSERT(_min <= _max, "value_range min should be <= max");
     return _max - _min;
   }
+  _WITE_NODISCARD constexpr value_type width() const _WITE_RELEASE_NOEXCEPT { return size(); }
 
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _min == _max; }
 
