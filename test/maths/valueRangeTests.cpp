@@ -260,6 +260,10 @@ TEST_CASE("value_range tests", "[maths]") {
     SECTION("intermediate value is correct") {
       REQUIRE(Catch::Approx(0.35).epsilon(1e-10) == value_range(0, 100).fraction(35));
     }
+
+    SECTION("empty range returns NaN") {
+      REQUIRE(std::isnan(value_range{0.0, 0.0}.fraction(0.0)));
+    }
   }
 }
 
