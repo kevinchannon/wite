@@ -15,10 +15,7 @@ TEST_CASE("bounded Value Tests", "[maths]") {
     }
 
     SECTION("can be set") {
-      auto x = bounded_value{10};
-
-      x.value(20);
-      REQUIRE(20 == x.value());
+      REQUIRE(20 == bounded_value{10}.value(20).value());
     }
   }
 
@@ -35,10 +32,7 @@ TEST_CASE("bounded Value Tests", "[maths]") {
     }
 
     SECTION("set bounds to new value") {
-      auto x = bounded_value{0, {-10, 10}};
-      x.bounds({-5, 5});
-
-      REQUIRE(value_range{-5, 5} == x.bounds());
+      REQUIRE(value_range{-5, 5} == bounded_value{0, {-10, 10}}.bounds({-5, 5}).bounds());
     }
   }
 

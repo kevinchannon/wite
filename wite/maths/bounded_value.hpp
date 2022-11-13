@@ -25,10 +25,16 @@ class bounded_value {
 
   _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return _value; }
 
-  void value(const Value_T& new_value) noexcept { _value = new_value; }
+  bounded_value& value(const Value_T& new_value) noexcept { 
+    _value = new_value;
+    return *this;
+  }
 
   _WITE_NODISCARD constexpr const bound_type& bounds() const noexcept { return _bounds; }
-  void bounds(const bound_type& new_bounds) { _bounds = new_bounds; }
+  bounded_value& bounds(const bound_type& new_bounds) {
+    _bounds = new_bounds;
+    return *this;
+  }
 
   _WITE_NODISCARD constexpr bool is_in_bounds() const noexcept { return _bounds.contains(_value); }
 
