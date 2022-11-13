@@ -12,10 +12,10 @@ namespace wite::maths {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
+template <typename Value_T, range_boundary LBOUND = range_boundary::closed, range_boundary HBOUND = range_boundary::closed>
 struct bounded_value {
   using value_type = Value_T;
-  using bound_type = value_range<value_type>;
+  using bound_type = value_range<value_type, LBOUND, HBOUND>;
 
   constexpr bounded_value(Value_T value,
                           bound_type bounds = bound_type{std::numeric_limits<value_type>::min(),
