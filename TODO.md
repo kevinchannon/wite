@@ -19,7 +19,6 @@
 
 ## Maths
 * Add `inerval` classes
-* Add `bound` classes  (from AdventOfCode repo)
 * Add `bounded_value` classes
 
 ## Types
