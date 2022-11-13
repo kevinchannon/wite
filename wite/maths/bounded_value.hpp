@@ -18,8 +18,10 @@ class bounded_value{
    using value_type = Value_T;
    using bound_type = value_range<value_type>;
 
-  constexpr bounded_value(Value_T value)
-       : _value{std::move(value)}, _bounds{std::numeric_limits<Value_T>::min(), std::numeric_limits<Value_T>::max()} {}
+  constexpr bounded_value(Value_T value,
+                           bound_type bounds = bound_type{std::numeric_limits<value_type>::min(),
+                                                          std::numeric_limits<value_type>::max()})
+       : _value{std::move(value)}, _bounds{std::move(bounds)} {}
 
   _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return _value; }
 
