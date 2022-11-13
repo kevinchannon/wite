@@ -28,6 +28,7 @@ class bounded_value{
   void value(const Value_T& new_value) noexcept { _value = new_value; }
 
   _WITE_NODISCARD constexpr const bound_type& bounds() const noexcept { return _bounds; }
+  void bounds(const bound_type& new_bounds) { _bounds = new_bounds; }
 
  private:
   Value_T _value{};

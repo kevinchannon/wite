@@ -33,5 +33,12 @@ TEST_CASE("bounded Value Tests", "[maths]") {
       REQUIRE(value_range{-std::numbers::pi, std::numbers::pi} ==
               bounded_value{1.0, {-std::numbers::pi, std::numbers::pi}}.bounds());
     }
+
+    SECTION("set bounds to new value") {
+      auto x = bounded_value{0, {-10, 10}};
+      x.bounds({-5, 5});
+
+      REQUIRE(value_range{-5, 5} == x.bounds());
+    }
   }
 }
