@@ -12,5 +12,12 @@ TEST_CASE("bounded Value Tests", "[maths]") {
       const auto x = bounded_value{10};
       REQUIRE(10 == x.value());
     }
+
+    SECTION("can be set") {
+      auto x = bounded_value{10};
+
+      x.value(20);
+      REQUIRE(20 == x.value());
+    }
   }
 }

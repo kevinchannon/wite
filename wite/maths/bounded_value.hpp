@@ -15,6 +15,8 @@ class bounded_value{
 
   _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return _value; }
 
+  void value(const Value_T& new_value) noexcept { _value = new_value; }
+
  private:
   Value_T _value;
 };
