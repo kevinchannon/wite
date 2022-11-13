@@ -15,6 +15,7 @@
 * [Maths](https://github.com/kevinchannon/wite#Maths)
     * [Numeric Helpers](https://github.com/kevinchannon/wite#Numeric-Helpers)
     * [Value Range](https://github.com/kevinchannon/wite#value_range)
+    * [Bounded Value](https://github.com/kevinchannon/wite#bounded_value)
 * [Compiler Macros](https://github.com/kevinchannon/wite#Compiler-Macros)
 
 # Wite
@@ -555,6 +556,28 @@ const auto val_rng_from_collection = maths::envelope(values);
 
 `maths::min` and `maths::max` are overloaded to take `value_range`. So, if you have a bunch of `value_range`s, then you can find the min of the mins, or the max of the maxes. 
 
+## `bounded_value`
+```c++
+#include <wite/maths/bounded_value.hpp>
+```
+This is a small class that bundles a value and its range together.
+```c++
+namespace wite::maths = wm;
+
+const auto val = wm::bounded_value{2, {0, 10}};
+```
+`val` is has a value of `2` and a range of `[0,10]`.  You can set the bounds and value to any value you like; there's no constraints applied by the class itself. However, `bounded_value` lets you check if the value is in range, or push it into range:
+```c++
+auto param = wm::bounded_value{2, {0, 10}};
+
+param.value = 20;
+
+// in_range <-- false.
+const auto in_range = param.is_in_bounds();
+
+// param.value <-- 10.
+param.clamp();
+```
 
 # Compiler Macros
 You might want to do things a bit differently, so here are some build-time specializations that you can make.

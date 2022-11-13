@@ -11,28 +11,20 @@ using namespace wite::maths;
 TEST_CASE("bounded Value Tests", "[maths]") {
   SECTION("value") {
     SECTION("is expected value") {
-      REQUIRE(10 == bounded_value{10}.value());
-    }
-
-    SECTION("can be set") {
-      REQUIRE(20 == bounded_value{10}.value(20).value());
+      REQUIRE(10 == bounded_value{10}.value);
     }
   }
 
   SECTION("bounds") {
     SECTION("are min/max value by default") {
-      REQUIRE(value_range{std::numeric_limits<int>::min(), std::numeric_limits<int>::max()} == bounded_value{10}.bounds());
-      REQUIRE(value_range{std::numeric_limits<double>::min(), std::numeric_limits<double>::max()} == bounded_value{100.0}.bounds());
+      REQUIRE(value_range{std::numeric_limits<int>::min(), std::numeric_limits<int>::max()} == bounded_value{10}.bounds);
+      REQUIRE(value_range{std::numeric_limits<double>::min(), std::numeric_limits<double>::max()} == bounded_value{100.0}.bounds);
     }
 
     SECTION("have the expected value on construction") {
-      REQUIRE(value_range{0, 10} == bounded_value{5, {0, 10}}.bounds());
+      REQUIRE(value_range{0, 10} == bounded_value{5, {0, 10}}.bounds);
       REQUIRE(value_range{-std::numbers::pi, std::numbers::pi} ==
-              bounded_value{1.0, {-std::numbers::pi, std::numbers::pi}}.bounds());
-    }
-
-    SECTION("set bounds to new value") {
-      REQUIRE(value_range{-5, 5} == bounded_value{0, {-10, 10}}.bounds({-5, 5}).bounds());
+              bounded_value{1.0, {-std::numbers::pi, std::numbers::pi}}.bounds);
     }
   }
 
@@ -44,8 +36,8 @@ TEST_CASE("bounded Value Tests", "[maths]") {
   }
 
   SECTION("clamp") {
-    REQUIRE(2 == bounded_value{2, {0, 10}}.clamp().value());
-    REQUIRE(0 == bounded_value{-1, {0, 10}}.clamp().value());
-    REQUIRE(10 == bounded_value{11, {0, 10}}.clamp().value());
+    REQUIRE(2 == bounded_value{2, {0, 10}}.clamp().value);
+    REQUIRE(0 == bounded_value{-1, {0, 10}}.clamp().value);
+    REQUIRE(10 == bounded_value{11, {0, 10}}.clamp().value);
   }
 }
