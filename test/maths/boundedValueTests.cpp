@@ -48,4 +48,10 @@ TEST_CASE("bounded Value Tests", "[maths]") {
     REQUIRE_FALSE(bounded_value{-1, {0, 10}}.is_in_bounds());
     REQUIRE_FALSE(bounded_value{11, {0, 10}}.is_in_bounds());
   }
+
+  SECTION("clamp") {
+    REQUIRE(2 == bounded_value{2, {0, 10}}.clamp().value());
+    REQUIRE(0 == bounded_value{-1, {0, 10}}.clamp().value());
+    REQUIRE(10 == bounded_value{11, {0, 10}}.clamp().value());
+  }
 }
