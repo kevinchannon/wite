@@ -1,4 +1,19 @@
-﻿# wite
+﻿### Table of Contents
+
+* [Wite](https://github.com/kevinchannon/wite#Wite)
+  * [Prerequisites](https://github.com/kevinchannon/wite)
+  * [Download](https://github.com/kevinchannon/wite#wite)
+  * [Installation](https://github.com/kevinchannon/wite#wite)
+* [Collections](https://github.com/kevinchannon/wite#Collections)
+* [IO](https://github.com/kevinchannon/wite#IO)
+* [Binascii](https://github.com/kevinchannon/wite#Binascii)
+* [String](https://github.com/kevinchannon/wite#String)
+* [Fragment String](https://github.com/kevinchannon/wite#Fragment%20String)
+* [Geometry](https://github.com/kevinchannon/wite#Geometry)
+* [Maths](https://github.com/kevinchannon/wite#Maths)
+* [Compiler Macros](https://github.com/kevinchannon/wite#Compiler%20Macros)
+
+# Wite
 Wite stands for "Why isn't this easy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
 
 ## Prerequisites
@@ -247,7 +262,7 @@ const auto views_of_pieces = ws::split_to<std::vector<std::string_view>>(long_li
 ```
 In this case, no additional memory allocation happens for the strings in the split result, the string_views are just pointers into the original strings.
 
-# fragment_string
+# Fragment String
 
 ```c++
 #include <wite/string/fragment_string.hpp>
