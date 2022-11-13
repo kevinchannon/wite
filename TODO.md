@@ -19,7 +19,6 @@
 
 ## Maths
 * Add `inerval` classes
-* Add `bounded_value` classes
 
 ## Types
 * Add `identifiable`
