@@ -41,4 +41,11 @@ TEST_CASE("bounded Value Tests", "[maths]") {
       REQUIRE(value_range{-5, 5} == x.bounds());
     }
   }
+
+  SECTION("is_in_bounds") {
+    REQUIRE(bounded_value{0, {0, 10}}.is_in_bounds());
+    REQUIRE(bounded_value{10, {0, 10}}.is_in_bounds());
+    REQUIRE_FALSE(bounded_value{-1, {0, 10}}.is_in_bounds());
+    REQUIRE_FALSE(bounded_value{11, {0, 10}}.is_in_bounds());
+  }
 }

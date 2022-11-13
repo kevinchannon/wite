@@ -30,6 +30,8 @@ class bounded_value{
   _WITE_NODISCARD constexpr const bound_type& bounds() const noexcept { return _bounds; }
   void bounds(const bound_type& new_bounds) { _bounds = new_bounds; }
 
+  _WITE_NODISCARD constexpr bool is_in_bounds() const noexcept { return _bounds.contains(_value); }
+
  private:
   Value_T _value{};
   bound_type _bounds{};
