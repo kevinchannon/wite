@@ -8,10 +8,12 @@
 * [IO](https://github.com/kevinchannon/wite#IO)
 * [Binascii](https://github.com/kevinchannon/wite#Binascii)
 * [String](https://github.com/kevinchannon/wite#String)
-* [Fragment String](https://github.com/kevinchannon/wite#Fragment%20String)
+* [Fragment String](https://github.com/kevinchannon/wite#Fragment-String)
 * [Geometry](https://github.com/kevinchannon/wite#Geometry)
 * [Maths](https://github.com/kevinchannon/wite#Maths)
-* [Compiler Macros](https://github.com/kevinchannon/wite#Compiler%20Macros)
+    * [Numeric Helpers](https://github.com/kevinchannon/wite#Numeric-Helpers)
+    * [Value Range](https://github.com/kevinchannon/wite#value_range)
+* [Compiler Macros](https://github.com/kevinchannon/wite#Compiler-Macros)
 
 # Wite
 Wite stands for "Why isn't this easy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
