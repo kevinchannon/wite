@@ -1,9 +1,11 @@
 ﻿### Table of Contents
 
 * [Wite](https://github.com/kevinchannon/wite#Wite)
-  * [Prerequisites](https://github.com/kevinchannon/wite)
-  * [Download](https://github.com/kevinchannon/wite#wite)
-  * [Installation](https://github.com/kevinchannon/wite#wite)
+  * [Prerequisites](https://github.com/kevinchannon/wite#Prerequisites)
+  * [Download](https://github.com/kevinchannon/wite#Download)
+  * [Installation](https://github.com/kevinchannon/wite#Installation)
+  * [Building](https://github.com/kevinchannon/wite#Building)
+  * [Get Started](https://github.com/kevinchannon/wite#Get-Started)
 * [Collections](https://github.com/kevinchannon/wite#Collections)
 * [IO](https://github.com/kevinchannon/wite#IO)
 * [Binascii](https://github.com/kevinchannon/wite#Binascii)
@@ -16,10 +18,10 @@
 * [Compiler Macros](https://github.com/kevinchannon/wite#Compiler-Macros)
 
 # Wite
-Wite stands for "Why isn't this easy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
+Wite stands for "**W**hy **i**sn't **t**his **e**asy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
 
 ## Prerequisites
-Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet).
+Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet). Wite pretty much requires that you're using **C++20**, so I guess that's a preeuisite of sorts.
 
 ## Download
 If you're planning to just use Wite in your project, then you don't really need to manually download it; it should be acquired by some kind of package management solution. If you do want to download the source, then you can do by going to the [Releases](https://github.com/kevinchannon/wite/releases) section and downloading the "wite-src.zip" file for the version of your choice.
@@ -27,8 +29,16 @@ If you're planning to just use Wite in your project, then you don't really need 
 ## Installation
 Wite is header only, so you can do something as simple as downloading the code and copying the "wite" directory into your source tree.  The preferred way to consume Wite is _via_ CMake's FetchContent.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository
 
-## Macros
-Some of the features of Wite are tunable by the user at compilation time. For a list of the macros that you can define as command-line parameters to the compiler, see the Compiler Macros section at the end of this readme.
+## Building
+Wite is header only, so there's no "building" of Wite by itself. The relevant bits will get built when you `#include` them in your files and then build your own project.
+
+Some of the features of Wite are tunable by the user at compilation time. For a list of the macros that you can define as command-line parameters to the compiler, see the [Compiler Macros](https://github.com/kevinchannon/wite#Compiler-Macros) section at the end of this readme.
+
+## Get Started
+Once downloaded, or however you installed things, then you should be able to just `#include` the bit you want to use and get going. If you don't know which bit you want, then just `#include <wite/wite.hpp>` and you'll get everything.
+
+Everything in Wite is in the `wite` namespace, and the various sub-parts are in their own sub-namespaces within this. So, the string stuff is all in `wite::string` and the maths stuff is all in `wite::maths`, and so on.
+
 
 # Collections
 ### `stack_vector`
