@@ -2,6 +2,10 @@
 
 #include <wite/env/environment.hpp>
 
+#include <wite/maths/value_range.hpp>
+
+#include <limits>
+
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace wite::maths {
@@ -11,14 +15,21 @@ namespace wite::maths {
 template<typename Value_T>
 class bounded_value{
  public:
-  explicit bounded_value(Value_T value) : _value{std::move(value)} {}
+   using value_type = Value_T;
+   using bound_type = value_range<value_type>;
+
+  constexpr bounded_value(Value_T value)
+       : _value{std::move(value)}, _bounds{std::numeric_limits<Value_T>::min(), std::numeric_limits<Value_T>::max()} {}
 
   _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return _value; }
 
   void value(const Value_T& new_value) noexcept { _value = new_value; }
 
+  _WITE_NODISCARD constexpr const bound_type& bounds() const noexcept { return _bounds; }
+
  private:
-  Value_T _value;
+  Value_T _value{};
+  bound_type _bounds{};
 };
 
 ///////////////////////////////////////////////////////////////////////////////
