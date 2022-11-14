@@ -5,11 +5,15 @@
 #include <cstdio>
 #include <filesystem>
 #include <optional>
+#include <stdexcept>
 
 namespace wite::io {
 
 _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
   auto file_pointer = std::fopen(path.c_str(), "rb");
+  if (not file_pointer){
+    throw std::invalid_argument{"cannot read invalid path"};
+  }
 
   if (not count.has_value()) {
     std::fseek(file_pointer, 0, SEEK_END);
