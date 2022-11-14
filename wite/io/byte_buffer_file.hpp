@@ -9,6 +9,12 @@
 
 namespace wite::io {
 
+_WITE_NODISCARD inline dynamic_byte_buffer unsafe_read(FILE* file_pointer, size_t count) {
+  auto out = dynamic_byte_buffer(count);
+  std::fread(out.data(), 1, count, file_pointer);
+  return out;
+}
+
 _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
   auto file_pointer = std::fopen(path.c_str(), "rb");
   if (not file_pointer){
@@ -21,9 +27,8 @@ _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& pat
     std::rewind(file_pointer);
   }
 
-  auto out = dynamic_byte_buffer(*count);
+  auto out = unsafe_read(file_pointer, *count);
 
-  std::fread(out.data(), 1, *count, file_pointer);
   std::fclose(file_pointer);
 
   return out;
