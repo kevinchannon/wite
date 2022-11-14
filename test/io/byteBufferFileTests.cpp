@@ -58,4 +58,8 @@ TEST_CASE("Byte buffer file tests", "[buffer_io]") {
   SECTION("reading a non-existent path throws std::invalid_argument") {
     WITE_REQ_THROWS(io::read("not_a_file"), std::invalid_argument, "cannot read invalid path");
   }
+
+  SECTION("reading too many bytes just reads until the end of the file") {
+    REQUIRE(TestFileMaker::default_content == to_string(io::read(test_file.path, 18)));
+  }
 }

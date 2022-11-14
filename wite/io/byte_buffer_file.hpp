@@ -21,10 +21,14 @@ _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& pat
     throw std::invalid_argument{"cannot read invalid path"};
   }
 
+  std::fseek(file_pointer, 0, SEEK_END);
+  const auto file_size_in_bytes = static_cast<size_t>(std::ftell(file_pointer));
+  std::rewind(file_pointer);
+
   if (not count.has_value()) {
-    std::fseek(file_pointer, 0, SEEK_END);
-    *count = static_cast<size_t>(std::ftell(file_pointer));
-    std::rewind(file_pointer);
+    *count = file_size_in_bytes;
+  } else {
+    *count = std::min(*count, file_size_in_bytes);
   }
 
   auto out = unsafe_read(file_pointer, *count);
