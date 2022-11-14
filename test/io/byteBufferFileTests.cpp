@@ -17,7 +17,8 @@ namespace {
 struct TestFileMaker {
   constexpr static auto default_content = "Some test content";
 
-  explicit TestFileMaker(std::filesystem::path path, std::optional<std::string_view> content = std::nullopt) : path{std::move(path)} {
+  explicit TestFileMaker(std::filesystem::path path, std::optional<std::string_view> content = std::nullopt)
+      : path{std::move(path)} {
     std::ofstream file{this->path};
     if (content) {
       file << *content;
@@ -46,7 +47,7 @@ std::string to_string(const io::dynamic_byte_buffer& bytes) {
 TEST_CASE("Byte buffer file tests", "[buffer_io]") {
   const auto test_file = TestFileMaker{"test_file_delete_me.bin"};
 
-  SECTION("read bytes from file") {
-    REQUIRE(TestFileMaker::default_content == to_string(io::read(test_file.path, 17)));
+  SECTION("Read specified number of bytes from file") {
+    REQUIRE(std::string(TestFileMaker::default_content).substr(0, 10) == to_string(io::read(test_file.path, 10)));
   }
 }
