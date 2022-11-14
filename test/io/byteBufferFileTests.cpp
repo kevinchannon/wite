@@ -50,4 +50,8 @@ TEST_CASE("Byte buffer file tests", "[buffer_io]") {
   SECTION("Read specified number of bytes from file") {
     REQUIRE(std::string(TestFileMaker::default_content).substr(0, 10) == to_string(io::read(test_file.path, 10)));
   }
+
+  SECTION("Read whole file if no byte count is specified"){
+    REQUIRE(TestFileMaker::default_content == to_string(io::read(test_file.path)));
+  }
 }
