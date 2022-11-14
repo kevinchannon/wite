@@ -15,24 +15,23 @@ _WITE_NODISCARD inline dynamic_byte_buffer unsafe_read(FILE* file_pointer, size_
   return out;
 }
 
+_WITE_NODISCARD auto file_size(FILE* file_pointer) {
+  const auto initial_offset = std::ftell(file_pointer);
+
+  std::fseek(file_pointer, 0, SEEK_END);
+  auto file_size_in_bytes = static_cast<size_t>(std::ftell(file_pointer));
+  std::fseek(file_pointer, initial_offset, SEEK_SET);
+
+  return file_size_in_bytes;
+}
+
 _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
   auto file_pointer = std::fopen(path.c_str(), "rb");
   if (not file_pointer){
     throw std::invalid_argument{"cannot read invalid path"};
   }
 
-  std::fseek(file_pointer, 0, SEEK_END);
-  const auto file_size_in_bytes = static_cast<size_t>(std::ftell(file_pointer));
-  std::rewind(file_pointer);
-
-  if (not count.has_value()) {
-    *count = file_size_in_bytes;
-  } else {
-    *count = std::min(*count, file_size_in_bytes);
-  }
-
-  auto out = unsafe_read(file_pointer, *count);
-
+  auto out = unsafe_read(file_pointer, not count.has_value() ? file_size(file_pointer) : std::min(*count, file_size(file_pointer)));
   std::fclose(file_pointer);
 
   return out;
