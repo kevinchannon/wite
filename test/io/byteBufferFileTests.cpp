@@ -61,5 +61,9 @@ TEST_CASE("Byte buffer file tests", "[buffer_io]") {
 
   SECTION("reading too many bytes just reads until the end of the file") {
     REQUIRE(TestFileMaker::default_content == to_string(io::read(test_file.path, 18)));
+
+    SECTION("...and returns the number of bytes read"){
+
+    }
   }
 }
