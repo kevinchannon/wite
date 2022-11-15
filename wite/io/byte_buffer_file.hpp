@@ -11,6 +11,18 @@
 
 namespace wite::io {
 
+namespace detail {
+FILE* get_read_file_pointer(const std::filesystem::path& path) noexcept {
+#ifdef _CRT_FUNCTIONS_REQUIRED
+    FILE* file_pointer = nullptr;
+    const auto ec      = fopen_s(&file_pointer, path.string().c_str(), "rb");
+    return 0 == ec ? file_pointer : nullptr;
+#else
+    return std::fopen(path.string().c_str(), "rb");
+#endif
+  }
+}
+
 _WITE_NODISCARD inline dynamic_byte_buffer unsafe_read(FILE* file_pointer, size_t count) {
   auto out = dynamic_byte_buffer(count);
   std::fread(out.data(), 1, count, file_pointer);
@@ -28,20 +40,25 @@ _WITE_NODISCARD auto file_size(FILE* file_pointer) {
 }
 
 _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
-#ifdef _WITE_COMPILER_MSVC
-  FILE* file_pointer = nullptr;
-  const auto ec = fopen_s(&file_pointer, path.string().c_str(), "rb");
-  if (0 != ec) {
-    throw std::invalid_argument{"cannot read invalid path"};
-  }
-#else
-  auto file_pointer = std::fopen(path.string().c_str(), "rb");
+  auto file_pointer = detail::get_read_file_pointer(path.string().c_str());
   if (not file_pointer) {
     throw std::invalid_argument{"cannot read invalid path"};
   }
-#endif
 
   auto out = unsafe_read(file_pointer, not count.has_value() ? file_size(file_pointer) : std::min(*count, file_size(file_pointer)));
+  std::fclose(file_pointer);
+
+  return out;
+}
+
+_WITE_NODISCARD inline read_result_t<dynamic_byte_buffer> try_read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
+  auto file_pointer = detail::get_read_file_pointer(path.string().c_str());
+  if (not file_pointer) {
+    return {read_error::file_not_found};
+  }
+
+  auto out =
+      unsafe_read(file_pointer, not count.has_value() ? file_size(file_pointer) : std::min(*count, file_size(file_pointer)));
   std::fclose(file_pointer);
 
   return out;

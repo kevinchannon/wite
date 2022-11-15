@@ -61,9 +61,11 @@ TEST_CASE("Byte buffer file tests", "[buffer_io]") {
 
   SECTION("reading too many bytes just reads until the end of the file") {
     REQUIRE(TestFileMaker::default_content == to_string(io::read(test_file.path, 18)));
+  }
 
-    SECTION("...and returns the number of bytes read"){
-
-    }
+  SECTION("try_read returns an error if the file cannot be opened") {
+    const auto read_result = io::try_read("not_a_file");
+    REQUIRE(read_result.is_error());
+    REQUIRE(io::read_error::file_not_found == read_result.error());
   }
 }

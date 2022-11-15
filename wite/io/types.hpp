@@ -42,7 +42,7 @@ using dynamic_byte_buffer = std::vector<byte>;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-enum class read_error { insufficient_buffer, invalid_position_offset };
+enum class read_error { insufficient_buffer, invalid_position_offset, file_not_found };
 
 template <typename Value_T>
 using read_result_t = wite::result<Value_T, read_error>;
