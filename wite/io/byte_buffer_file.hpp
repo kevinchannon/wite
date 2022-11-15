@@ -9,19 +9,31 @@
 #include <optional>
 #include <stdexcept>
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace wite::io {
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail {
-FILE* get_read_file_pointer(const std::filesystem::path& path) noexcept {
+
+///////////////////////////////////////////////////////////////////////////////
+
+_WITE_NODISCARD inline FILE* get_read_file_pointer(const std::filesystem::path& path) noexcept {
 #ifdef _CRT_FUNCTIONS_REQUIRED
-    FILE* file_pointer = nullptr;
-    const auto ec      = fopen_s(&file_pointer, path.string().c_str(), "rb");
-    return 0 == ec ? file_pointer : nullptr;
+  FILE* file_pointer = nullptr;
+  const auto ec      = fopen_s(&file_pointer, path.string().c_str(), "rb");
+  return 0 == ec ? file_pointer : nullptr;
 #else
-    return std::fopen(path.string().c_str(), "rb");
+  return std::fopen(path.string().c_str(), "rb");
 #endif
-  }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+}  // namespace detail
+
+///////////////////////////////////////////////////////////////////////////////
 
 _WITE_NODISCARD inline dynamic_byte_buffer unsafe_read(FILE* file_pointer, size_t count) {
   auto out = dynamic_byte_buffer(count);
@@ -29,7 +41,9 @@ _WITE_NODISCARD inline dynamic_byte_buffer unsafe_read(FILE* file_pointer, size_
   return out;
 }
 
-_WITE_NODISCARD auto file_size(FILE* file_pointer) {
+///////////////////////////////////////////////////////////////////////////////
+
+_WITE_NODISCARD inline auto file_size(FILE* file_pointer) noexcept {
   const auto initial_offset = std::ftell(file_pointer);
 
   std::fseek(file_pointer, 0, SEEK_END);
@@ -39,6 +53,9 @@ _WITE_NODISCARD auto file_size(FILE* file_pointer) {
   return file_size_in_bytes;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+#ifndef WITE_NO_EXCEPTIONS
 _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
   auto file_pointer = detail::get_read_file_pointer(path.string().c_str());
   if (not file_pointer) {
@@ -50,6 +67,9 @@ _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& pat
 
   return out;
 }
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
 
 _WITE_NODISCARD inline read_result_t<dynamic_byte_buffer> try_read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
   auto file_pointer = detail::get_read_file_pointer(path.string().c_str());
@@ -64,4 +84,8 @@ _WITE_NODISCARD inline read_result_t<dynamic_byte_buffer> try_read(const std::fi
   return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 }  // namespace wite::io
+
+///////////////////////////////////////////////////////////////////////////////
