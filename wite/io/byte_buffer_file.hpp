@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wite/env/environment.hpp>
+
 #include <wite/io/types.hpp>
 
 #include <cstdio>
@@ -26,10 +28,18 @@ _WITE_NODISCARD auto file_size(FILE* file_pointer) {
 }
 
 _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
-  auto file_pointer = std::fopen(path.c_str(), "rb");
-  if (not file_pointer){
+#ifdef _WITE_COMPILER_MSVC
+  FILE* file_pointer = nullptr;
+  const auto ec = fopen_s(&file_pointer, path.string().c_str(), "rb");
+  if (0 != ec) {
     throw std::invalid_argument{"cannot read invalid path"};
   }
+#else
+  auto file_pointer = std::fopen(path.string().c_str(), "rb");
+  if (not file_pointer) {
+    throw std::invalid_argument{"cannot read invalid path"};
+  }
+#endif
 
   auto out = unsafe_read(file_pointer, not count.has_value() ? file_size(file_pointer) : std::min(*count, file_size(file_pointer)));
   std::fclose(file_pointer);
