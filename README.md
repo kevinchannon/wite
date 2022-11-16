@@ -133,6 +133,26 @@ The advantage of this approach is that the various checks on the buffer capacity
 writer.write(uint64_t{v.size()}, v);
 ```
 
+## Reading/writing bytes from/to files
+```c++
+#include <wite/io/byte_buffer_file.hpp>
+```
+`io::read` and `io::write` can be used with a file path to write bytes to file. So, to read some bytes from a file with path `my/great/bytes.bin` you'd do:
+```c++
+// Read all the bytes
+const auto all_the_bytes = io::read("my/great/bytes.bin");
+
+// The first 100 bytes
+const auto some_bytes = io::read("my/great/bytes.bin", 100);
+```
+
+If you specify a number of bytes, but the file is smaller than that, then all the bytes will be read (however many that is).  You can also use `try_read` if you don't want the call to throw exceptions (if the file doesn't exist, for example).
+
+Writing to a file is similar:
+```c++
+
+```
+
 ## Simple byte conversions
 If you have a value and you want to get it as an array of `std::bytes`, then you can simply do:
 ```c++
