@@ -77,7 +77,7 @@ _WITE_NODISCARD inline auto file_size(FILE* file_pointer) noexcept {
 #ifndef WITE_NO_EXCEPTIONS
 _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& path, std::optional<size_t> count = std::nullopt) {
   auto file_pointer = detail::get_read_file_pointer(path.string().c_str());
-  if (not file_pointer) {
+  if (nullptr == file_pointer) {
     throw std::invalid_argument{"cannot read invalid path"};
   }
 
@@ -94,7 +94,7 @@ _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& pat
 template<common::contiguous_range_type Range_T>
 _WITE_NODISCARD inline read_result_t<typename Range_T::size_type> try_read(const std::filesystem::path& path, Range_T& out) noexcept {
   auto file_pointer = detail::get_read_file_pointer(path.string().c_str());
-  if (not file_pointer) {
+  if (nullptr == file_pointer) {
     return {read_error::file_not_found};
   }
 
@@ -114,6 +114,10 @@ _WITE_NODISCARD inline read_result_t<typename Range_T::size_type> try_read(const
 template<common::contiguous_range_type Range_T>
 void write(const std::filesystem::path& path, size_t count, Range_T&& bytes) {
   auto file_pointer = detail::get_write_file_pointer(path);
+  if (nullptr == file_pointer) {
+    throw std::invalid_argument{"cannot write to invalid path"};
+  }
+
   unsafe_write(file_pointer, count, std::forward<Range_T>(bytes));
   std::fclose(file_pointer);
 }
@@ -123,6 +127,10 @@ void write(const std::filesystem::path& path, size_t count, Range_T&& bytes) {
 template <common::contiguous_range_type Range_T>
 void write(const std::filesystem::path& path, Range_T&& bytes) {
   auto file_pointer = detail::get_write_file_pointer(path);
+  if (nullptr == file_pointer) {
+    throw std::invalid_argument{"cannot write to invalid path"};
+  }
+
   const auto size   = std::distance(bytes.begin(), bytes.end());
   unsafe_write(file_pointer, size, std::forward<Range_T>(bytes));
   std::fclose(file_pointer);
