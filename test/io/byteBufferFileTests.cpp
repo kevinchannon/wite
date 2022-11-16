@@ -65,9 +65,17 @@ TEST_CASE("Byte buffer file tests", "[buffer_io]") {
   }
 
   SECTION("try_read returns an error if the file cannot be opened") {
-    const auto read_result = io::try_read("not_a_file");
+    auto bytes             = io::dynamic_byte_buffer(100);
+    const auto read_result = io::try_read("not_a_file", bytes);
     REQUIRE(read_result.is_error());
     REQUIRE(io::read_error::file_not_found == read_result.error());
+  }
+
+  SECTION("try_read returns the number of bytes read on success") {
+    auto bytes = io::dynamic_byte_buffer(100);
+    const auto result = io::try_read(test_file.path, bytes);
+    REQUIRE(result.ok());
+    REQUIRE(TestFileMaker::default_content == to_string(bytes));
   }
 
   SECTION("Write specified number of bytes from a buffer to file") {

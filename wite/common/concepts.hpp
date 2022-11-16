@@ -28,10 +28,12 @@ template <typename T>
 _WITE_CONCEPT is_iterator_v = is_input_iterator<T>::value;
 
 #if _WITE_HAS_CONCEPTS
-template<typename T>
+template <typename T>
 concept contiguous_range_type = requires(T& t) {
-                       t.data();
-                     };
+                                  t.begin();
+                                  t.end();
+                                  t.data();
+                                };
 #endif
 
 template <typename T, typename = void>
