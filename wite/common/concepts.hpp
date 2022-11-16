@@ -27,6 +27,26 @@ struct is_input_iterator<T,
 template <typename T>
 _WITE_CONCEPT is_iterator_v = is_input_iterator<T>::value;
 
+#if _WITE_HAS_CONCEPTS
+template<typename T>
+concept contiguous_range_type = requires(T& t) {
+                       t.data();
+                     };
+#endif
+
+template <typename T, typename = void>
+struct is_range : std::false_type {};
+
+template <typename T>
+struct is_range<T,
+                      ::std::void_t<decltype(std::declval<T>().begin()),  // has a beginning
+                                    decltype(std::declval<T>().end())>>   // ...and an end 
+    : std::true_type {};
+
+template <typename T>
+_WITE_CONCEPT is_range_v = is_range<T>::value;
+
+
 template <typename T, typename = void>
 struct is_sized_range : std::false_type {};
 

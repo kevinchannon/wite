@@ -10,6 +10,7 @@
 #include <numeric>
 #include <optional>
 #include <string_view>
+#include <algorithm>
 
 using namespace wite;
 
@@ -51,7 +52,7 @@ TEST_CASE("Byte buffer file tests", "[buffer_io]") {
     REQUIRE(std::string(TestFileMaker::default_content).substr(0, 10) == to_string(io::read(test_file.path, 10)));
   }
 
-  SECTION("Read whole file if no byte count is specified"){
+  SECTION("Read whole file if no byte count is specified") {
     REQUIRE(TestFileMaker::default_content == to_string(io::read(test_file.path)));
   }
 
@@ -67,5 +68,34 @@ TEST_CASE("Byte buffer file tests", "[buffer_io]") {
     const auto read_result = io::try_read("not_a_file");
     REQUIRE(read_result.is_error());
     REQUIRE(io::read_error::file_not_found == read_result.error());
+  }
+
+  SECTION("Write specified number of bytes from a buffer to file") {
+    const auto bytes = io::dynamic_byte_buffer{io::byte{0x01},
+                                               io::byte{0x02},
+                                               io::byte{0x03},
+                                               io::byte{0x04},
+                                               io::byte{0x05},
+                                               io::byte{0x06},
+                                               io::byte{0x07},
+                                               io::byte{0x08}};
+
+    io::write(test_file.path, 6, bytes);
+
+    SECTION("writes the correct number of bytes to the file") {
+      REQUIRE(6 == std::filesystem::file_size(test_file.path));
+
+      SECTION("and the bytes have the expected values") {
+        std::ifstream byte_file{test_file.path, std::ios::binary};
+        REQUIRE(byte_file.is_open());
+        auto bytes_from_file = io::dynamic_byte_buffer{};
+        std::transform(std::istream_iterator<uint8_t>{byte_file}, {}, std::back_inserter(bytes_from_file), [](const auto& c) {
+          return io::byte{c};
+        });
+
+        REQUIRE(6 == bytes_from_file.size());
+        REQUIRE(std::equal(bytes.begin(), std::next(bytes.begin(), 6), bytes_from_file.begin()));
+      }
+    }
   }
 }

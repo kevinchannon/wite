@@ -3,6 +3,7 @@
 #include <wite/env/environment.hpp>
 
 #include <wite/io/types.hpp>
+#include <wite/common/concepts.hpp>
 
 #include <cstdio>
 #include <filesystem>
@@ -19,14 +20,26 @@ namespace detail {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-_WITE_NODISCARD inline FILE* get_read_file_pointer(const std::filesystem::path& path) noexcept {
+_WITE_NODISCARD inline FILE* get_file_pointer(const std::filesystem::path& path, const char* mode) noexcept {
 #ifdef _CRT_FUNCTIONS_REQUIRED
   FILE* file_pointer = nullptr;
-  const auto ec      = fopen_s(&file_pointer, path.string().c_str(), "rb");
+  const auto ec      = fopen_s(&file_pointer, path.string().c_str(), mode);
   return 0 == ec ? file_pointer : nullptr;
 #else
-  return std::fopen(path.string().c_str(), "rb");
+  return std::fopen(path.string().c_str(), mode);
 #endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+_WITE_NODISCARD inline FILE* get_read_file_pointer(const std::filesystem::path& path) noexcept {
+  return get_file_pointer(path, "rb");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+_WITE_NODISCARD inline FILE* get_write_file_pointer(const std::filesystem::path& path) noexcept {
+  return get_file_pointer(path, "wb");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,6 +52,13 @@ _WITE_NODISCARD inline dynamic_byte_buffer unsafe_read(FILE* file_pointer, size_
   auto out = dynamic_byte_buffer(count);
   std::fread(out.data(), 1, count, file_pointer);
   return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <common::contiguous_range_type Range_T>
+inline void unsafe_write(FILE* file_pointer, size_t count, Range_T&& bytes) {
+  std::fwrite(bytes.data(), 1, count, file_pointer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,6 +102,15 @@ _WITE_NODISCARD inline read_result_t<dynamic_byte_buffer> try_read(const std::fi
   std::fclose(file_pointer);
 
   return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<common::contiguous_range_type Range_T>
+void write(const std::filesystem::path& path, size_t count, Range_T&& bytes) {
+  auto file_pointer = detail::get_write_file_pointer(path);
+  unsafe_write(file_pointer, count, std::forward<Range_T>(bytes));
+  std::fclose(file_pointer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
