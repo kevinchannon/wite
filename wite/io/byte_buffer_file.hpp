@@ -139,6 +139,37 @@ void write(const std::filesystem::path& path, Range_T&& bytes) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <common::contiguous_range_type Range_T>
+bool try_write(const std::filesystem::path& path, size_t count, Range_T&& bytes) noexcept {
+  auto file_pointer = detail::get_write_file_pointer(path);
+  if (nullptr == file_pointer) {
+    return false;
+  }
+
+  unsafe_write(file_pointer, count, std::forward<Range_T>(bytes));
+  std::fclose(file_pointer);
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <common::contiguous_range_type Range_T>
+void try_write(const std::filesystem::path& path, Range_T&& bytes) {
+  auto file_pointer = detail::get_write_file_pointer(path);
+  if (nullptr == file_pointer) {
+    return false;
+  }
+
+  const auto size = std::distance(bytes.begin(), bytes.end());
+  unsafe_write(file_pointer, size, std::forward<Range_T>(bytes));
+  std::fclose(file_pointer);
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 }  // namespace wite::io
 
 ///////////////////////////////////////////////////////////////////////////////
