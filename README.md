@@ -150,7 +150,16 @@ If you specify a number of bytes, but the file is smaller than that, then all th
 
 Writing to a file is similar:
 ```c++
+const auto bytes = io::dynamic_byte_buffer{};
 
+// Fill the buffer with things...
+
+// Write the bytes to a file.
+io::write("my/file.bin", bytes);
+```
+If you only want to write the first N bytes from the buffer to file, you can pass that into `write` too:
+```c++
+io::write("my/file.bin", 100, bytes);
 ```
 
 ## Simple byte conversions
