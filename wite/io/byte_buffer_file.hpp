@@ -155,7 +155,7 @@ bool try_write(const std::filesystem::path& path, size_t count, Range_T&& bytes)
 ///////////////////////////////////////////////////////////////////////////////
 
 template <common::contiguous_range_type Range_T>
-void try_write(const std::filesystem::path& path, Range_T&& bytes) {
+bool try_write(const std::filesystem::path& path, Range_T&& bytes) {
   auto file_pointer = detail::get_write_file_pointer(path);
   if (nullptr == file_pointer) {
     return false;
