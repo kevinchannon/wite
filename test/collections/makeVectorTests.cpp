@@ -11,4 +11,8 @@ TEST_CASE("make_vector tests") {
   SECTION("reserve adapter creates vector with expected capacity") {
     REQUIRE(10 == wite::make_vector<int>(wite::reserve{10}).capacity());
   }
+
+  SECTION("size adapter creates a vector with the expected size") {
+    REQUIRE(10 == wite::make_vector<float>(wite::size{10}).size());
+  }
 }
