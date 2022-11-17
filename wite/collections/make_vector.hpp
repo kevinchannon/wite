@@ -7,22 +7,24 @@
 
 namespace wite {
 
-struct reserve {
-  size_t value{};
-};
+namespace arg {
+  struct reserve {
+    size_t value{};
+  };
 
-struct size {
-  size_t value{};
-};
+  struct size {
+    size_t value{};
+  };
+}  // namespace arg
 
-template <typename T, typename... Param_Ts>
-_WITE_NODISCARD std::vector<T> make_vector(Param_Ts... params) {
+template <typename T, typename... Arg_Ts>
+_WITE_NODISCARD std::vector<T> make_vector(Arg_Ts... args) {
   auto out = std::vector<T>{};
 
-  (overloaded{[&out](reserve param) { out.reserve(param.value); },
-              [&out](size param) { out.resize(param.value); },
-              [](auto param) { static_assert(always_false_v<decltype(param)>, "Invalid make_vector param type"); }}(
-       std::forward<Param_Ts>(params)),
+  (overloaded{[&out](arg::reserve arg) { out.reserve(arg.value); },
+              [&out](arg::size arg) { out.resize(arg.value); },
+              [](auto arg) { static_assert(always_false_v<decltype(arg)>, "Invalid make_vector arg type"); }}(
+       std::forward<Arg_Ts>(args)),
    ...);
 
   return out;
