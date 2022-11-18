@@ -6,6 +6,7 @@
   * [Installation](https://github.com/kevinchannon/wite#Installation)
   * [Building](https://github.com/kevinchannon/wite#Building)
   * [Get Started](https://github.com/kevinchannon/wite#Get-Started)
+* [Core](https://github.com/kevinchannon/wite#Core)
 * [Collections](https://github.com/kevinchannon/wite#Collections)
 * [IO](https://github.com/kevinchannon/wite#IO)
 * [Binascii](https://github.com/kevinchannon/wite#Binascii)
@@ -40,6 +41,132 @@ Once downloaded, or however you installed things, then you should be able to jus
 
 Everything in Wite is in the `wite` namespace, and the various sub-parts are in their own sub-namespaces within this. So, the string stuff is all in `wite::string` and the maths stuff is all in `wite::maths`, and so on.
 
+# Core
+```c++
+#include <wite/core.hpp>
+```
+
+These are some small and very basic classes and functions that can be used in a wide variety of situations.
+
+## `make_vector`
+```c++
+#include <wite/core/make_vector.hpp>
+```
+How much do you hate the aesthetic of having to declare a vector with it's default constructor and then immediately on the next line call `reserve` on it, before passing it to some algorithm, or something (which will typically be using `push_back`, or something, on the vector)?  I know I do:
+```c++
+auto v = std::vector<int>{};
+v.reserve(1000);   // What an annoying extra line!
+```
+Anyway, `make_vector` solves this issue:
+```c++
+using namespace wite;
+
+auto v = make_vector<int>(arg::reseve{1000});
+```
+Now, `v` is reserved with space for 1000 elements on one line. Nice.
+
+You can also specify a size for the vector too, if you like:
+```c++
+// v <- [ 1, 1, ... , 1]
+auto v = make_vector<int>(arg::size{1000, 1});
+```
+If you want to specify a size and also reserve space for more things, then you can:
+```c++
+auto v = make_vector<float>(arg::reserve{1000}, arg::size{10, 3.14f});
+```
+This gives a `v` that has 10 values initialised to 3.14, with space reserved for 1000 `float` elements in total. The order of the `arg` parameters is not important; you coud have `size` first in the list if you like.  I don't know what the name for this "argument adapter object" pattern, but I quite like it.
+
+## `result`
+```c++
+#include <wite/core/result.hpp>
+```
+In a world where exceptions are not the mechanism for handling errors, then "result codes" are basically the go-to alternative. These often take the form of an `int` value that's returned by a function that indicates the error state. Then you define a special value of that code to mean OK and you have lot of code that looks like this:
+```c++
+// Result-code-returning function; takes a value to populate
+int string_populator(std::string&);
+
+...
+
+auto my_string = std::string{];
+auto rc = string_populator(my_string);
+if (RC_OK != rc) {
+    // Handle the error gracefully
+}
+
+// Use `my_string` for something
+```
+
+This code is a little annoying because:
+1. `my_string` is first defined and default constructed and then passed the function to be populated via an ugly "output" argument.
+2. If `string_populator` returns an error, there has to be some statement somewhere about the state of `my_string` in this case. Is it left as it was when you passed it in? Is its state undefined? does it get cleared?
+3. There is nothing to prevent you accidentally using `my_string` if you ignore the result code (purposly, or not)
+
+`result` ia intended to be an alternative to this pattern that does not allow you to accidentally ignore the error state. So, the example above would look like this:
+```c++
+const auto string_result = string_maker();
+if (string_result.is_error()) { // Alternatively call do `not string_result.ok()`
+    // Handle the error by calling string_result.error() to get at the error code
+}
+
+// Use the result by calling string_result.value() to get the string.
+```
+
+### Definining a result type
+`result` is a class template that looks like this:
+```c++
+template <typename Value_T, typename Error_T> class result;
+```
+So, you need to tell it what the good result looks like (i.e. a `std::string` in the example above) and what the bad result looks like, which could just be an `int , or you could define some `error_code` enum, or even some specific class for the errors. Say we had soem `enum` for the errors like:
+```c++
+enum class string_maker_error {
+    error_1,
+    error_2,
+    error_3,
+    ...
+    error_N
+};
+```
+Then we would define an alias for the result in this situation:
+```c++
+using string_maker_result = wite::result<std::string, string_maker_error>;
+```
+and then the prototype for `string_maker` just looks like:
+```c++
+string_maker_result string_maker();
+```
+And now we have a strongly-typed result type that won't allow us to ignore errors. If you call `value()` on the result when it's actually an error, then it will call `abort` and kill your app... probably.  
+### Warning!
+All the methods on `result` are declared `noexcept`, but it's based on `std::variant`, so it will try to throw exceptions. Without the proper things built by the compiler for handling the exceptions, this will probably have some undefined behaviour, but in my experience it just aborts execution of the thing pretty quicky.  What the hell!? I can hear you saying. Well, this is in an error case, where you have ignored the error and tried to use the result anyway, so all bets are off, in my opinion. If you're using the "traditional" error code mechanism, then it may let your app stumble on in a pretty undefined way for some time, but it's still fundamentally in an undefined state (since the error should have been handled properly, but someone failed to write the code to do that). To me, all undefined states are equivalent ;)
+
+So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before you make your next move and then use either `value()` or `error()` to get at the details. That's about it.
+
+## `overload`
+This is a thing that alllows you to do a kind of type-switching on a parameter pack.  So, if you have a function that looks like this:
+```c++
+template<typename... Arg_Ts>
+void fn(Arg_Ts... args){
+...
+}
+```
+
+And you want to handle a bunch of different argument types and combinations, then you can use `overload` in a fold-expression to handle any and all of a specific set of types in the pack. This is how the `make_vector` function works, for example.
+```c++
+template <typename T, typename... Arg_Ts>
+std::vector<T> make_vector(Arg_Ts... args) {
+  auto out = std::vector<T>{};
+
+  (overloaded{[&out](arg::reserve arg) { out.reserve(arg.value); },
+              [&out](arg::size<T> arg) { out.resize(arg.value, arg.initialise_to); },
+              [](auto arg) { static_assert(always_false_v<decltype(arg)>, "Invalid make_vector arg type"); }}(
+       std::forward<Arg_Ts>(args)),
+   ...);
+
+  return out;
+}
+```
+So, you make lambdas with the types that you want to handle in your pack and then pass them all to overload as arguments and then use that whole thing in a fold-expression to handle each of the parameters in turn. In this case, it's going to process the params in the reverse order that they appear in the argument list, but you could change that by reversing the fold-expression.
+
+Anyway, that's overload. It's useful in some niche situations.
 
 # Collections
 ### `stack_vector`
