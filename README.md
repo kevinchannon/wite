@@ -164,7 +164,7 @@ std::vector<T> make_vector(Arg_Ts... args) {
   return out;
 }
 ```
-So, you make lambdas with the types that you want to handle in your pack and then pass them all to overload as arguments and then use that whole thing in a fold-expression to handle each of the parameters in turn. In this case, it's going to process the params in the reverse order that they appear in the argument list, but you could change that by reversing the fold-expression.
+So, you make lambdas with the types that you want to handle in your pack and then pass them all to `overloaded` as arguments and then use that whole thing in a fold-expression to handle each of the parameters in turn. In this case, it's going to process the params in the reverse order that they appear in the argument list, but you could change that by reversing the fold-expression.
 
 Anyway, that's overload. It's useful in some niche situations.
 
