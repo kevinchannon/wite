@@ -13,6 +13,8 @@ TEST_CASE("make_vector tests") {
   }
 
   SECTION("size adapter creates a vector with the expected size") {
-    REQUIRE(10 == wite::make_vector<float>(wite::arg::size{10}).size());
+    const auto v = wite::make_vector<float>(wite::arg::size{10, 1.0f});
+    REQUIRE(10 == v.size());
+    REQUIRE(std::vector<float>{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f} == v);
   }
 }
