@@ -23,7 +23,7 @@
 Wite stands for "**W**hy **i**sn't **t**his **e**asy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
 
 ## Prerequisites
-Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet). Wite pretty much requires that you're using **C++20**, so I guess that's a preeuisite of sorts.
+Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet). Wite pretty much requires that you're using **C++20**, so I guess that's a prerequisite of sorts.
 
 ## Download
 If you're planning to just use Wite in your project, then you don't really need to manually download it; it should be acquired by some kind of package management solution. If you do want to download the source, then you can do by going to the [Releases](https://github.com/kevinchannon/wite/releases) section and downloading the "wite-src.zip" file for the version of your choice.
@@ -34,7 +34,7 @@ Wite is header only, so you can do something as simple as downloading the code a
 ## Building
 Wite is header only, so there's no "building" of Wite by itself. The relevant bits will get built when you `#include` them in your files and then build your own project.
 
-Some of the features of Wite are tunable by the user at compilation time. For a list of the macros that you can define as command-line parameters to the compiler, see the [Compiler Macros](https://github.com/kevinchannon/wite#Compiler-Macros) section at the end of this readme.
+Some features of Wite are tunable by the user at compilation time. For a list of the macros that you can define as command-line parameters to the compiler, see the [Compiler Macros](https://github.com/kevinchannon/wite#Compiler-Macros) section at the end of this readme.
 
 ## Get Started
 Once downloaded, or however you installed things, then you should be able to just `#include` the bit you want to use and get going. If you don't know which bit you want, then just `#include <wite/wite.hpp>` and you'll get everything.
@@ -52,7 +52,7 @@ These are some small and very basic classes and functions that can be used in a 
 ```c++
 #include <wite/core/make_vector.hpp>
 ```
-How much do you hate the aesthetic of having to declare a vector with it's default constructor and then immediately on the next line call `reserve` on it, before passing it to some algorithm, or something (which will typically be using `push_back`, or something, on the vector)?  I know I do:
+How much do you hate the aesthetic of having to declare a vector with its default constructor and then immediately on the next line call `reserve` on it, before passing it to some algorithm, or something (which will typically be using `push_back`, or something, on the vector)?  I know I do:
 ```c++
 auto v = std::vector<int>{};
 v.reserve(1000);   // What an annoying extra line!
@@ -74,13 +74,13 @@ If you want to specify a size and also reserve space for more things, then you c
 ```c++
 auto v = make_vector<float>(arg::reserve{1000}, arg::size{10, 3.14f});
 ```
-This gives a `v` that has 10 values initialised to 3.14, with space reserved for 1000 `float` elements in total. The order of the `arg` parameters is not important; you coud have `size` first in the list if you like.  I don't know what the name for this "argument adapter object" pattern, but I quite like it.
+This gives a `v` that has 10 values initialised to 3.14, with space reserved for 1000 `float` elements in total. The order of the `arg` parameters is not important; you could have `size` first in the list if you like.  I don't know what the name for this "argument adapter object" pattern, but I quite like it.
 
 ## `result`
 ```c++
 #include <wite/core/result.hpp>
 ```
-In a world where exceptions are not the mechanism for handling errors, then "result codes" are basically the go-to alternative. These often take the form of an `int` value that's returned by a function that indicates the error state. Then you define a special value of that code to mean OK and you have lot of code that looks like this:
+In a world where exceptions are not the mechanism for handling errors, then "result codes" are basically the go-to alternative. These often take the form of an `int` value that's returned by a function that indicates the error state. Then you define a special value of that code to mean OK and you have a lot of code that looks like this:
 ```c++
 // Result-code-returning function; takes a value to populate
 int string_populator(std::string&);
@@ -99,9 +99,9 @@ if (RC_OK != rc) {
 This code is a little annoying because:
 1. `my_string` is first defined and default constructed and then passed the function to be populated via an ugly "output" argument.
 2. If `string_populator` returns an error, there has to be some statement somewhere about the state of `my_string` in this case. Is it left as it was when you passed it in? Is its state undefined? does it get cleared?
-3. There is nothing to prevent you accidentally using `my_string` if you ignore the result code (purposly, or not)
+3. There is nothing to prevent you accidentally using `my_string` if you ignore the result code (purposely, or not)
 
-`result` ia intended to be an alternative to this pattern that does not allow you to accidentally ignore the error state. So, the example above would look like this:
+`result` is intended to be an alternative to this pattern that does not allow you to accidentally ignore the error state. So, the example above would look like this:
 ```c++
 const auto string_result = string_maker();
 if (string_result.is_error()) { // Alternatively call do `not string_result.ok()`
@@ -111,12 +111,12 @@ if (string_result.is_error()) { // Alternatively call do `not string_result.ok()
 // Use the result by calling string_result.value() to get the string.
 ```
 
-### Definining a result type
+### Defining a result type
 `result` is a class template that looks like this:
 ```c++
 template <typename Value_T, typename Error_T> class result;
 ```
-So, you need to tell it what the good result looks like (i.e. a `std::string` in the example above) and what the bad result looks like, which could just be an `int , or you could define some `error_code` enum, or even some specific class for the errors. Say we had soem `enum` for the errors like:
+So, you need to tell it what the good result looks like (i.e. a `std::string` in the example above) and what the bad result looks like, which could just be an `int` , or you could define some `error_code` enum, or even some specific class for the errors. Say we had some `enum` for the errors like:
 ```c++
 enum class string_maker_error {
     error_1,
@@ -136,12 +136,12 @@ string_maker_result string_maker();
 ```
 And now we have a strongly-typed result type that won't allow us to ignore errors. If you call `value()` on the result when it's actually an error, then it will call `abort` and kill your app... probably.  
 ### Warning!
-All the methods on `result` are declared `noexcept`, but it's based on `std::variant`, so it will try to throw exceptions. Without the proper things built by the compiler for handling the exceptions, this will probably have some undefined behaviour, but in my experience it just aborts execution of the thing pretty quicky.  What the hell!? I can hear you saying. Well, this is in an error case, where you have ignored the error and tried to use the result anyway, so all bets are off, in my opinion. If you're using the "traditional" error code mechanism, then it may let your app stumble on in a pretty undefined way for some time, but it's still fundamentally in an undefined state (since the error should have been handled properly, but someone failed to write the code to do that). To me, all undefined states are equivalent ;)
+All the methods on `result` are declared `noexcept`, but it's based on `std::variant`, so it will try to throw exceptions. Without the proper things built by the compiler for handling the exceptions, this will probably have some undefined behaviour, but in my experience it just aborts execution of the thing pretty quickly.  What the hell!? I can hear you saying. Well, this is in an error case, where you have ignored the error and tried to use the result anyway, so all bets are off, in my opinion. If you're using the "traditional" error code mechanism, then it may let your app stumble on in a pretty undefined way for some time, but it's still fundamentally in an undefined state (since the error should have been handled properly, but someone failed to write the code to do that). To me, all undefined states are equivalent ;)
 
 So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before you make your next move and then use either `value()` or `error()` to get at the details. That's about it.
 
-## `overload`
-This is a thing that alllows you to do a kind of type-switching on a parameter pack.  So, if you have a function that looks like this:
+## `overloaded`
+This is a thing that allows you to do a kind of type-switching on a parameter pack.  So, if you have a function that looks like this:
 ```c++
 template<typename... Arg_Ts>
 void fn(Arg_Ts... args){
@@ -149,7 +149,7 @@ void fn(Arg_Ts... args){
 }
 ```
 
-And you want to handle a bunch of different argument types and combinations, then you can use `overload` in a fold-expression to handle any and all of a specific set of types in the pack. This is how the `make_vector` function works, for example.
+And you want to handle a bunch of different argument types and combinations, then you can use `overloaded` in a fold-expression to handle any and all of a specific set of types in the pack. This is how the `make_vector` function works, for example.
 ```c++
 template <typename T, typename... Arg_Ts>
 std::vector<T> make_vector(Arg_Ts... args) {
@@ -174,7 +174,7 @@ Anyway, that's overload. It's useful in some niche situations.
 #include <wite/collections/stack_vector.hpp>
 ```
 
-This is a vector with a compile-time capacity, but a run-time size. It stores it's data on the stack, so don't put too many huge things in it.  Other than not being able to call `reserve` on it, the interface is pretty much like that of `std::vector`. For example, you can do something like:
+This is a vector with a compile-time capacity, but a run-time size. It stores its data on the stack, so don't put too many huge things in it.  Other than not being able to call `reserve` on it, the interface is pretty much like that of `std::vector`. For example, you can do something like:
 
 ```c++
 auto v = wite::collections::stack_vector<int, 20>{};
@@ -290,7 +290,7 @@ io::write("my/file.bin", 100, bytes);
 ```
 
 ## Simple byte conversions
-If you have a value and you want to get it as an array of `std::bytes`, then you can simply do:
+If you have a value, and you want to get it as an array of `std::bytes`, then you can simply do:
 ```c++
 // "bytes" <- wite::io::static_byte_buffer<sizeof(my_value)>
 const auto bytes = wite::io::to_bytes(my_value);
@@ -304,8 +304,8 @@ const auto i = wite::io::from_bytes<int>(bytes);
 ```
 
 ## Fancier usage
-### Controlling edianness
-Sometimes you want to write the bytes of a value with a particular endianness.  If you know the endianness that you're going to need at build time, then you can specify it using either of the two endian encoding adapters `wite::io::little_endian` or `wite::io::big_endian`. So, to write some `int` called `my_int` to a buffer as big endian, then:
+### Controlling endianness
+Sometimes you want to write the bytes of a value with a particular endianness.  If you know the endianness that you're going to need at build time, then you can specify it using either of the two endian encoding adapters `wite::io::little_endian` or `wite::io::big_endian`. So, to write some `int` called `my_int` to a buffer as a big endian value, then:
 ```c++
 wite::io::write(buffer, wite::io::big_endian{my_int});
 ```
@@ -423,7 +423,7 @@ const auto values = ws::split(csv_row, ',', ws::split_behaviour::drop_empty);
 ```
 
 #### `split_to`
-If you really want to control the thing, you can call `split_to`, which allows you to specify how the output is returned.  So, if you know that the string that you're splitting is going to out-live the result of the split and it's not going to change, then you can do something like:
+If you really want to control the thing, you can call `split_to`, which allows you to specify how the output is returned.  So, if you know that the string that you're splitting is going to out-live the result of the split, and it's not going to change, then you can do something like:
 ```c++
 const auto long_lived_values = { "1.618,2.718,3.142" };
 
@@ -437,7 +437,7 @@ In this case, no additional memory allocation happens for the strings in the spl
 #include <wite/string/fragment_string.hpp>
 ```
 
-`wite::basic_fragment_string<Char_T, FRAGMENT_COUNT>` is a part of the wite strings library.  It allows you to compose literal strings into something that apppears to be a single string. The interface is pretty much the same as the non-mutating parts of std::string. Some examples:
+`wite::basic_fragment_string<Char_T, FRAGMENT_COUNT>` is a part of the wite strings library.  It allows you to compose literal strings into something that appears to be a single string. The interface is pretty much the same as the non-mutating parts of std::string. Some examples:
 
 ```c++
 const auto fs_1 = fragment_string{"Hello"};
@@ -598,7 +598,7 @@ These functions are templated, so the result has the same type as the extrema th
 #include <with/maths/value_range.hpp>
 ```
 
-A small class that expresses an interval, in the mathematical sense. You give it the min and max of the range in its constructor and the you can test where values are inside or ourside the range, etc.
+A small class that expresses an interval, in the mathematical sense. You give it the min and max of the range in its constructor, and you can test where values are inside or outside the range, etc.
 
 ```c++
 const auto val_rng = maths::value_range{-10, 10};
@@ -610,7 +610,7 @@ const auto width = val_rng.size();  // 20
 
 const auto mid_point = val_rng.mid();   // 0
 ```
-In this example, we're relying on class template deduction to guess the type for the `value_range`. So, it's deduced as `int` in this case. We could has used `const auto val_rng = maths::value_range<int>{-10, 10}` if we wanted to be explicit. Similarly, `maths::value_range{0.0, std::numbers::pi}` would return a `double` range.
+In this example, we're relying on class template deduction to guess the type for the `value_range`. So, it's deduced as `int` in this case. We could have used `const auto val_rng = maths::value_range<int>{-10, 10}` if we wanted to be explicit. Similarly, `maths::value_range{0.0, std::numbers::pi}` would return a `double` range.
 
 To test whether points are in or out of the range, you can use `contains`:
 ```c++
@@ -634,7 +634,7 @@ const auto common_rng = val_rng.overlap(maths::value_range{-100, -2});
 const auto no_overlap = val_rng.overlap(maths::value_range{20, 40});
 ```
 
-If you have a value and a range and you want to clamp the value into the range, then you can use `clamp` for that:
+If you have a value and a range, and you want to clamp the value into the range, then you can use `clamp` for that:
 ```c++
 const auto r = maths::value_range{0.0, std::numbers::pi};
 
@@ -698,7 +698,7 @@ std::cout << "My range = " << rng << std::endl;
 
 ### Free functions
 
-If you have a bunch of values and you want to get their range, you can use `envelope` for that:
+If you have a bunch of values, and you want to get their range, you can use `envelope` for that:
 ```c++
 // val_rng <-- [-4.0, 11.2]
 const auto val_rng = maths::envelope(0.0, 0.1, -1.2, 10.0, -4.0, 11.2);
@@ -760,7 +760,7 @@ By default, Wite will try to use the system's native endianness (if `std::endian
 
 It is an error to specify both of these options at the same time.
 
-## Geommetry
+## Geometry
 
 ### `WITE_DEFAULT_POINT_TYPE`
-If you're using `wite::geometry::point`, then the default default value type for points is `double`.  If you're concerned mainly with pixel positions, or something, and you want the default type for points to be some integer type, then you can use `WITE_DEFAULT_POINT_TYPE` to define the default type.
+If you're using `wite::geometry::point`, then the *default* default value type for points is `double`.  If you're concerned mainly with pixel positions, or something, and you want the default type for points to be some integer type, then you can use `WITE_DEFAULT_POINT_TYPE` to define the default type.
