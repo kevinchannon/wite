@@ -1,7 +1,6 @@
 # TODO
 
 ## IO
-* Add read/write that take filepaths
 
 ## String
 
