@@ -17,6 +17,9 @@ namespace arg {
     size_t value{};
     T initialise_to{};
   };
+
+  template<typename T>
+  size(size_t, T) -> size<T>;
 }  // namespace arg
 
 template <typename T, typename... Arg_Ts>
