@@ -35,7 +35,9 @@ add_executable(wite_test
 	"maths/numericTests.cpp"
 	"maths/boundedValueTests.cpp"
 	"io/byteBufferFileTests.cpp"
- "collections/makeVectorTests.cpp")
+	"collections/makeVectorTests.cpp"
+	"collections/staticLookupTests.cpp"
+)
 
 target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}

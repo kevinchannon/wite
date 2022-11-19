@@ -128,3 +128,15 @@
 #else
 #define _WITE_HAS_STD_ENDIAN 0
 #endif
+
+#if __cpp_deduction_guides >= 201703L
+#define _WITE_HAS_CTAD 1
+#else
+#define _WITE_HAS_CTAD 0
+#endif
+
+#if __cpp_deduction_guides >= 201907L
+#define _WITE_HAS_CTAD_FOR_ALIASES_AND_AGGREGATES 1
+#else
+#define _WITE_HAS_CTAD_FOR_ALIASES_AND_AGGREGATES 0
+#endif
