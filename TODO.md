@@ -1,5 +1,8 @@
 # TODO
 
+## Core
+* scope_exit
+
 ## IO
 
 ## String

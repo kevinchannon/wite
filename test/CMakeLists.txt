@@ -37,6 +37,7 @@ add_executable(wite_test
 	"io/byteBufferFileTests.cpp"
 	"collections/makeVectorTests.cpp"
 	"collections/staticLookupTests.cpp"
+	"core/scopeTests.cpp"
 )
 
 target_include_directories(wite_test PUBLIC
