@@ -5,8 +5,6 @@
 ## String
 
 ## Collections
-* Add `static_lookup_table` (from StaticMap repo)
-* Add exmples
 
 ## Geometry
 * Add `line` class (from AdventOfCode repo), as `direction` template
@@ -17,7 +15,6 @@
   * direction - direction = direction
 
 ## Maths
-* Add `inerval` classes
 
 ## Types
 * Add `identifiable`
