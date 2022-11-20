@@ -112,6 +112,81 @@ All the methods on `result` are declared `noexcept`, but it's based on `std::var
 
 So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before you make your next move and then use either `value()` or `error()` to get at the details. That's about it.
 
+## Scope Exit Runners
+```c++
+#include <wite/core/scope.hpp>
+```
+
+> ⚠️ **NOTE**:
+> 
+>These are supposed to be in the C++ standard, but they're stuck in the "experimental" state and not many compilers seem to implement them. This is probably because it's hard to define and implement them in a way that is guaranteed to be safe in all situations. This is the remit of the standards committee, but it is not our remit here :)  So, Wite has simple scope exit runners, but the usual caveats apply: they might not be the MOST memory and performance efficient implementations possible, and it's possible to get yourself into trouble if you use them wrongly!  So, use with care :)|
+
+So, the use-case it simple, these are for doing clean-up stuff that is guaranteed to execute when the thing goes out of scope:
+```c++
+void must_be_run_at_the_end_no_matter_what(){
+    std::cout << "Phew! I ran" << std::endl;
+}
+
+void some_fn(){
+    auto tidyup = wite::scope_exit{must_be_run_at_the_end_no_matter_what};
+
+    // Insert code that needs to be run on exit.
+
+}   // <-- `must_be_run_at_the_end_no_matter_what` is run somewhere around here.
+```
+
+That's about it. Some cautionary points:
+1. Make sure that all the things that the exit function needs to run are still in scope and valid at the point that it's going to run.
+   1. Things captured by lambdas (by reference).
+   2. Member variables, if you're in some class' member function
+   3. Locks and mutexes
+
+That's about it.
+
+In addition to `scope_exit`, you can also use `scope_success` to run a function only in the case that the scope was exited normally and, conversely, `scope_fail` to run a function if the scope is being exited due to an exception being thrown.
+```c++
+void some_fn() {
+    try {
+        auto tidyup = wite::scope_exit{[](){
+            std::cout << "This is always done!" << std::endl; }
+        };
+        auto success_tidyup = wite::scope_success{[](){
+            std::cout << "Success things were done!" << std::endl; }
+        };
+        auto failure_tidyup = wite::scope_success{[](){
+            std::cout << "Failure things were done!" << std::endl; }
+        };
+    } catch (...) {}
+}
+```
+In the above example, you should see the "Success things were done!" message, because no exceptions are thrown in the scope. The failure message should not appear.
+
+Now for the other case:
+```c++
+void some_fn_that_goes_wrong_and_throws(){
+    throw std::runtime_error{"Boom!"}
+}
+
+void some_fn() {
+    try {
+        auto tidyup = wite::scope_exit{[](){
+            std::cout << "This is always done!" << std::endl; }
+        };
+        auto success_tidyup = wite::scope_success{[](){
+            std::cout << "Success things were done!" << std::endl; }
+        };
+        auto failure_tidyup = wite::scope_success{[](){
+            std::cout << "Failure things were done!" << std::endl; }
+        };
+        
+        some_fn_that_goes_wrong_and_throws();
+    } catch (...) {}
+}
+```
+Here, we will see the failure message, but not the success one. In both cases, you will see the message "This is always done!", because that is in a `scope_exit`, which doesn't care about exceptions.
+
+> ⚠️ **WITE_NO_EXCEPTIONS**: If you're compiling with the `WITE_NO_EXCEPTIONS` macro defined, then `scope_success` and `scope_fail` are not defined and you'll get a compilation failure if you try to use them.
+
 ## `overloaded`
 This is a thing that allows you to do a kind of type-switching on a parameter pack.  So, if you have a function that looks like this:
 ```c++
