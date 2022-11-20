@@ -13,9 +13,11 @@ class scope_exit {
  public:
   using function_type = Fn_T;
 
-  scope_exit()                             = delete;
-  scope_exit(const scope_exit&)            = delete;
-  scope_exit& operator=(const scope_exit&) = delete;
+  scope_exit()                                 = delete;
+  scope_exit(const scope_exit&)                = delete;
+  scope_exit& operator=(const scope_exit&)     = delete;
+  scope_exit(scope_exit&&) noexcept            = default;
+  scope_exit& operator=(scope_exit&&) noexcept = default;
 
   constexpr explicit scope_exit(Fn_T fn) : _fn{std::move(fn)} {}
   ~scope_exit() {
