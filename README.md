@@ -22,6 +22,20 @@
 # Wite
 Wite stands for "**W**hy **i**sn't **t**his **e**asy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
 
+The aim here is not to produce necessarily the most complete set of features, nor the most generic, nor the most performant, nor the most memory-efficient, nor, even, the safest implementations. If we were to make all those considerations, then we'd miss out on 99% of the usefulness, for the sake of 1% of the considerations. This is not to say that those considerations are not made, just that they're not the focus.
+
+The focus is to provide things that are *simple at the point of use*, with implementations that are *intuative* and can almost be guessed and just *do the right thing* in >~95% cases. That is **Wite should be**:
+1. Easy to obtain and include in a project
+2. Easy to call in the project's code
+
+**If you're a C++ beginner**, then you should be able to acquire and use Wite in your project without too much of a headache. That's the aim.  If this is not the case, then let me know and we'll see what we can do to make it even easier :)
+ 
+`string::split` is a good example. There isn't (currently) a standard library function for this and every codebase rolls its own, essentially. Sure, I could get it from [Boost](https://www.boost.org/doc/libs/1_80_0/doc/html/string_algo/usage.html#id-1.3.3.5.9), but then I've pulled in quite a heavyweight dependency (or, I've had to exercise a relatively large amount of understanding in order *not* to pull in a large dependency). Wite's `string::split` takes one thing (a string-like thing) and returns a `std::vector<std::string>` with the result in it. Is this the most efficient thing in all cases? No. Is it *good enough* in 99% of cases? Probably.
+
+If you're looking at some implementation inside Wite and thinking "this is definitely NOT the best way to do this!" and have an idea how to make it better, safer or more generic (without harming the most common case usability, of course) then go for it and raise an issue, or send a pull request, or something :)
+
+Right, on with iinstructions on how to get going...
+
 ## Prerequisites
 Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet). Wite pretty much requires that you're using **C++20**, so I guess that's a prerequisite of sorts.
 
@@ -29,7 +43,7 @@ Wite doesn't have any dependencies, so you don't have to worry about that sort o
 If you're planning to just use Wite in your project, then you don't really need to manually download it; it should be acquired by some kind of package management solution. If you do want to download the source, then you can do by going to the [Releases](https://github.com/kevinchannon/wite/releases) section and downloading the "wite-src.zip" file for the version of your choice.
 
 ## Installation
-Wite is header only, so you can do something as simple as downloading the code and copying the "wite" directory into your source tree.  The preferred way to consume Wite is _via_ CMake's FetchContent.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository
+Wite is header only, so you can do something as simple as downloading the code and copying the "wite" directory into your source tree.  The preferred way to consume Wite is via **CMake FetchContent**.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository
 
 ## Building
 Wite is header only, so there's no "building" of Wite by itself. The relevant bits will get built when you `#include` them in your files and then build your own project.
