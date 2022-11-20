@@ -43,7 +43,8 @@ TEST_CASE("Scope success tests") {
     try {
       auto _ = wite::scope_success{[&fn_called]() { fn_called = true; }};
       throw std::runtime_error{""};
-    } catch (const std::runtime_error&) {}
+    } catch (const std::runtime_error&) {
+    }
 
     REQUIRE_FALSE(fn_called);
   }
@@ -53,6 +54,41 @@ TEST_CASE("Scope success tests") {
     {
       auto exit_janitor = wite::scope_success{[&fn_called]() { fn_called = true; }};
       exit_janitor.release();
+    }
+
+    REQUIRE_FALSE(fn_called);
+  }
+}
+
+TEST_CASE("Scope fail tests") {
+  SECTION("doesn't call exit function on exit if no exception is in progress") {
+    auto fn_called = false;
+    {
+      auto _ = wite::scope_fail{[&fn_called]() { fn_called = true; }};
+    }
+
+    REQUIRE_FALSE(fn_called);
+  }
+
+  SECTION("calls exit function on exit if an exception is in progress") {
+    auto fn_called = false;
+    try {
+      auto _ = wite::scope_fail{[&fn_called]() { fn_called = true; }};
+      throw std::runtime_error{""};
+    } catch (const std::runtime_error&) {
+    }
+
+    REQUIRE(fn_called);
+  }
+
+  SECTION("exit not called if it is released") {
+    auto fn_called = false;
+    try {
+      auto exit_janitor = wite::scope_fail{[&fn_called]() { fn_called = true; }};
+      exit_janitor.release();
+
+      throw std::runtime_error{""};
+    } catch (const std::runtime_error&) {
     }
 
     REQUIRE_FALSE(fn_called);

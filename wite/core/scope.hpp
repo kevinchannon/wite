@@ -64,6 +64,36 @@ class scope_success {
   std::optional<function_type> _fn;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
+#ifndef WITE_NO_EXCEPTIONS
+
+template <typename Fn_T>
+class scope_fail {
+ public:
+  using function_type = Fn_T;
+
+  scope_fail()                                       = delete;
+  scope_fail(const scope_fail&)                      = delete;
+  scope_fail& operator=(const scope_fail&)           = delete;
+  scope_fail(scope_fail&&) noexcept                  = default;
+  scope_fail& operator=(scope_fail&&) noexcept       = default;
+
+  constexpr explicit scope_fail(Fn_T fn) : _fn{std::move(fn)} {}
+  ~scope_fail() {
+    if (_fn and std::uncaught_exceptions() > 0) {
+      std::invoke(*_fn);
+    }
+  }
+
+  void release() { _fn.reset(); }
+
+ private:
+  std::optional<function_type> _fn;
+};
+
+#endif
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
