@@ -2,10 +2,9 @@
 
 #pragma once
 
-namespace wite {
+#include <wite/common/concepts.hpp>
 
-template <typename>
-inline constexpr bool always_false_v = false;
+namespace wite {
 
 template <typename... Ts>
 struct overloaded : Ts... {

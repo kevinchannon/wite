@@ -28,7 +28,7 @@ _WITE_NODISCARD std::vector<T> make_vector(Arg_Ts... args) {
 
   (overloaded{[&out](arg::reserve arg) { out.reserve(arg.value); },
               [&out](arg::size<T> arg) { out.resize(arg.value, arg.initialise_to); },
-              [](auto arg) { static_assert(always_false_v<decltype(arg)>, "Invalid make_vector arg type"); }}(
+              [](auto arg) { static_assert(common::always_false_v<decltype(arg)>, "Invalid make_vector arg type"); }}(
        std::forward<Arg_Ts>(args)),
    ...);
 
