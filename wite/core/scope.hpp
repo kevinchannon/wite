@@ -27,16 +27,16 @@ namespace scope::detail {
     if constexpr (_exit_condition::all == CONDITION) {
       return true;
     }
+#ifndef WITE_NO_EXCEPTIONS
 #if _WITE_HAS_UNCAUGHT_EXCEPTION
     else if constexpr (_exit_condition::success == CONDITION) {
       return std::uncaught_exceptions() == 0;
     }
-#ifndef WITE_NO_EXCEPTIONS
     else if constexpr (_exit_condition::fail == CONDITION) {
       return std::uncaught_exceptions() > 0;
     }
-#endif  // WITE_NO_EXCEPTIONS
 #endif  // _WITE_HAS_UNCAUGHT_EXCEPTION
+#endif  // WITE_NO_EXCEPTIONS
     else {
       static_assert(_exit_condition::all == CONDITION, "Invalid exit condition");
     }
@@ -81,14 +81,14 @@ namespace scope::detail {
 
 _WITE_DEFINE_SCOPE_EXIT_RUNNER(scope_exit, all);
 
-#if _WITE_HAS_UNCAUGHT_EXCEPTION
-_WITE_DEFINE_SCOPE_EXIT_RUNNER(scope_success, success);
-
 #ifndef WITE_NO_EXCEPTIONS
+#if _WITE_HAS_UNCAUGHT_EXCEPTION
+
+_WITE_DEFINE_SCOPE_EXIT_RUNNER(scope_success, success);
 _WITE_DEFINE_SCOPE_EXIT_RUNNER(scope_fail, fail);
-#endif  // WITE_NO_EXCEPTIONS
 
 #endif  // _WITE_HAS_UNCAUGHT_EXCEPTION
+#endif  // WITE_NO_EXCEPTIONS
 
 ///////////////////////////////////////////////////////////////////////////////
 
