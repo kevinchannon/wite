@@ -140,3 +140,9 @@
 #else
 #define _WITE_HAS_CTAD_FOR_ALIASES_AND_AGGREGATES 0
 #endif
+
+#if __cpp_lib_uncaught_exceptions >= 201411L
+#define _WITE_HAS_UNCAUGHT_EXCEPTION 1
+#else
+#define _WITE_HAS_UNCAUGHT_EXCEPTION 0
+#endif
