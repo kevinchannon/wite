@@ -73,7 +73,7 @@ int string_populator(std::string&);
 
 ...
 
-auto my_string = std::string{];
+auto my_string = std::string{};
 auto rc = string_populator(my_string);
 if (RC_OK != rc) {
     // Handle the error gracefully
@@ -121,8 +121,9 @@ and then the prototype for `string_maker` just looks like:
 string_maker_result string_maker();
 ```
 And now we have a strongly-typed result type that won't allow us to ignore errors. If you call `value()` on the result when it's actually an error, then it will call `abort` and kill your app... probably.  
-### Warning!
-All the methods on `result` are declared `noexcept`, but it's based on `std::variant`, so it will try to throw exceptions. Without the proper things built by the compiler for handling the exceptions, this will probably have some undefined behaviour, but in my experience it just aborts execution of the thing pretty quickly.  What the hell!? I can hear you saying. Well, this is in an error case, where you have ignored the error and tried to use the result anyway, so all bets are off, in my opinion. If you're using the "traditional" error code mechanism, then it may let your app stumble on in a pretty undefined way for some time, but it's still fundamentally in an undefined state (since the error should have been handled properly, but someone failed to write the code to do that). To me, all undefined states are equivalent ;)
+> ⚠️ **Warning**
+> 
+> All the methods on `result` are declared `noexcept`, but it's based on `std::variant`, so it will try to throw exceptions. Without the proper things built by the compiler for handling the exceptions, this will probably have some undefined behaviour, but in my experience it just aborts execution of the thing pretty quickly.  What the hell!? I can hear you saying. Well, this is in an error case, where you have ignored the error and tried to use the result anyway, so all bets are off, in my opinion. If you're using the "traditional" error code mechanism, then it may let your app stumble on in a pretty undefined way for some time, but it's still fundamentally in an undefined state (since the error should have been handled properly, but someone failed to write the code to do that). To me, all undefined states are equivalent ;)
 
 So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before you make your next move and then use either `value()` or `error()` to get at the details. That's about it.
 
@@ -135,7 +136,7 @@ So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before
 > 
 >These are supposed to be in the C++ standard, but they're stuck in the "experimental" state and not many compilers seem to implement them. This is probably because it's hard to define and implement them in a way that is guaranteed to be safe in all situations. This is the remit of the standards committee, but it is not our remit here :)  So, Wite has simple scope exit runners, but the usual caveats apply: they might not be the MOST memory and performance efficient implementations possible, and it's possible to get yourself into trouble if you use them wrongly!  So, use with care :)|
 
-So, the use-case it simple, these are for doing clean-up stuff that is guaranteed to execute when the thing goes out of scope:
+So, the use-case is simple, these are for doing clean-up stuff that is guaranteed to execute when the thing goes out of scope:
 ```c++
 void must_be_run_at_the_end_no_matter_what(){
     std::cout << "Phew! I ran" << std::endl;
@@ -167,7 +168,7 @@ void some_fn() {
         auto success_tidyup = wite::scope_success{[](){
             std::cout << "Success things were done!" << std::endl; }
         };
-        auto failure_tidyup = wite::scope_success{[](){
+        auto failure_tidyup = wite::scope_fail{[](){
             std::cout << "Failure things were done!" << std::endl; }
         };
     } catch (...) {}
@@ -189,7 +190,7 @@ void some_fn() {
         auto success_tidyup = wite::scope_success{[](){
             std::cout << "Success things were done!" << std::endl; }
         };
-        auto failure_tidyup = wite::scope_success{[](){
+        auto failure_tidyup = wite::scope_fail{[](){
             std::cout << "Failure things were done!" << std::endl; }
         };
         
@@ -312,8 +313,9 @@ One of the cool things about `static_lookup` is that lots of the parts of it are
 
 These examples are aimed at this use case, but you should be able to put many other types of things in it.
 
-### Warning!
-It doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
+> ⚠️ **Warning**
+> 
+> `static_lookup` doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
 
 # IO
 ```c++
