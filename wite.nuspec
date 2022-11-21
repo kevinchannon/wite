@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+    <metadata>
+        <id>wite</id>
+        <version>0.10.2</version>
+        <authors>Kevin J Channon</authors>
+        <description>Why Isn't This Easy (Wite) C++ convenience functions</description>
+        <repository url="https://github.com/kevinchannon/wite.git" type="git"/>
+        <projectUrl>https://github.com/kevinchannon/wite</projectUrl>
+        <license type="expression">MIT</license>
+        <readme>README.md</readme>
+        <tags>Native, native, buffers, strings, utilities, utility, geometry</tags>
+        <releaseNotes>This release adds `scope_exit`, `scope_success` and `scope_failure` helper classes</releaseNotes>
+    </metadata>
+     
+    <files>
+        <file src="wite\**\*.*"   target="build\native\include\wite" />
+        <file src="wite.props"   target="build\native" />
+        <file src="wite.targets"   target="build\native" />
+        <file src="README.md" target="" />
+    </files>
+</package>

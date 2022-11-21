@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="17.0">
+	<PropertyGroup>
+		<LibraryType Condition="'$(Configuration)'=='Debug'">mdd</LibraryType>
+		<LibraryType Condition="'$(Configuration)'=='Release'">md</LibraryType>
+	</PropertyGroup>
+	<ItemDefinitionGroup>
+		<ClCompile>
+			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)\include</AdditionalIncludeDirectories>
+		</ClCompile>
+	</ItemDefinitionGroup>
+</Project>
