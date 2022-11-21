@@ -2,8 +2,7 @@
 
 * [Wite](https://github.com/kevinchannon/wite#Wite)
   * [Prerequisites](https://github.com/kevinchannon/wite#Prerequisites)
-  * [Download](https://github.com/kevinchannon/wite#Download)
-  * [Installation](https://github.com/kevinchannon/wite#Installation)
+  * [Getting Wite](https://github.com/kevinchannon/wite#getting-wite)
   * [Building](https://github.com/kevinchannon/wite#Building)
   * [Get Started](https://github.com/kevinchannon/wite#Get-Started)
 * [Core](https://github.com/kevinchannon/wite#Core)
