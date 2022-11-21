@@ -34,16 +34,24 @@ The focus is to provide things that are *simple at the point of use*, with imple
 
 If you're looking at some implementation inside Wite and thinking "this is definitely NOT the best way to do this!" and have an idea how to make it better, safer or more generic (without harming the most common case usability, of course) then go for it and raise an issue, or send a pull request, or something :)
 
-Right, on with iinstructions on how to get going...
+Right, on with instructions on how to get going...
 
 ## Prerequisites
 Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet). Wite pretty much requires that you're using **C++20**, so I guess that's a prerequisite of sorts.
 
-## Download
-If you're planning to just use Wite in your project, then you don't really need to manually download it; it should be acquired by some kind of package management solution. If you do want to download the source, then you can do by going to the [Releases](https://github.com/kevinchannon/wite/releases) section and downloading the "wite-src.zip" file for the version of your choice.
+## Getting Wite
+There are a bunch of ways you could chose to consume Wite, here are some possibilities
 
-## Installation
-Wite is header only, so you can do something as simple as downloading the code and copying the "wite" directory into your source tree.  The preferred way to consume Wite is via **CMake FetchContent**.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository
+### CMake FetchContent
+If your project is CMake-based, then the preferred way to get going is by using **CMake FetchContent**.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository.
+
+### NuGet
+If you use NuGet, then see [NuGet.org](https://www.nuget.org/packages/wite) for more information on acquiring Wite via NuGet.  If you're using Visual Studio for your project, then you can consume Wite via the NuGet integration it has. So, you right-click on your project, or solution, and then choose "Manage NuGet packages..." (or something like that) and then you should be able to search for Wite and include it in your project.  For an example project that has Wite included this way, see the [wite-vs-example](https://github.com/kevinchannon/wite-vs-example) repo.
+
+### Ain't nobody got time for package management!! Just tell me where to doanload it!
+One of the above options should really be your first call, but if you're in a hurry and don't care about controlling the version, or getting updates and stuff like that, then just straight up downloading it and putting it in your source tree will also do the business. You can get it from here: [Releases](https://github.com/kevinchannon/wite/releases).
+
+You'll want the "wite-src.zip" file for the version of your choice.
 
 ## Building
 Wite is header only, so there's no "building" of Wite by itself. The relevant bits will get built when you `#include` them in your files and then build your own project.
@@ -134,7 +142,7 @@ So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before
 
 > ⚠️ **NOTE**:
 > 
->These are supposed to be in the C++ standard, but they're stuck in the "experimental" state and not many compilers seem to implement them. This is probably because it's hard to define and implement them in a way that is guaranteed to be safe in all situations. This is the remit of the standards committee, but it is not our remit here :)  So, Wite has simple scope exit runners, but the usual caveats apply: they might not be the MOST memory and performance efficient implementations possible, and it's possible to get yourself into trouble if you use them wrongly!  So, use with care :)|
+>These are supposed to be in the C++ standard, but they're stuck in the "experimental" state and not many compilers seem to implement them. This is probably because it's hard to define and implement them in a way that is guaranteed to be safe in all situations. This is the remit of the standards committee, but it is not our remit here :)  So, Wite has simple scope exit runners, but the usual caveats apply: they might not be the MOST memory and performance efficient implementations possible, and it's possible to get yourself into trouble if you use them wrongly!  So, use with care :)
 
 So, the use-case is simple, these are for doing clean-up stuff that is guaranteed to execute when the thing goes out of scope:
 ```c++
@@ -884,7 +892,7 @@ In general, things that go wrong throw exceptions in Wite. However, if you don't
 By default, and if the compiler supports it, Wite will use `std::byte` as its native byte type for IO. If your compiler doesn't support `std::byte`, then WIte will detect this at build time and use `unsigned char` as its native byte type. If you have a bunch of pre-existing code that uses some other type for bytes, then you can choose some other options at compile-time.
 * `WITE_USER_DEFINED_BYTE_TYPE_CHAR` - sets the byte type to `char`
 * `WITE_USER_DEFINED_BYTE_TYPE_U8` - sets the byte type to `std::uint8_t`
-* `WITE_USER_DEFINED_BYTE_TYPE_I8` - sets the byte type to `std::int8_t`3
+* `WITE_USER_DEFINED_BYTE_TYPE_I8` - sets the byte type to `std::int8_t`
 
 It is an error to specify more than one of these options. 
 
