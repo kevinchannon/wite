@@ -11,7 +11,7 @@ enum class ETestError {
 
 using TestResult_t = wite::result<uint32_t, ETestError>;
 
-TEST_CASE("result::ok returns the expected value") {
+TEST_CASE("result::ok returns the expected value", "[core]") {
   REQUIRE(TestResult_t{10}.ok());
   REQUIRE_FALSE(TestResult_t{ETestError::error_1}.ok());
 }

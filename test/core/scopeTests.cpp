@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-TEST_CASE("Scope exit tests") {
+TEST_CASE("Scope exit tests", "[core]") {
   SECTION("calls exit function on exit") {
     auto fn_called = false;
     {

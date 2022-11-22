@@ -38,7 +38,7 @@ add_executable(wite_test
 	"collections/makeVectorTests.cpp"
 	"collections/staticLookupTests.cpp"
 	"core/scopeTests.cpp"
-)
+ "core/indexTests.cpp")
 
 target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}
