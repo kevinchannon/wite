@@ -3,6 +3,7 @@
 ## Core
 
 ## IO
+* Simple CSV input?
 
 ## String
 
@@ -23,4 +24,3 @@
 * Add `index`
 
 ## Build things
-* Make some kind of packaged release version (in addition to working with CMake FetchContent). NuGet, Conan, etc.
