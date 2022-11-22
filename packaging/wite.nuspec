@@ -2,7 +2,7 @@
 <package >
     <metadata>
         <id>wite</id>
-        <version>0.10.2</version>
+        <version>0.11.0</version>
         <authors>Kevin J Channon</authors>
         <description>Why Isn't This Easy (Wite) C++ convenience functions</description>
         <repository url="https://github.com/kevinchannon/wite.git" type="git"/>
@@ -10,7 +10,9 @@
         <license type="expression">MIT</license>
         <readme>README.md</readme>
         <tags>Native, native, buffers, strings, utilities, utility, geometry</tags>
-        <releaseNotes>This release adds `scope_exit`, `scope_success` and `scope_failure` helper classes</releaseNotes>
+        <releaseNotes>
+            Getting closer to version 1.0.0. This release is just an update to README and to align Github and NuGet version numbers.
+        </releaseNotes>
     </metadata>
      
     <files>
