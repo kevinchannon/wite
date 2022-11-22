@@ -1,7 +1,10 @@
 #include <wite/core/index.hpp>
+#include <wite/core/io.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+
+#include <sstream>
 
 TEST_CASE("Index tests", "[core]") {
   struct TestCollection {};
@@ -83,4 +86,12 @@ TEST_CASE("Index tests", "[core]") {
     REQUIRE(5 == (wite::index<TestCollection>{10} - 5).value());
     REQUIRE(15 == (wite::index<TestCollection>{10} - -5).value());
   }
+}
+
+TEST_CASE("Index IO tests", "[core]") {
+  std::stringstream ss;
+
+  ss << wite::index<std::vector<int>>{100};
+
+  REQUIRE("100" == ss.str());
 }
