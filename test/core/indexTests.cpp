@@ -50,4 +50,15 @@ TEST_CASE("Index tests", "[core]") {
     REQUIRE(1000 == (idx++).value());
     REQUIRE(1001 == idx.value());
   }
+
+  SECTION("pre-decrement operator") {
+    auto idx = wite::index<TestCollection>{3};
+    REQUIRE(2 == (--idx).value());
+  }
+
+  SECTION("pre-decrement operator") {
+    auto idx = wite::index<TestCollection>{1001};
+    REQUIRE(1001 == (idx--).value());
+    REQUIRE(1000 == idx.value());
+  }
 }

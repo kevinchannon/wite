@@ -27,6 +27,15 @@ class index {
     ++_idx;
     return temp;
   }
+  index& operator--() noexcept {
+    --_idx;
+    return *this;
+  }
+  index operator--(int) noexcept {
+    auto temp = *this;
+    --_idx;
+    return temp;
+  }
 
   _WITE_NODISCARD constexpr value_type value() const noexcept { return _idx; }
 
