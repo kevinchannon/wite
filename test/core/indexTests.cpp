@@ -66,4 +66,9 @@ TEST_CASE("Index tests", "[core]") {
     auto idx = wite::index<TestCollection>{100};
     REQUIRE(110 == (idx += 10).value());
   }
+
+  SECTION("decrement-assignment") {
+    auto idx = wite::index<TestCollection>{100};
+    REQUIRE(90 == (idx -= 10).value());
+  }
 }

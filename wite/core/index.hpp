@@ -47,6 +47,11 @@ class index {
     return *this;
   }
 
+  index& operator-=(std::make_signed_t<value_type> offset) {
+    _idx -= offset;
+    return *this;
+  }
+
   _WITE_NODISCARD constexpr value_type value() const noexcept { return _idx; }
 
  private:
