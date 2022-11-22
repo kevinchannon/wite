@@ -71,4 +71,8 @@ TEST_CASE("Index tests", "[core]") {
     auto idx = wite::index<TestCollection>{100};
     REQUIRE(90 == (idx -= 10).value());
   }
+
+  SECTION("addition with int") {
+    REQUIRE(10 == (wite::index<TestCollection>{5} + 5).value());
+  }
 }
