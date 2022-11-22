@@ -53,6 +53,7 @@ class index {
   }
 
   _WITE_NODISCARD index operator+(std::make_signed_t<value_type> offset) const noexcept { return index{_idx + offset}; }
+  _WITE_NODISCARD index operator-(std::make_signed_t<value_type> offset) const noexcept { return index{_idx - offset}; }
 
   _WITE_NODISCARD constexpr value_type value() const noexcept { return _idx; }
 

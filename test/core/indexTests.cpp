@@ -65,14 +65,17 @@ TEST_CASE("Index tests", "[core]") {
   SECTION("increment-assignment") {
     auto idx = wite::index<TestCollection>{100};
     REQUIRE(110 == (idx += 10).value());
+    REQUIRE(100 == (idx += -10).value());
   }
 
   SECTION("decrement-assignment") {
     auto idx = wite::index<TestCollection>{100};
     REQUIRE(90 == (idx -= 10).value());
+    REQUIRE(100 == (idx -= -10).value());
   }
 
   SECTION("addition with int") {
-    REQUIRE(10 == (wite::index<TestCollection>{5} + 5).value());
+    REQUIRE(15 == (wite::index<TestCollection>{10} + 5).value());
+    REQUIRE(5 == (wite::index<TestCollection>{10} + -5).value());
   }
 }
