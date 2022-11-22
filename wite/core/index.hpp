@@ -3,6 +3,8 @@
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/environment.hpp>
 
+#include <compare>
+
 namespace wite {
 
 template <typename Obj_T>
@@ -14,6 +16,8 @@ class index {
   constexpr explicit index(value_type idx) noexcept : _idx{idx} {}
 
   WITE_DEFAULT_CONSTRUCTORS(index);
+
+  _WITE_NODISCARD constexpr auto operator<=>(const index&) const noexcept = default;
 
   _WITE_NODISCARD constexpr value_type value() const noexcept { return _idx; }
 
