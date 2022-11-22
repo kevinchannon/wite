@@ -44,4 +44,10 @@ TEST_CASE("Index tests", "[core]") {
     auto idx = wite::index<TestCollection>{1};
     REQUIRE(2 == (++idx).value());
   }
+
+  SECTION("pre-increment operator") {
+    auto idx = wite::index<TestCollection>{1000};
+    REQUIRE(1000 == (idx++).value());
+    REQUIRE(1001 == idx.value());
+  }
 }
