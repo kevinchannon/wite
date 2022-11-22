@@ -18,6 +18,10 @@ class index {
   WITE_DEFAULT_CONSTRUCTORS(index);
 
   _WITE_NODISCARD constexpr auto operator<=>(const index&) const noexcept = default;
+  index& operator++() noexcept {
+    ++_idx;
+    return *this;
+  }
 
   _WITE_NODISCARD constexpr value_type value() const noexcept { return _idx; }
 

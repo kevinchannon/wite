@@ -39,4 +39,9 @@ TEST_CASE("Index tests", "[core]") {
       REQUIRE(idx >= wite::index<TestCollection>{99});
     }
   }
+
+  SECTION("pre-increment operator") {
+    auto idx = wite::index<TestCollection>{1};
+    REQUIRE(2 == (++idx).value());
+  }
 }
