@@ -61,4 +61,9 @@ TEST_CASE("Index tests", "[core]") {
     REQUIRE(1001 == (idx--).value());
     REQUIRE(1000 == idx.value());
   }
+
+  SECTION("increment-assignment") {
+    auto idx = wite::index<TestCollection>{100};
+    REQUIRE(110 == (idx += wite::index<TestCollection>{10}).value());
+  }
 }
