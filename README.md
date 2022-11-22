@@ -210,7 +210,7 @@ Here, we will see the failure message, but not the success one. In both cases, y
 > ⚠️ **WITE_NO_EXCEPTIONS**: If you're compiling with the `WITE_NO_EXCEPTIONS` macro defined, then `scope_success` and `scope_fail` are not defined and you'll get a compilation failure if you try to use them.
 
 ## `overloaded`
-This is a thing that allows you to do a kind of type-switching on a parameter pack.  So, if you have a function that looks like this:
+This is a thing that allows you to do a kind of type-switching on a parameter pack, which is basically directly lifted from [here](https://en.cppreference.com/w/cpp/utility/variant/visit).  So, if you have a function that looks like this:
 ```c++
 template<typename... Arg_Ts>
 void fn(Arg_Ts... args){
