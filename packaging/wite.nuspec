@@ -14,7 +14,7 @@
     </metadata>
      
     <files>
-        <file src="wite\**\*.*"   target="build\native\include\wite" />
+        <file src="..\wite\**\*.*"   target="build\native\include\wite" />
         <file src="wite.props"   target="build\native" />
         <file src="wite.targets"   target="build\native" />
         <file src="README.md" target="" />
