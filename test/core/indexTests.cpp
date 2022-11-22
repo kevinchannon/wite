@@ -74,8 +74,13 @@ TEST_CASE("Index tests", "[core]") {
     REQUIRE(100 == (idx -= -10).value());
   }
 
-  SECTION("addition with int") {
+  SECTION("addition of int") {
     REQUIRE(15 == (wite::index<TestCollection>{10} + 5).value());
     REQUIRE(5 == (wite::index<TestCollection>{10} + -5).value());
+  }
+
+  SECTION("subrtaction of int") {
+    REQUIRE(5 == (wite::index<TestCollection>{10} - 5).value());
+    REQUIRE(15 == (wite::index<TestCollection>{10} - -5).value());
   }
 }
