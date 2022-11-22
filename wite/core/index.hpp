@@ -4,6 +4,7 @@
 #include <wite/env/environment.hpp>
 
 #include <compare>
+#include <type_traits>
 
 namespace wite {
 
@@ -41,8 +42,8 @@ class index {
     return temp;
   }
 
-  index& operator+=(const index& other) {
-    _idx += other._idx;
+  index& operator+=(std::make_signed_t<value_type> offset) {
+    _idx += offset;
     return *this;
   }
 
