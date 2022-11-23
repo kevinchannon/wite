@@ -40,6 +40,11 @@ add_executable(wite_test
 	"core/scopeTests.cpp"
  "core/indexTests.cpp")
 
+target_compile_options(wite_test PRIVATE
+	$<$<CXX_COMPILER_ID:MSVC>:/W3 /WX>
+	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+)
+
 target_include_directories(wite_test PUBLIC
 	${CMAKE_SOURCE_DIR}
 )

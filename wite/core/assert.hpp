@@ -33,7 +33,7 @@ struct assertion_error : public std::logic_error {
     if (!(pred)) {                                               \
       throw ::wite::assertion_error{_WITE_ASSERT_MESSAGE(msg)};  \
     }                                                            \
-  } while (0, 0)
+  } while (0)
 #else
 #include <cassert>
 #define _WITE_DEBUG_ASSERT(pred, msg) assert(pred)

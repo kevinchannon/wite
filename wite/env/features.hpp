@@ -73,7 +73,7 @@
 #endif
 #define WITE_BYTE                  char
 #define _WITE_FEATURE_USE_STD_BYTE 0
-#elif WITE_USER_DEFINED_BYTE_TYPE_U8
+#elifdef WITE_USER_DEFINED_BYTE_TYPE_U8
 #ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
 #error "It is an error to specify multiple byte types"
 #endif
@@ -85,7 +85,7 @@
 
 #define WITE_BYTE                  std::uint8_t
 #define _WITE_FEATURE_USE_STD_BYTE 0
-#elif WITE_USER_DEFINED_BYTE_TYPE_I8
+#elifdef WITE_USER_DEFINED_BYTE_TYPE_I8
 #ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
 #error "It is an error to specify multiple byte types"
 #endif

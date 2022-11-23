@@ -156,7 +156,7 @@ TEST_CASE("Stack vector push_back() moves r-values into itself", "[stack_vector]
     bool moved{false};
 
     Moveable() {}
-    Moveable(const Moveable& other) {}
+    Moveable(const Moveable&) {}
     Moveable(Moveable&& other) noexcept { other.moved = true; }
 
     Moveable& operator=(const Moveable& other)

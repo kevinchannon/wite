@@ -97,8 +97,13 @@ class basic_fragment_string {
 
       if (_data.current == _data.fragment->end()) {
         ++_data.fragment;
-        _data.current =
-            _data.fragment == _data.fragment_end ? (--_data.fragment)->end() : _data.current = _data.fragment->begin();
+        if (_data.fragment == _data.fragment_end) {
+          --_data.fragment;
+          _data.current = _data.fragment->end();
+        }
+        else {
+          _data.current = _data.fragment->begin();
+        }
       }
 
       return *this;

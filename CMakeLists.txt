@@ -10,7 +10,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Do this check in case we're included in another project via FetchContent
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-
 	# The GCC in MinGW requires this, for some reason.
 	if(WIN32)
 		if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

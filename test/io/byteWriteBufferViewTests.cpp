@@ -172,7 +172,6 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
         SECTION("Endian adapter interface") {
           auto raw_buffer   = io::static_byte_buffer<10>{};
           auto write_buffer = io::byte_write_buffer_view{raw_buffer};
-          auto read_buffer  = io::byte_read_buffer_view{raw_buffer};
 
           const auto val_1 = uint32_t{0x01234567};
           REQUIRE(sizeof(uint32_t) == write_buffer.write(io::little_endian{val_1}));
