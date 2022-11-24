@@ -74,7 +74,7 @@ TEST_CASE("Index tests", "[core]") {
     REQUIRE(2 == (--idx).value());
 
 #ifdef _WITE_CONFIG_DEBUG
-    SECTION("Asserts in debug if index undeflows") {
+    SECTION("Asserts in debug if index underflows") {
       idx = wite::index<TestCollection>{0};
       WITE_REQUIRE_ASSERTS_WITH(--idx, "Index underflow");
     }
@@ -87,7 +87,7 @@ TEST_CASE("Index tests", "[core]") {
     REQUIRE(1000 == idx.value());
 
 #ifdef _WITE_CONFIG_DEBUG
-    SECTION("Asserts in debug if index undeflows") {
+    SECTION("Asserts in debug if index underflows") {
       idx = wite::index<TestCollection>{0};
       WITE_REQUIRE_ASSERTS_WITH(idx--, "Index underflow");
     }
@@ -98,12 +98,36 @@ TEST_CASE("Index tests", "[core]") {
     auto idx = wite::index<TestCollection>{100};
     REQUIRE(110 == (idx += 10).value());
     REQUIRE(100 == (idx += -10).value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index overflows") {
+      idx = wite::index<TestCollection>{std::numeric_limits<size_t>::max() - 5};
+      WITE_REQUIRE_ASSERTS_WITH(idx += 6, "Index overflow");
+    }
+
+    SECTION("Asserts in debug if index underflows") {
+      idx = wite::index<TestCollection>{5};
+      WITE_REQUIRE_ASSERTS_WITH(idx += -6, "Index underflow");
+    }
+#endif
   }
 
   SECTION("decrement-assignment") {
     auto idx = wite::index<TestCollection>{100};
     REQUIRE(90 == (idx -= 10).value());
     REQUIRE(100 == (idx -= -10).value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index underflows") {
+      idx = wite::index<TestCollection>{5};
+      WITE_REQUIRE_ASSERTS_WITH(idx -= 6, "Index underflow");
+    }
+
+    SECTION("Asserts in debug if index overflows") {
+      idx = wite::index<TestCollection>{std::numeric_limits<size_t>::max() - 5};
+      WITE_REQUIRE_ASSERTS_WITH(idx -= -6, "Index overflow");
+    }
+#endif
   }
 
   SECTION("addition of int") {

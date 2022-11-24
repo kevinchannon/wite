@@ -1,10 +1,11 @@
 #pragma once
 
-#include <wite/core/assert.hpp>
 #include <wite/common/constructor_macros.hpp>
+#include <wite/core/assert.hpp>
 #include <wite/env/environment.hpp>
 
 #include <compare>
+#include <limits>
 #include <type_traits>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,7 +19,7 @@ class index {
  public:
   struct index_type_tag {
     static constexpr auto value = true;
-   };
+  };
 
   using value_type      = size_t;
   using collection_type = Obj_T;
@@ -55,12 +56,17 @@ class index {
     return temp;
   }
 
-  index& operator+=(std::make_signed_t<value_type> offset) noexcept {
+  index& operator+=(std::make_signed_t<value_type> offset) _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(offset > 0 ? _idx <= std::numeric_limits<value_type>::max() - offset : _idx >= value_type(-offset),
+                       offset > 0 ? "Index overflow" : "Index underflow");
     _idx += offset;
     return *this;
   }
 
-  index& operator-=(std::make_signed_t<value_type> offset) noexcept {
+  index& operator-=(std::make_signed_t<value_type> offset) _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(
+        offset < 0 ? _idx <= std::numeric_limits<value_type>::max() - value_type(-offset) : _idx >= value_type(offset),
+        offset > 0 ? "Index underflow" : "Index overflow");
     _idx -= offset;
     return *this;
   }
@@ -77,7 +83,7 @@ class index {
 ///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
-template<typename T>
+template <typename T>
 concept index_like = requires(T& t) { T::index_type_tag::value; };
 #endif
 
