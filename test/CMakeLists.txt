@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.15)
+
 Include(FetchContent)
 
 FetchContent_Declare(
@@ -41,7 +43,7 @@ add_executable(wite_test
  "core/indexTests.cpp")
 
 target_compile_options(wite_test PRIVATE
-	$<$<CXX_COMPILER_ID:MSVC>:/W3 /WX>
+	$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
 	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
 )
 
