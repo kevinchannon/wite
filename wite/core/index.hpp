@@ -57,22 +57,40 @@ class index {
   }
 
   index& operator+=(std::make_signed_t<value_type> offset) _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(offset > 0 ? _idx <= std::numeric_limits<value_type>::max() - offset : _idx >= value_type(-offset),
-                       offset > 0 ? "Index overflow" : "Index underflow");
+  #ifdef _WITE_CONFIG_DEBUG
+    if (offset > 0) {
+      _WITE_DEBUG_ASSERT(_idx <= std::numeric_limits<value_type>::max() - offset, "Index overflow");
+    } else {
+      _WITE_DEBUG_ASSERT(_idx >= value_type(-offset), "Index underflow");
+    }
+ #endif
     _idx += offset;
     return *this;
   }
 
   index& operator-=(std::make_signed_t<value_type> offset) _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(
-        offset < 0 ? _idx <= std::numeric_limits<value_type>::max() - value_type(-offset) : _idx >= value_type(offset),
-        offset > 0 ? "Index underflow" : "Index overflow");
+#ifdef _WITE_CONFIG_DEBUG
+    if (offset > 0) {
+      _WITE_DEBUG_ASSERT( _idx >= value_type(offset), "Index underflow");
+    } else {
+      _WITE_DEBUG_ASSERT(_idx <= std::numeric_limits<value_type>::max() - value_type(-offset), "Index overflow");
+    }
+#endif
     _idx -= offset;
     return *this;
   }
 
-  _WITE_NODISCARD index operator+(std::make_signed_t<value_type> offset) const noexcept { return index{_idx + offset}; }
-  _WITE_NODISCARD index operator-(std::make_signed_t<value_type> offset) const noexcept { return index{_idx - offset}; }
+  _WITE_NODISCARD index operator+(std::make_signed_t<value_type> offset) const _WITE_RELEASE_NOEXCEPT {
+    auto out = *this;
+    out += offset;
+    return out; 
+  }
+
+  _WITE_NODISCARD index operator-(std::make_signed_t<value_type> offset) const _WITE_RELEASE_NOEXCEPT {
+    auto out = *this;
+    out -= offset;
+    return out;
+  }
 
   _WITE_NODISCARD constexpr value_type value() const noexcept { return _idx; }
 

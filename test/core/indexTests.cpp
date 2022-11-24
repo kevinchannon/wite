@@ -1,11 +1,12 @@
+#include <test/utils.hpp>
 #include <wite/core/index.hpp>
 #include <wite/core/io.hpp>
-#include <test/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
 #include <sstream>
+#include <tuple>
 
 TEST_CASE("Index tests", "[core]") {
   struct TestCollection {};
@@ -133,11 +134,33 @@ TEST_CASE("Index tests", "[core]") {
   SECTION("addition of int") {
     REQUIRE(15 == (wite::index<TestCollection>{10} + 5).value());
     REQUIRE(5 == (wite::index<TestCollection>{10} + -5).value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index underflows") {
+      WITE_REQUIRE_ASSERTS_WITH(std::ignore = wite::index<TestCollection>{5} + -6, "Index underflow");
+    }
+
+    SECTION("Asserts in debug if index overflows") {
+      WITE_REQUIRE_ASSERTS_WITH(std::ignore = wite::index<TestCollection>{std::numeric_limits<size_t>::max() - 5} + 6,
+                                "Index overflow");
+    }
+#endif
   }
 
   SECTION("subrtaction of int") {
     REQUIRE(5 == (wite::index<TestCollection>{10} - 5).value());
     REQUIRE(15 == (wite::index<TestCollection>{10} - -5).value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index underflows") {
+      WITE_REQUIRE_ASSERTS_WITH(std::ignore = wite::index<TestCollection>{5} - 6, "Index underflow");
+    }
+
+    SECTION("Asserts in debug if index overflows") {
+      WITE_REQUIRE_ASSERTS_WITH(std::ignore = wite::index<TestCollection>{std::numeric_limits<size_t>::max() - 5} - -6,
+                                "Index overflow");
+    }
+#endif
   }
 }
 
