@@ -93,6 +93,7 @@ class index {
   }
 
   _WITE_NODISCARD constexpr value_type value() const noexcept { return _idx; }
+  _WITE_NODISCARD constexpr const value_type& operator*() const noexcept { return _idx; }
 
  private:
   value_type _idx;

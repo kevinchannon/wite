@@ -15,6 +15,11 @@ TEST_CASE("Index tests", "[core]") {
     REQUIRE(10 == wite::index<TestCollection>{10}.value());
   }
 
+  SECTION("value() and operator*() return the same thing") {
+    const auto idx = wite::index<TestCollection>{123};
+    REQUIRE(idx.value() == *idx);
+  }
+
   SECTION("indices are comparable") {
     const auto idx = wite::index<TestCollection>{100};
 
