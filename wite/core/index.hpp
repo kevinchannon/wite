@@ -1,5 +1,6 @@
 #pragma once
 
+#include <wite/core/assert.hpp>
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/environment.hpp>
 
@@ -28,23 +29,27 @@ class index {
 
   _WITE_NODISCARD constexpr auto operator<=>(const index&) const noexcept = default;
 
-  index& operator++() noexcept {
+  index& operator++() _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(_idx < std::numeric_limits<value_type>::max(), "Index overflow");
     ++_idx;
     return *this;
   }
 
-  index operator++(int) noexcept {
+  index operator++(int) _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(_idx < std::numeric_limits<value_type>::max(), "Index overflow");
     auto temp = *this;
     ++_idx;
     return temp;
   }
 
-  index& operator--() noexcept {
+  index& operator--() _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(_idx > 0, "Index underflow");
     --_idx;
     return *this;
   }
 
-  index operator--(int) noexcept {
+  index operator--(int) _WITE_RELEASE_NOEXCEPT {
+    _WITE_DEBUG_ASSERT(_idx > 0, "Index underflow");
     auto temp = *this;
     --_idx;
     return temp;

@@ -1,5 +1,6 @@
 #include <wite/core/index.hpp>
 #include <wite/core/io.hpp>
+#include <test/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -46,23 +47,51 @@ TEST_CASE("Index tests", "[core]") {
   SECTION("pre-increment operator") {
     auto idx = wite::index<TestCollection>{1};
     REQUIRE(2 == (++idx).value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index rolls over") {
+      idx = wite::index<TestCollection>{std::numeric_limits<size_t>::max()};
+      WITE_REQUIRE_ASSERTS_WITH(++idx, "Index overflow");
+    }
+#endif
   }
 
-  SECTION("pre-increment operator") {
+  SECTION("post-increment operator") {
     auto idx = wite::index<TestCollection>{1000};
     REQUIRE(1000 == (idx++).value());
     REQUIRE(1001 == idx.value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index rolls over") {
+      idx = wite::index<TestCollection>{std::numeric_limits<size_t>::max()};
+      WITE_REQUIRE_ASSERTS_WITH(idx++, "Index overflow");
+    }
+#endif
   }
 
   SECTION("pre-decrement operator") {
     auto idx = wite::index<TestCollection>{3};
     REQUIRE(2 == (--idx).value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index undeflows") {
+      idx = wite::index<TestCollection>{0};
+      WITE_REQUIRE_ASSERTS_WITH(--idx, "Index underflow");
+    }
+#endif
   }
 
-  SECTION("pre-decrement operator") {
+  SECTION("post-decrement operator") {
     auto idx = wite::index<TestCollection>{1001};
     REQUIRE(1001 == (idx--).value());
     REQUIRE(1000 == idx.value());
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("Asserts in debug if index undeflows") {
+      idx = wite::index<TestCollection>{0};
+      WITE_REQUIRE_ASSERTS_WITH(idx--, "Index underflow");
+    }
+#endif
   }
 
   SECTION("increment-assignment") {
