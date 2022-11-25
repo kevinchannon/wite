@@ -65,49 +65,53 @@
 #endif  // _WITE_FEATURE_USE_CONSTEVAL
 
 #ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
-#error "It is an error to specify multiple byte types"
-#endif
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_I8
-#error "It is an error to specify multiple byte types"
-#endif
-#define WITE_BYTE                  char
-#define _WITE_FEATURE_USE_STD_BYTE 0
-#elifdef WITE_USER_DEFINED_BYTE_TYPE_U8
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
-#error "It is an error to specify multiple byte types"
-#endif
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_I8
-#error "It is an error to specify multiple byte types"
-#endif
+  #ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
+    #error "It is an error to specify multiple byte types"
+  #endif
+  #ifdef WITE_USER_DEFINED_BYTE_TYPE_I8
+    #error "It is an error to specify multiple byte types"
+  #endif
+  #define WITE_BYTE                  char
+  #define _WITE_FEATURE_USE_STD_BYTE 0
+#else // ^^^^ WITE_USER_DEFINED_BYTE_TYPE_CHAR / vvvv !WITE_USER_DEFINED_BYTE_TYPE_CHAR
+  #ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
+    #ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
+      #error "It is an error to specify multiple byte types"
+    #endif
+    #ifdef WITE_USER_DEFINED_BYTE_TYPE_I8
+      #error "It is an error to specify multiple byte types"
+    #endif
 
-#include <cstdint>
+    #include <cstdint>
 
-#define WITE_BYTE                  std::uint8_t
-#define _WITE_FEATURE_USE_STD_BYTE 0
-#elifdef WITE_USER_DEFINED_BYTE_TYPE_I8
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
-#error "It is an error to specify multiple byte types"
-#endif
-#ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
-#error "It is an error to specify multiple byte types"
-#endif
+    #define WITE_BYTE                  std::uint8_t
+    #define _WITE_FEATURE_USE_STD_BYTE 0
+  #else // ^^^^ WITE_USER_DEFINED_BYTE_TYPE_U8 / vvvv !WITE_USER_DEFINED_BYTE_TYPE_U8
+    #ifdef WITE_USER_DEFINED_BYTE_TYPE_I8
+      #ifdef WITE_USER_DEFINED_BYTE_TYPE_U8
+        #error "It is an error to specify multiple byte types"
+      #endif
+      #ifdef WITE_USER_DEFINED_BYTE_TYPE_CHAR
+        #error "It is an error to specify multiple byte types"
+      #endif
 
-#include <cstdint>
+      #include <cstdint>
 
-#define WITE_BYTE                  std::int8_t
-#define _WITE_FEATURE_USE_STD_BYTE 0
-#else
-#ifndef _WITE_FEATURE_USE_STD_BYTE
-#ifdef __cpp_lib_byte
-#define _WITE_FEATURE_USE_STD_BYTE 1
-#define WITE_BYTE                 std::byte
-#else
-#define _WITE_FEATURE_USE_STD_BYTE 0
-#define WITE_BYTE                 unsigned char
-#endif  // __cpp_lib_byte
-#endif  // _WITE_FEATURE_USE_STD_BYTE
-#endif  // WITE_USER_DEFINED_BYTE_TYPE
+      #define WITE_BYTE                  std::int8_t
+      #define _WITE_FEATURE_USE_STD_BYTE 0
+    #else // ^^^^ WITE_USER_DEFINED_BYTE_TYPE_I8 / vvvv !WITE_USER_DEFINED_BYTE_TYPE_I8
+      #ifndef _WITE_FEATURE_USE_STD_BYTE
+        #ifdef __cpp_lib_byte
+          #define _WITE_FEATURE_USE_STD_BYTE 1
+          #define WITE_BYTE                 std::byte
+        #else
+          #define _WITE_FEATURE_USE_STD_BYTE 0
+          #define WITE_BYTE                 unsigned char
+        #endif  // __cpp_lib_byte
+      #endif  // _WITE_FEATURE_USE_STD_BYTE
+    #endif  // WITE_USER_DEFINED_BYTE_TYPE_I8
+  #endif // WITE_USER_DEFINED_BYTE_TYPE_U8
+#endif // WITE_USER_DEFINED_BYTE_TYPE_CHAR
 
 #ifndef _WITE_FEATURE_HAS_THREE_WAY_COMPARE
 #if __cpp_impl_three_way_comparison >= 201711
