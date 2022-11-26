@@ -1,11 +1,13 @@
 #include <wite/collections/identifiable_item_collection.hpp>
 #include <wite/core/id.hpp>
+#include <test/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
 #include <compare>
 #include <vector>
+#include <stdexcept>
 
 namespace {
 
@@ -77,5 +79,9 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       const auto& retrieved_item = items.at(TestItem::id_type{2});
       REQUIRE(retrieved_item == item_2);
     }
+  }
+
+  SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
+    WITE_REQ_THROWS(identifiable_item_collection<TestItem>{}.at(TestItem::id_type{1}), std::out_of_range, "identifiable_item_collection failed to retreive item");
   }
 }

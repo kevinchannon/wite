@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 #include <ranges>
+#include <stdexcept>
 
 namespace wite::collections {
 
@@ -40,8 +41,11 @@ class identifiable_item_collection {
   }
 
   const value_type& at(const id_type& id) const {
-    const auto item = _items.find(id);
-    return *(item->second);
+    if (const auto item = _items.find(id); _items.end() != item) {
+      return *(item->second);
+    }
+
+    throw std::out_of_range{"identifiable_item_collection failed to retreive item"};
   }
 
  private:
