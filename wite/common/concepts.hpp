@@ -57,7 +57,7 @@ struct is_range<T,
     : std::true_type {};
 
 template <typename T>
-_WITE_CONCEPT is_range_v = is_range<T>::value;
+constexpr bool is_range_v = is_range<T>::value;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +72,7 @@ struct is_sized_range<T,
     : std::true_type {};
 
 template <typename T>
-_WITE_CONCEPT is_sized_range_v = is_sized_range<T>::value;
+constexpr bool is_sized_range_v = is_sized_range<T>::value;
 
 ///////////////////////////////////////////////////////////////////////////////
 

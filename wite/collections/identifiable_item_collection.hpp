@@ -1,10 +1,12 @@
 #pragma once
 
 #include <wite/env/environment.hpp>
+#include <wite/common/concepts.hpp>
 
 #include <map>
 #include <memory>
 #include <utility>
+#include <ranges>
 
 namespace wite::collections {
 
@@ -27,6 +29,14 @@ class identifiable_item_collection {
     auto p  = std::make_unique<Item_T>(std::move(item));
     auto id = p->id();
     _items.insert(typename _item_map_type::value_type{std::move(id), std::move(p)});
+  }
+
+  template<std::ranges::forward_range Range_T>
+    requires std::is_same_v<value_type, typename std::decay_t<Range_T>::value_type>
+  void insert(Range_T&& range) {
+    for (const auto& value : range) {
+      insert(value);
+    }
   }
 
   const value_type& at(const id_type& id) const {

@@ -5,6 +5,7 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <compare>
+#include <vector>
 
 namespace {
 
@@ -52,5 +53,29 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 
     const auto& retrieved_item = items.at(TestItem::id_type{1});
     REQUIRE(retrieved_item == item);
+  }
+
+  SECTION("multiple items can be inserted and retreived") {
+    auto items      = identifiable_item_collection<TestItem>{};
+    const auto item_1 = TestItem{TestItem::id_type{1}};
+    const auto item_2 = TestItem{TestItem::id_type{2}};
+    const auto item_3 = TestItem{TestItem::id_type{3}};
+
+    items.insert(std::vector{item_1, item_2, item_3});
+
+    {
+      const auto& retrieved_item = items.at(TestItem::id_type{1});
+      REQUIRE(retrieved_item == item_1);
+    }
+
+    {
+      const auto& retrieved_item = items.at(TestItem::id_type{3});
+      REQUIRE(retrieved_item == item_3);
+    }
+
+    {
+      const auto& retrieved_item = items.at(TestItem::id_type{2});
+      REQUIRE(retrieved_item == item_2);
+    }
   }
 }
