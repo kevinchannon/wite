@@ -4,6 +4,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <compare>
+
 namespace {
 
   struct TestItem {
@@ -12,6 +14,8 @@ namespace {
     explicit TestItem(id_type id) : _id{std::move(id)} {}
 
     id_type id() const { return _id; }
+
+    auto operator<=>(const TestItem&) const = default;
 
     id_type _id;
   };
@@ -39,5 +43,14 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     SECTION("and the collection is not empty") {
       REQUIRE_FALSE(items.empty());
     }
+  }
+
+  SECTION("inserted item can be retreived by ID") {
+    auto items = identifiable_item_collection<TestItem>{};
+    const auto item = TestItem{TestItem::id_type{1}};
+    items.insert(item);
+
+    const auto& retrieved_item = items.at(TestItem::id_type{1});
+    REQUIRE(retrieved_item == item);
   }
 }
