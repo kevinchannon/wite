@@ -13,5 +13,6 @@ class identifiable_item_collection {
    using size_type = size_t;
 
    _WITE_NODISCARD constexpr size_type size() const noexcept { return 0; }
+   _WITE_NODISCARD constexpr bool empty() const noexcept { return 0 == size(); }
 };
 }  // namespace wite::collections

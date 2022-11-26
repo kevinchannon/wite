@@ -22,4 +22,8 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
   SECTION("default constructed collection has zero size") {
     REQUIRE(0 == identifiable_item_collection<TestItem>{}.size());
   }
+
+  SECTION("default constructed collection is empty") {
+    REQUIRE(identifiable_item_collection<TestItem>{}.empty());
+  }
 }
