@@ -3,8 +3,8 @@
 #include <wite/env/environment.hpp>
 
 #include <map>
-#include <utility>
 #include <memory>
+#include <utility>
 
 namespace wite::collections {
 
@@ -16,21 +16,19 @@ class identifiable_item_collection {
   using _item_map_type = std::map<typename Item_T::id_type, std::unique_ptr<Item_T>>;
 
  public:
-  using size_type  = size_t;
-  using value_type = Item_T;
+  using size_type      = typename _item_map_type::size_type;
+  using value_type     = Item_T;
 
-  _WITE_NODISCARD constexpr size_type size() const noexcept { return 0; }
-  _WITE_NODISCARD constexpr bool empty() const noexcept { return 0 == size(); }
+  _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
+  _WITE_NODISCARD constexpr bool empty() const noexcept { return _items.empty(); }
 
-//  std::pair<value_type&, bool> insert(Item_T&& item) {
-//    auto p = std::unique_ptr<Item_T>(new Item_T{item});
-//    auto id = p->id();
-//    auto [iter, inserted] = _item_m.insert(
-//        std::pair<typename _item_map_type::value_type::first_type, typename _item_map_type::value_type::second_type>{std::move(id), std::move(p)});
-//    return std::pair<value_type&, bool>{iter->second, inserted};
-//  }
+  void insert(Item_T item) {
+    auto p  = std::make_unique<Item_T>(std::move(item));
+    auto id = p->id();
+    _items.insert(typename _item_map_type::value_type{std::move(id), std::move(p)});
+  }
 
  private:
-  _item_map_type _item_m;
+  _item_map_type _items;
 };
 }  // namespace wite::collections
