@@ -16,13 +16,16 @@ namespace {
 struct TestItem {
   using id_type = wite::id<TestItem, size_t>;
 
-  explicit TestItem(id_type id) : _id{std::move(id)} {}
+  explicit TestItem(size_t id, std::string data) : _id{std::move(id)}, data{std::move(data)} {} 
+
+  explicit TestItem(size_t id) : TestItem{id, ""} {}
 
   id_type id() const { return _id; }
 
   auto operator<=>(const TestItem&) const = default;
 
   id_type _id;
+  std::string data;
 };
 
 }  // namespace
@@ -31,9 +34,9 @@ using namespace wite::collections;
 
 TEST_CASE("Identifiable item collection tests", "[collections]") {
   auto items        = identifiable_item_collection<TestItem>{};
-  const auto item_0 = TestItem{TestItem::id_type{1}};
-  const auto item_1 = TestItem{TestItem::id_type{2}};
-  const auto item_2 = TestItem{TestItem::id_type{3}};
+  const auto item_0 = TestItem{1};
+  const auto item_1 = TestItem{2};
+  const auto item_2 = TestItem{3};
 
   SECTION("construction") {
     SECTION("default constructed collection has zero size") {
@@ -146,6 +149,17 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
   }
 
+  SECTION("emplacing items") {
+    SECTION("emplace an item increases the size") {
+      const auto& item = items.emplace(5, "the data");
+      REQUIRE(TestItem::id_type{5} == item.id());
+      REQUIRE("the data" == item.data);
+
+      REQUIRE(1 == items.size());
+      REQUIRE(items.contains(TestItem::id_type{5}));
+    }
+  }
+
   SECTION("retreiving items") {
     using idx_t = identifiable_item_collection<TestItem>::index_type;
     
@@ -190,9 +204,9 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("erase a range of item IDs") {
-      const auto item_3 = TestItem{TestItem::id_type{4}};
-      const auto item_4 = TestItem{TestItem::id_type{5}};
-      const auto item_5 = TestItem{TestItem::id_type{6}};
+      const auto item_3 = TestItem{4};
+      const auto item_4 = TestItem{5};
+      const auto item_5 = TestItem{6};
 
       items.insert(item_0, item_1, item_2, item_3, item_4, item_5);
       const auto ids_to_erase = std::vector{item_1.id(), item_3.id(), item_4.id()};
@@ -209,9 +223,9 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("variadic erasure of some item IDs") {
-      const auto item_3 = TestItem{TestItem::id_type{4}};
-      const auto item_4 = TestItem{TestItem::id_type{5}};
-      const auto item_5 = TestItem{TestItem::id_type{6}};
+      const auto item_3 = TestItem{4};
+      const auto item_4 = TestItem{5};
+      const auto item_5 = TestItem{6};
 
       items.insert(item_0, item_1, item_2, item_3, item_4, item_5);
       

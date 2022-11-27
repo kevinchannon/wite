@@ -73,27 +73,6 @@ class identifiable_item_collection {
     return out;
   }
 
-  const value_type& at(const id_type& id) const {
-    if (const auto item = _items.find(id); _items.end() != item) {
-      return *(item->second);
-    }
-
-    throw std::out_of_range{"identifiable_item_collection failed to retreive item by ID"};
-  }
-
-  const value_type& at(const index_type& idx) const {
-    if (*idx >= _ordered_items.size()) {
-      throw std::out_of_range{"identifiable_item_collection failed to retreive item by index"};
-    }
-
-    return *_ordered_items[*idx];
-  }
-
-  void clear() {
-    _items.clear();
-    _ordered_items.clear();
-  }
-
   bool erase(const id_type& id) {
     const auto to_erase =
         std::find_if(_ordered_items.begin(), _ordered_items.end(), [&id](auto&& item) { return id == item->id(); });
@@ -128,6 +107,35 @@ class identifiable_item_collection {
     (..., [this, &out, &out_idx](const id_type& id) { out[out_idx++] = erase(id); }(ids));
 
     return out;
+  }
+
+  template<typename... Arg_Ts>
+  value_type& emplace(Arg_Ts&&... args) {
+    auto p = std::make_unique<value_type>(std::forward<Arg_Ts>(args)...);
+    const auto id = p->id();
+    auto [out, _] = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(p)});
+    return *(out->second);
+  }
+
+  const value_type& at(const id_type& id) const {
+    if (const auto item = _items.find(id); _items.end() != item) {
+      return *(item->second);
+    }
+
+    throw std::out_of_range{"identifiable_item_collection failed to retreive item by ID"};
+  }
+
+  const value_type& at(const index_type& idx) const {
+    if (*idx >= _ordered_items.size()) {
+      throw std::out_of_range{"identifiable_item_collection failed to retreive item by index"};
+    }
+
+    return *_ordered_items[*idx];
+  }
+
+  void clear() {
+    _items.clear();
+    _ordered_items.clear();
   }
 
   _WITE_NODISCARD bool contains(const id_type& id) const noexcept { return _items.contains(id); }
