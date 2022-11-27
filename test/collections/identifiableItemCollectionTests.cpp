@@ -174,8 +174,15 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     SECTION("erase item by ID") {
       items.insert(item_0, item_1, item_2);
 
-      items.erase(item_1.id());
+      REQUIRE(items.erase(item_1.id()));
       REQUIRE(2 == items.size());
+    }
+
+    SECTION("erasing a non-existent item returns false") {
+      items.insert(item_0, item_1, item_2);
+
+      REQUIRE_FALSE(items.erase(TestItem::id_type{4}));
+      REQUIRE(3 == items.size());
     }
   }
 }
