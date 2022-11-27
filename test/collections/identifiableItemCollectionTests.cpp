@@ -30,111 +30,131 @@ struct TestItem {
 using namespace wite::collections;
 
 TEST_CASE("Identifiable item collection tests", "[collections]") {
-  SECTION("default constructed collection has zero size") {
-    REQUIRE(0 == identifiable_item_collection<TestItem>{}.size());
-  }
-
-  SECTION("default constructed collection is empty") {
-    REQUIRE(identifiable_item_collection<TestItem>{}.empty());
-  }
-
-  SECTION("insert an item increases the size") {
-    auto items = identifiable_item_collection<TestItem>{};
-
-    REQUIRE(items.insert(TestItem{TestItem::id_type{1}}));
-
-    REQUIRE(1 == items.size());
-
-    SECTION("and the collection is not empty") {
-      REQUIRE_FALSE(items.empty());
+  SECTION("construction") {
+    SECTION("default constructed collection has zero size") {
+      REQUIRE(0 == identifiable_item_collection<TestItem>{}.size());
     }
 
-    SECTION("and inserting another item with the same ID returns false") {
-      REQUIRE_FALSE(items.insert(TestItem{TestItem::id_type{1}}));
+    SECTION("default constructed collection is empty") {
+      REQUIRE(identifiable_item_collection<TestItem>{}.empty());
+    }
+  }
 
-      SECTION("and the size does not change") {
-        REQUIRE(1 == items.size());
+  SECTION("inserting items") {
+    SECTION("insert an item increases the size") {
+      auto items = identifiable_item_collection<TestItem>{};
+
+      REQUIRE(items.insert(TestItem{TestItem::id_type{1}}));
+
+      REQUIRE(1 == items.size());
+
+      SECTION("and the collection is not empty") {
+        REQUIRE_FALSE(items.empty());
+      }
+
+      SECTION("and inserting another item with the same ID returns false") {
+        REQUIRE_FALSE(items.insert(TestItem{TestItem::id_type{1}}));
+
+        SECTION("and the size does not change") {
+          REQUIRE(1 == items.size());
+        }
       }
     }
-  }
 
-  SECTION("inserted item can be retreived by ID") {
-    auto items      = identifiable_item_collection<TestItem>{};
-    const auto item = TestItem{TestItem::id_type{1}};
-    items.insert(item);
+    SECTION("inserted item can be retreived by ID") {
+      auto items      = identifiable_item_collection<TestItem>{};
+      const auto item = TestItem{TestItem::id_type{1}};
+      items.insert(item);
 
-    const auto& retrieved_item = items.at(TestItem::id_type{1});
-    REQUIRE(retrieved_item == item);
-  }
+      const auto& retrieved_item = items.at(TestItem::id_type{1});
+      REQUIRE(retrieved_item == item);
+    }
 
-  SECTION("multiple items can be inserted and retreived") {
-    auto items = identifiable_item_collection<TestItem>{};
-    const auto items_to_insert =
-        std::forward_list{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
+    SECTION("multiple items can be inserted and retreived") {
+      auto items = identifiable_item_collection<TestItem>{};
+      const auto items_to_insert =
+          std::forward_list{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
 
-    const auto result = items.insert(items_to_insert);
-    REQUIRE(std::vector{true, true, true} == result);
+      const auto result = items.insert(items_to_insert);
+      REQUIRE(std::vector{true, true, true} == result);
 
-    for (const auto& expected : items_to_insert) {
-      const auto& retrieved_item = items.at(expected.id());
-      REQUIRE(expected == retrieved_item);
+      for (const auto& expected : items_to_insert) {
+        const auto& retrieved_item = items.at(expected.id());
+        REQUIRE(expected == retrieved_item);
+      }
+    }
+
+    SECTION("result of range insert contains false values where insertions fail") {
+      auto items = identifiable_item_collection<TestItem>{};
+      const auto items_to_insert =
+          std::array{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
+
+      items.insert(items_to_insert[1]);
+
+      const auto result = items.insert(items_to_insert);
+      REQUIRE(std::vector{true, false, true} == result);
+
+      for (const auto& expected : items_to_insert) {
+        const auto& retrieved_item = items.at(expected.id());
+        REQUIRE(expected == retrieved_item);
+      }
+    }
+
+    SECTION("multiple items can be inserted from a forward range") {
+      auto items = identifiable_item_collection<TestItem>{};
+      const auto items_to_insert =
+          std::array{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
+
+      items.insert(items_to_insert[1]);
+
+      const auto result = items.insert(items_to_insert);
+      REQUIRE(std::vector{true, false, true} == result);
+
+      for (const auto& expected : items_to_insert) {
+        const auto& retrieved_item = items.at(expected.id());
+        REQUIRE(expected == retrieved_item);
+      }
+    }
+
+    SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
+      WITE_REQ_THROWS(identifiable_item_collection<TestItem>{}.at(TestItem::id_type{1}),
+                      std::out_of_range,
+                      "identifiable_item_collection failed to retreive item by ID");
+    }
+
+    SECTION("variadic insertion of items") {
+      auto items         = identifiable_item_collection<TestItem>{};
+      const auto item_0 = TestItem{TestItem::id_type{1}};
+      const auto item_1  = TestItem{TestItem::id_type{2}};
+      const auto item_2  = TestItem{TestItem::id_type{3}};
+
+      items.insert(item_0, item_1, item_2);
+
+      REQUIRE(3 == items.size());
+      REQUIRE(item_0 == items.at(item_0.id()));
+      REQUIRE(item_1 == items.at(item_1.id()));
+      REQUIRE(item_2 == items.at(item_2.id()));
     }
   }
 
-  SECTION("result of range insert contains false values where insertions fail") {
-    auto items = identifiable_item_collection<TestItem>{};
-    const auto items_to_insert =
-        std::array{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
+  SECTION("retreiving items") {
+    SECTION("items can be retreived by index") {
+      using idx_t = identifiable_item_collection<TestItem>::index_type;
 
-    items.insert(items_to_insert[1]);
+      auto items      = identifiable_item_collection<TestItem>{};
+      const auto item = TestItem{TestItem::id_type{1}};
+      items.insert(item);
 
-    const auto result = items.insert(items_to_insert);
-    REQUIRE(std::vector{true, false, true} == result);
-    
-    for (const auto& expected : items_to_insert) {
-      const auto& retrieved_item = items.at(expected.id());
-      REQUIRE(expected == retrieved_item);
+      const auto& retrieved_item = items.at(idx_t{0});
+      REQUIRE(retrieved_item == item);
     }
-  }
 
-  SECTION("multiple items can be inserted from a forward range") {
-    auto items = identifiable_item_collection<TestItem>{};
-    const auto items_to_insert =
-        std::array{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
+    SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
+      using idx_t = identifiable_item_collection<TestItem>::index_type;
 
-    items.insert(items_to_insert[1]);
-
-    const auto result = items.insert(items_to_insert);
-    REQUIRE(std::vector{true, false, true} == result);
-
-    for (const auto& expected : items_to_insert) {
-      const auto& retrieved_item = items.at(expected.id());
-      REQUIRE(expected == retrieved_item);
+      WITE_REQ_THROWS(identifiable_item_collection<TestItem>{}.at(idx_t{0}),
+                      std::out_of_range,
+                      "identifiable_item_collection failed to retreive item by index");
     }
-  }
-
-  SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
-    WITE_REQ_THROWS(identifiable_item_collection<TestItem>{}.at(TestItem::id_type{1}),
-                    std::out_of_range,
-                    "identifiable_item_collection failed to retreive item by ID");
-  }
-
-  SECTION("items can be retreived by index") {
-    using idx_t = identifiable_item_collection<TestItem>::index_type;
-
-    auto items      = identifiable_item_collection<TestItem>{};
-    const auto item = TestItem{TestItem::id_type{1}};
-    items.insert(item);
-
-    const auto& retrieved_item = items.at(idx_t{0});
-    REQUIRE(retrieved_item == item);
-  }
-
-  SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
-    using idx_t = identifiable_item_collection<TestItem>::index_type;
-
-    WITE_REQ_THROWS(identifiable_item_collection<TestItem>{}.at(idx_t{0}),
-                    std::out_of_range,
-                    "identifiable_item_collection failed to retreive item by index");
   }
 }
