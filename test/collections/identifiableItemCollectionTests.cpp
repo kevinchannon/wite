@@ -170,5 +170,12 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       items.clear();
       REQUIRE(items.empty());
     }
+
+    SECTION("erase item by ID") {
+      items.insert(item_0, item_1, item_2);
+
+      items.erase(item_1.id());
+      REQUIRE(2 == items.size());
+    }
   }
 }

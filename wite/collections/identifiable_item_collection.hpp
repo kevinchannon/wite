@@ -93,6 +93,13 @@ class identifiable_item_collection {
     _ordered_items.clear();
   }
 
+  void erase(const id_type& id) {
+    _ordered_items.erase(
+        std::remove_if(_ordered_items.begin(), _ordered_items.end(), [&id](auto&& item) { return id == item->id(); }),
+                         _ordered_items.end());
+    _items.erase(id);
+  }
+
  private:
   _item_map_type _items;
   _ordered_items_type _ordered_items;
