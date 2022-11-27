@@ -56,7 +56,8 @@ class identifiable_item_collection {
       out.reserve(values.size());
     }
 
-    std::ranges::transform(std::forward<Range_T>(values), std::back_inserter(out), [this](auto&& val) { return this->insert(val); });
+    std::ranges::transform(
+        std::forward<Range_T>(values), std::back_inserter(out), [this](auto&& val) { return this->insert(val); });
 
     return out;
   }
@@ -85,6 +86,11 @@ class identifiable_item_collection {
     }
 
     return *_ordered_items[*idx];
+  }
+
+  void clear() {
+    _items.clear();
+    _ordered_items.clear();
   }
 
  private:
