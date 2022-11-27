@@ -197,4 +197,18 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       REQUIRE(3 == items.size());
     }
   }
+
+  SECTION("finding items") {
+    items.insert(item_0, item_1, item_2);
+
+    SECTION("contains returns true if there is an item with the target ID in the collection") {
+      REQUIRE(items.contains(item_0.id()));
+      REQUIRE(items.contains(item_1.id()));
+      REQUIRE(items.contains(item_2.id()));
+    }
+
+    SECTION("contains returns false if the is NO item with the target ID in the collection") {
+      REQUIRE_FALSE(items.contains(TestItem::id_type{4}));
+    }
+  }
 }

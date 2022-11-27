@@ -114,11 +114,12 @@ class identifiable_item_collection {
       out.reserve(ids.size());
     }
 
-    std::ranges::transform(
-        std::forward<Range_T>(ids), std::back_inserter(out), [this](auto&& id) { return this->erase(id); });
+    std::ranges::transform(std::forward<Range_T>(ids), std::back_inserter(out), [this](auto&& id) { return this->erase(id); });
 
     return out;
   }
+
+  _WITE_NODISCARD bool contains(const id_type& id) const noexcept { return _items.contains(id); }
 
  private:
   _item_map_type _items;
