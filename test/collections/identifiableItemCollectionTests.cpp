@@ -39,12 +39,20 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
   SECTION("insert an item increases the size") {
     auto items = identifiable_item_collection<TestItem>{};
 
-    items.insert(TestItem{TestItem::id_type{1}});
+    REQUIRE(items.insert(TestItem{TestItem::id_type{1}}));
 
     REQUIRE(1 == items.size());
 
     SECTION("and the collection is not empty") {
       REQUIRE_FALSE(items.empty());
+    }
+
+    SECTION("and inserting another item with the same ID returns false") {
+      REQUIRE_FALSE(items.insert(TestItem{TestItem::id_type{1}}));
+
+      SECTION("and the size does not change") {
+        REQUIRE(1 == items.size());
+      }
     }
   }
 

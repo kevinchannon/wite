@@ -30,7 +30,7 @@ class identifiable_item_collection {
   _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _items.empty(); }
 
-  void insert(Item_T item) {
+  bool insert(Item_T item) {
     auto p = std::make_unique<Item_T>(std::move(item));
 
     auto id                 = p->id();
@@ -40,6 +40,9 @@ class identifiable_item_collection {
     if (newly_inserted) {
       _ordered_items.push_back(item_pointer);
     }
+
+    _WITE_DEBUG_ASSERT(_items.size() == _ordered_items.size(), "item container size mismatch");
+    return newly_inserted;
   }
 
   template <std::ranges::forward_range Range_T>
