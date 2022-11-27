@@ -37,15 +37,7 @@ class identifiable_item_collection {
   bool insert(Item_T item) {
     auto p = std::make_unique<Item_T>(std::move(item));
 
-    auto id                 = p->id();
-    const auto item_pointer = p.get();
-
-    const auto [_, newly_inserted] = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(p)});
-    if (newly_inserted) {
-      _ordered_items.push_back(item_pointer);
-    }
-
-    _WITE_DEBUG_ASSERT(_items.size() == _ordered_items.size(), "item container size mismatch");
+    const auto [_, newly_inserted] = _unchecked_insert(std::move(p));
     return newly_inserted;
   }
 
@@ -112,12 +104,11 @@ class identifiable_item_collection {
   template<typename... Arg_Ts>
   value_type& emplace(Arg_Ts&&... args) {
     auto p = std::make_unique<value_type>(std::forward<Arg_Ts>(args)...);
-    const auto id = p->id();
-    auto [out, inserted_new_item] = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(p)});
-    if (not inserted_new_item) {
+    auto [out, inserted_new_value] = _unchecked_insert(std::move(p));
+    if (not inserted_new_value) {
       throw std::logic_error{"identifiable_item_collection already contains this ID"};
     }
-
+    
     return *(out->second);
   }
 
@@ -145,6 +136,19 @@ class identifiable_item_collection {
   _WITE_NODISCARD bool contains(const id_type& id) const noexcept { return _items.contains(id); }
 
  private:
+
+   auto _unchecked_insert(std::unique_ptr<value_type> value) {
+    auto id           = value->id();
+    auto item_pointer              = value.get();
+    const auto out = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(value)});
+    if (out.second) {
+      _ordered_items.push_back(item_pointer);
+    }
+
+    _WITE_DEBUG_ASSERT(_items.size() == _ordered_items.size(), "item container size mismatch");
+    return out;
+   }
+
   _item_map_type _items;
   _ordered_items_type _ordered_items;
 };
