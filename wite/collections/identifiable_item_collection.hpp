@@ -55,10 +55,16 @@ class identifiable_item_collection {
       return *(item->second);
     }
 
-    throw std::out_of_range{"identifiable_item_collection failed to retreive item"};
+    throw std::out_of_range{"identifiable_item_collection failed to retreive item by ID"};
   }
 
-  const value_type& at(const index_type& idx) const { return *_ordered_items[*idx]; }
+  const value_type& at(const index_type& idx) const {
+    if (*idx >= _ordered_items.size()) {
+      throw std::out_of_range{"identifiable_item_collection failed to retreive item by index"};
+    }
+
+    return *_ordered_items[*idx];
+  }
 
  private:
   _item_map_type _items;
