@@ -3,6 +3,7 @@
 #include <wite/collections/make_vector.hpp>
 #include <wite/common/concepts.hpp>
 #include <wite/core/index.hpp>
+#include <wite/core/id.hpp>
 #include <wite/env/environment.hpp>
 
 #include <algorithm>
@@ -115,6 +116,16 @@ class identifiable_item_collection {
     }
 
     std::ranges::transform(std::forward<Range_T>(ids), std::back_inserter(out), [this](auto&& id) { return this->erase(id); });
+
+    return out;
+  }
+
+  template <id_like... Id_Ts>
+  std::array<bool, sizeof...(Id_Ts)> erase(const Id_Ts&... ids) {
+    auto out     = std::array<bool, sizeof...(Id_Ts)>{};
+    auto out_idx = size_t{0};
+
+    (..., [this, &out, &out_idx](const id_type& id) { out[out_idx++] = erase(id); }(ids));
 
     return out;
   }

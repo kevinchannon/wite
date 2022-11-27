@@ -207,6 +207,24 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       REQUIRE_FALSE(items.contains(item_4.id()));
       REQUIRE(items.contains(item_5.id()));
     }
+
+    SECTION("variadic erasure of some item IDs") {
+      const auto item_3 = TestItem{TestItem::id_type{4}};
+      const auto item_4 = TestItem{TestItem::id_type{5}};
+      const auto item_5 = TestItem{TestItem::id_type{6}};
+
+      items.insert(item_0, item_1, item_2, item_3, item_4, item_5);
+      
+      items.erase(item_1.id(), item_3.id(), item_4.id());
+      REQUIRE(3 == items.size());
+
+      REQUIRE(items.contains(item_0.id()));
+      REQUIRE_FALSE(items.contains(item_1.id()));
+      REQUIRE(items.contains(item_2.id()));
+      REQUIRE_FALSE(items.contains(item_3.id()));
+      REQUIRE_FALSE(items.contains(item_4.id()));
+      REQUIRE(items.contains(item_5.id()));
+    }
   }
 
   SECTION("finding items") {
