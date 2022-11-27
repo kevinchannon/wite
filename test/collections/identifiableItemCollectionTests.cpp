@@ -176,6 +176,10 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 
       REQUIRE(items.erase(item_1.id()));
       REQUIRE(2 == items.size());
+
+      REQUIRE(items.contains(item_0.id()));
+      REQUIRE_FALSE(items.contains(item_1.id()));
+      REQUIRE(items.contains(item_2.id()));
     }
 
     SECTION("erasing a non-existent item returns false") {
@@ -195,6 +199,13 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 
       items.erase(ids_to_erase);
       REQUIRE(3 == items.size());
+
+      REQUIRE(items.contains(item_0.id()));
+      REQUIRE_FALSE(items.contains(item_1.id()));
+      REQUIRE(items.contains(item_2.id()));
+      REQUIRE_FALSE(items.contains(item_3.id()));
+      REQUIRE_FALSE(items.contains(item_4.id()));
+      REQUIRE(items.contains(item_5.id()));
     }
   }
 
