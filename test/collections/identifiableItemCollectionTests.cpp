@@ -5,9 +5,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <array>
 #include <compare>
 #include <stdexcept>
 #include <vector>
+#include <forward_list>
 
 namespace {
 
@@ -66,26 +68,48 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
   }
 
   SECTION("multiple items can be inserted and retreived") {
-    auto items        = identifiable_item_collection<TestItem>{};
-    const auto item_1 = TestItem{TestItem::id_type{1}};
-    const auto item_2 = TestItem{TestItem::id_type{2}};
-    const auto item_3 = TestItem{TestItem::id_type{3}};
+    auto items = identifiable_item_collection<TestItem>{};
+    const auto items_to_insert =
+        std::forward_list{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
 
-    items.insert(std::vector{item_1, item_2, item_3});
+    const auto result = items.insert(items_to_insert);
+    REQUIRE(std::vector{true, true, true} == result);
 
-    {
-      const auto& retrieved_item = items.at(TestItem::id_type{1});
-      REQUIRE(retrieved_item == item_1);
+    for (const auto& expected : items_to_insert) {
+      const auto& retrieved_item = items.at(expected.id());
+      REQUIRE(expected == retrieved_item);
     }
+  }
 
-    {
-      const auto& retrieved_item = items.at(TestItem::id_type{3});
-      REQUIRE(retrieved_item == item_3);
+  SECTION("result of range insert contains false values where insertions fail") {
+    auto items = identifiable_item_collection<TestItem>{};
+    const auto items_to_insert =
+        std::array{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
+
+    items.insert(items_to_insert[1]);
+
+    const auto result = items.insert(items_to_insert);
+    REQUIRE(std::vector{true, false, true} == result);
+    
+    for (const auto& expected : items_to_insert) {
+      const auto& retrieved_item = items.at(expected.id());
+      REQUIRE(expected == retrieved_item);
     }
+  }
 
-    {
-      const auto& retrieved_item = items.at(TestItem::id_type{2});
-      REQUIRE(retrieved_item == item_2);
+  SECTION("multiple items can be inserted from a forward range") {
+    auto items = identifiable_item_collection<TestItem>{};
+    const auto items_to_insert =
+        std::array{TestItem{TestItem::id_type{1}}, TestItem{TestItem::id_type{2}}, TestItem{TestItem::id_type{3}}};
+
+    items.insert(items_to_insert[1]);
+
+    const auto result = items.insert(items_to_insert);
+    REQUIRE(std::vector{true, false, true} == result);
+
+    for (const auto& expected : items_to_insert) {
+      const auto& retrieved_item = items.at(expected.id());
+      REQUIRE(expected == retrieved_item);
     }
   }
 

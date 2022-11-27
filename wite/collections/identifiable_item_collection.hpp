@@ -1,9 +1,11 @@
 #pragma once
 
+#include <wite/collections/make_vector.hpp>
 #include <wite/common/concepts.hpp>
 #include <wite/core/index.hpp>
 #include <wite/env/environment.hpp>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <ranges>
@@ -47,10 +49,17 @@ class identifiable_item_collection {
 
   template <std::ranges::forward_range Range_T>
     requires std::is_same_v<value_type, typename std::decay_t<Range_T>::value_type>
-  void insert(Range_T&& range) {
-    for (const auto& value : range) {
-      insert(value);
+  std::vector<bool> insert(Range_T&& values) {
+    auto out = std::vector<bool>{};
+    if constexpr (common::is_sized_range_v<Range_T>) {
+      out.reserve(values.size());
     }
+
+    std::ranges::transform(std::forward<Range_T>(values), std::back_inserter(out), [this](auto&& val) {
+      return insert(val);
+    });
+
+    return out;
   }
 
   const value_type& at(const id_type& id) const {
