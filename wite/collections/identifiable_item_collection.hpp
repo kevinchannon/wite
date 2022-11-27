@@ -113,7 +113,11 @@ class identifiable_item_collection {
   value_type& emplace(Arg_Ts&&... args) {
     auto p = std::make_unique<value_type>(std::forward<Arg_Ts>(args)...);
     const auto id = p->id();
-    auto [out, _] = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(p)});
+    auto [out, inserted_new_item] = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(p)});
+    if (not inserted_new_item) {
+      throw std::logic_error{"identifiable_item_collection already contains this ID"};
+    }
+
     return *(out->second);
   }
 

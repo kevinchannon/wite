@@ -16,7 +16,7 @@ namespace {
 struct TestItem {
   using id_type = wite::id<TestItem, size_t>;
 
-  explicit TestItem(size_t id, std::string data) : _id{std::move(id)}, data{std::move(data)} {} 
+  explicit TestItem(size_t id, std::string data) : _id{std::move(id)}, data{std::move(data)} {}
 
   explicit TestItem(size_t id) : TestItem{id, ""} {}
 
@@ -113,9 +113,8 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
-      WITE_REQ_THROWS(items.at(TestItem::id_type{3}),
-                      std::out_of_range,
-                      "identifiable_item_collection failed to retreive item by ID");
+      WITE_REQ_THROWS(
+          items.at(TestItem::id_type{3}), std::out_of_range, "identifiable_item_collection failed to retreive item by ID");
     }
 
     SECTION("variadic insertion of items") {
@@ -157,12 +156,28 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 
       REQUIRE(1 == items.size());
       REQUIRE(items.contains(TestItem::id_type{5}));
+
+      SECTION("emplacing a second item increases the size further") {
+        const auto& additional_item = items.emplace(3, "more data");
+        REQUIRE(TestItem::id_type{3} == additional_item.id());
+        REQUIRE("more data" == additional_item.data);
+
+        REQUIRE(2 == items.size());
+        REQUIRE(items.contains(TestItem::id_type{3}));
+      }
+
+      SECTION("emplacing another item with an existing ID throws std::invalid_argument") {
+        WITE_REQ_THROWS(
+            items.emplace(5, "other data"), std::logic_error, "identifiable_item_collection already contains this ID");
+
+        REQUIRE("the data" == items.at(TestItem::id_type{5}).data);
+      }
     }
   }
 
   SECTION("retreiving items") {
     using idx_t = identifiable_item_collection<TestItem>::index_type;
-    
+
     SECTION("items can be retreived by index") {
       items.insert(item_0);
 
@@ -171,9 +186,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
-      WITE_REQ_THROWS(identifiable_item_collection<TestItem>{}.at(idx_t{0}),
-                      std::out_of_range,
-                      "identifiable_item_collection failed to retreive item by index");
+      WITE_REQ_THROWS(items.at(idx_t{0}), std::out_of_range, "identifiable_item_collection failed to retreive item by index");
     }
   }
 
@@ -228,7 +241,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       const auto item_5 = TestItem{6};
 
       items.insert(item_0, item_1, item_2, item_3, item_4, item_5);
-      
+
       items.erase(item_1.id(), item_3.id(), item_4.id());
       REQUIRE(3 == items.size());
 
