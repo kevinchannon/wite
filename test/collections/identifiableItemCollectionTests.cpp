@@ -184,5 +184,17 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       REQUIRE_FALSE(items.erase(TestItem::id_type{4}));
       REQUIRE(3 == items.size());
     }
+
+    SECTION("erase a range of item IDs") {
+      const auto item_3 = TestItem{TestItem::id_type{4}};
+      const auto item_4 = TestItem{TestItem::id_type{5}};
+      const auto item_5 = TestItem{TestItem::id_type{6}};
+
+      items.insert(item_0, item_1, item_2, item_3, item_4, item_5);
+      const auto ids_to_erase = std::vector{item_1.id(), item_3.id(), item_4.id()};
+
+      items.erase(ids_to_erase);
+      REQUIRE(3 == items.size());
+    }
   }
 }

@@ -106,6 +106,20 @@ class identifiable_item_collection {
     return true;
   }
 
+  template <std::ranges::forward_range Range_T>
+    requires std::is_same_v<id_type, typename std::decay_t<Range_T>::value_type>
+  std::vector<bool> erase(Range_T&& ids) {
+    auto out = std::vector<bool>{};
+    if constexpr (common::is_sized_range_v<Range_T>) {
+      out.reserve(ids.size());
+    }
+
+    std::ranges::transform(
+        std::forward<Range_T>(ids), std::back_inserter(out), [this](auto&& id) { return this->erase(id); });
+
+    return out;
+  }
+
  private:
   _item_map_type _items;
   _ordered_items_type _ordered_items;
