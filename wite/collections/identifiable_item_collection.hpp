@@ -3,7 +3,6 @@
 #include <wite/collections/make_vector.hpp>
 #include <wite/common/concepts.hpp>
 #include <wite/core/index.hpp>
-#include <wite/core/overload.hpp>
 #include <wite/env/environment.hpp>
 
 #include <algorithm>
@@ -57,14 +56,19 @@ class identifiable_item_collection {
       out.reserve(values.size());
     }
 
-    std::ranges::transform(std::forward<Range_T>(values), std::back_inserter(out), [this](auto&& val) { return insert(val); });
+    std::ranges::transform(std::forward<Range_T>(values), std::back_inserter(out), [this](auto&& val) { return this->insert(val); });
 
     return out;
   }
 
   template <identifiable... Item_Ts>
-  void insert(Item_Ts&&... items) {
-    (... , overloaded{[this](value_type item) { insert(std::move(item)); }}(std::forward<Item_Ts>(items)));
+  std::array<bool, sizeof...(Item_Ts)> insert(Item_Ts&&... items) {
+    auto out     = std::array<bool, sizeof...(Item_Ts)>{};
+    auto out_idx = size_t{0};
+
+    (..., [this, &out, &out_idx](value_type item) { out[out_idx++] = insert(std::move(item)); }(std::forward<Item_Ts>(items)));
+
+    return out;
   }
 
   const value_type& at(const id_type& id) const {

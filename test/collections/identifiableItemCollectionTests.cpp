@@ -7,9 +7,9 @@
 
 #include <array>
 #include <compare>
+#include <forward_list>
 #include <stdexcept>
 #include <vector>
-#include <forward_list>
 
 namespace {
 
@@ -123,12 +123,38 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("variadic insertion of items") {
-      auto items         = identifiable_item_collection<TestItem>{};
+      auto items        = identifiable_item_collection<TestItem>{};
       const auto item_0 = TestItem{TestItem::id_type{1}};
-      const auto item_1  = TestItem{TestItem::id_type{2}};
-      const auto item_2  = TestItem{TestItem::id_type{3}};
+      const auto item_1 = TestItem{TestItem::id_type{2}};
+      const auto item_2 = TestItem{TestItem::id_type{3}};
 
-      items.insert(item_0, item_1, item_2);
+      const auto result = items.insert(item_0, item_1, item_2);
+      REQUIRE(std::array{true, true, true} == result);
+
+      REQUIRE(3 == items.size());
+      REQUIRE(item_0 == items.at(item_0.id()));
+      REQUIRE(item_1 == items.at(item_1.id()));
+      REQUIRE(item_2 == items.at(item_2.id()));
+    }
+
+    SECTION("variadic insertion of items with existing IDs returns false") {
+      auto items        = identifiable_item_collection<TestItem>{};
+      const auto item_0 = TestItem{TestItem::id_type{1}};
+      const auto item_1 = TestItem{TestItem::id_type{2}};
+      const auto item_2 = TestItem{TestItem::id_type{3}};
+
+      // clang-format off
+      const auto [existing_item, expected_insertion_result] = GENERATE_REF(table<TestItem, std::array<bool, 3>>({
+        {item_0, std::array{false, true, true}},
+        {item_1, std::array{true, false, true}},
+        {item_2, std::array{true, true, false}}
+      }));
+      // clang-format on
+
+      REQUIRE(items.insert(existing_item));
+
+      const auto result = items.insert(item_0, item_1, item_2);
+      REQUIRE(expected_insertion_result == result);
 
       REQUIRE(3 == items.size());
       REQUIRE(item_0 == items.at(item_0.id()));
