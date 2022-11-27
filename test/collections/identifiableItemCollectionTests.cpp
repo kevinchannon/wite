@@ -84,4 +84,15 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
   SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
     WITE_REQ_THROWS(identifiable_item_collection<TestItem>{}.at(TestItem::id_type{1}), std::out_of_range, "identifiable_item_collection failed to retreive item");
   }
+
+  SECTION("items can be retreived by index") {
+    using idx_t = identifiable_item_collection<TestItem>::index_type;
+
+    auto items      = identifiable_item_collection<TestItem>{};
+    const auto item = TestItem{TestItem::id_type{1}};
+    items.insert(item);
+
+    const auto& retrieved_item = items.at(idx_t{0});
+    REQUIRE(retrieved_item == item);
+  }
 }
