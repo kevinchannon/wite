@@ -49,102 +49,104 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
   }
 
   SECTION("inserting items") {
-    SECTION("insert an item increases the size") {
-      REQUIRE(items.try_insert(item_0));
+    SECTION("try_insert") {
+      SECTION("increases the size if successful") {
+        REQUIRE(items.try_insert(item_0));
 
-      REQUIRE(1 == items.size());
+        REQUIRE(1 == items.size());
 
-      SECTION("and the collection is not empty") {
-        REQUIRE_FALSE(items.empty());
-      }
+        SECTION("and the collection is not empty") {
+          REQUIRE_FALSE(items.empty());
+        }
 
-      SECTION("and inserting another item with the same ID returns false") {
-        REQUIRE_FALSE(items.try_insert(item_0));
+        SECTION("and try_insert-ing another item with the same ID returns false") {
+          REQUIRE_FALSE(items.try_insert(item_0));
 
-        SECTION("and the size does not change") {
-          REQUIRE(1 == items.size());
+          SECTION("and the size does not change") {
+            REQUIRE(1 == items.size());
+          }
         }
       }
-    }
 
-    SECTION("inserted item can be retreived by ID") {
-      items.try_insert(item_0);
+      SECTION("item can be retreived by ID") {
+        items.try_insert(item_0);
 
-      const auto& retrieved_item = items.at(TestItem::id_type{1});
-      REQUIRE(retrieved_item == item_0);
-    }
-
-    SECTION("multiple items can be inserted and retreived") {
-      const auto items_to_insert = std::forward_list{item_0, item_1, item_2};
-
-      const auto result = items.try_insert(items_to_insert);
-      REQUIRE(std::vector{true, true, true} == result);
-
-      for (const auto& expected : items_to_insert) {
-        const auto& retrieved_item = items.at(expected.id());
-        REQUIRE(expected == retrieved_item);
+        const auto& retrieved_item = items.at(TestItem::id_type{1});
+        REQUIRE(retrieved_item == item_0);
       }
-    }
 
-    SECTION("result of range insert contains false values where insertions fail") {
-      const auto items_to_insert = std::array{item_0, item_1, item_2};
+      SECTION("multiple items can be try_insert-ed and retreived") {
+        const auto items_to_insert = std::forward_list{item_0, item_1, item_2};
 
-      items.try_insert(item_1);
+        const auto result = items.try_insert(items_to_insert);
+        REQUIRE(std::vector{true, true, true} == result);
 
-      const auto result = items.try_insert(items_to_insert);
-      REQUIRE(std::vector{true, false, true} == result);
-
-      for (const auto& expected : items_to_insert) {
-        const auto& retrieved_item = items.at(expected.id());
-        REQUIRE(expected == retrieved_item);
+        for (const auto& expected : items_to_insert) {
+          const auto& retrieved_item = items.at(expected.id());
+          REQUIRE(expected == retrieved_item);
+        }
       }
-    }
 
-    SECTION("multiple items can be inserted from a forward range") {
-      const auto items_to_insert = std::forward_list{item_0, item_1, item_2};
+      SECTION("result of range try_insert contains false values where insertions fail") {
+        const auto items_to_insert = std::array{item_0, item_1, item_2};
 
-      const auto result = items.try_insert(items_to_insert);
-      REQUIRE(std::vector{true, true, true} == result);
+        items.try_insert(item_1);
 
-      for (const auto& expected : items_to_insert) {
-        const auto& retrieved_item = items.at(expected.id());
-        REQUIRE(expected == retrieved_item);
+        const auto result = items.try_insert(items_to_insert);
+        REQUIRE(std::vector{true, false, true} == result);
+
+        for (const auto& expected : items_to_insert) {
+          const auto& retrieved_item = items.at(expected.id());
+          REQUIRE(expected == retrieved_item);
+        }
       }
-    }
 
-    SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
-      WITE_REQ_THROWS(
-          items.at(TestItem::id_type{3}), std::out_of_range, "identifiable_item_collection failed to retreive item by ID");
-    }
+      SECTION("multiple items can be try_insert-ed from a forward range") {
+        const auto items_to_insert = std::forward_list{item_0, item_1, item_2};
 
-    SECTION("variadic insertion of items") {
-      const auto result = items.try_insert(item_0, item_1, item_2);
-      REQUIRE(std::array{true, true, true} == result);
+        const auto result = items.try_insert(items_to_insert);
+        REQUIRE(std::vector{true, true, true} == result);
 
-      REQUIRE(3 == items.size());
-      REQUIRE(item_0 == items.at(item_0.id()));
-      REQUIRE(item_1 == items.at(item_1.id()));
-      REQUIRE(item_2 == items.at(item_2.id()));
-    }
+        for (const auto& expected : items_to_insert) {
+          const auto& retrieved_item = items.at(expected.id());
+          REQUIRE(expected == retrieved_item);
+        }
+      }
 
-    SECTION("variadic insertion of items with existing IDs returns false") {
-      // clang-format off
+      SECTION("std::out_of_range is thrown if an item with the required ID is not found") {
+        WITE_REQ_THROWS(
+            items.at(TestItem::id_type{3}), std::out_of_range, "identifiable_item_collection failed to retreive item by ID");
+      }
+
+      SECTION("variadic try_insert of items") {
+        const auto result = items.try_insert(item_0, item_1, item_2);
+        REQUIRE(std::array{true, true, true} == result);
+
+        REQUIRE(3 == items.size());
+        REQUIRE(item_0 == items.at(item_0.id()));
+        REQUIRE(item_1 == items.at(item_1.id()));
+        REQUIRE(item_2 == items.at(item_2.id()));
+      }
+
+      SECTION("variadic try_insert of items with existing IDs returns false") {
+        // clang-format off
       const auto [existing_item, expected_insertion_result] = GENERATE_REF(table<TestItem, std::array<bool, 3>>({
         {item_0, std::array{false, true, true}},
         {item_1, std::array{true, false, true}},
         {item_2, std::array{true, true, false}}
       }));
-      // clang-format on
+        // clang-format on
 
-      REQUIRE(items.try_insert(existing_item));
+        REQUIRE(items.try_insert(existing_item));
 
-      const auto result = items.try_insert(item_0, item_1, item_2);
-      REQUIRE(expected_insertion_result == result);
+        const auto result = items.try_insert(item_0, item_1, item_2);
+        REQUIRE(expected_insertion_result == result);
 
-      REQUIRE(3 == items.size());
-      REQUIRE(item_0 == items.at(item_0.id()));
-      REQUIRE(item_1 == items.at(item_1.id()));
-      REQUIRE(item_2 == items.at(item_2.id()));
+        REQUIRE(3 == items.size());
+        REQUIRE(item_0 == items.at(item_0.id()));
+        REQUIRE(item_1 == items.at(item_1.id()));
+        REQUIRE(item_2 == items.at(item_2.id()));
+      }
     }
   }
 
