@@ -2,8 +2,8 @@
 
 #include <wite/collections/make_vector.hpp>
 #include <wite/common/concepts.hpp>
-#include <wite/core/index.hpp>
 #include <wite/core/id.hpp>
+#include <wite/core/index.hpp>
 #include <wite/env/environment.hpp>
 
 #include <algorithm>
@@ -34,10 +34,18 @@ class identifiable_item_collection {
   _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _items.empty(); }
 
+  void insert(Item_T item) {
+    if (this->contains(item.id())) {
+      throw std::logic_error{"Insertion of duplicate ID into identifiable_item_collection"};
+    }
+
+    _unchecked_insert(std::make_unique<Item_T>(std::move(item)));
+  }
+
   bool try_insert(Item_T item) {
     auto p = std::make_unique<Item_T>(std::move(item));
 
-    const auto [_, newly_inserted] = _unchecked_insert(std::move(p));
+    const auto [_, newly_inserted] = _try_unchecked_insert(std::move(p));
     return newly_inserted;
   }
 
@@ -60,7 +68,8 @@ class identifiable_item_collection {
     auto out     = std::array<bool, sizeof...(Item_Ts)>{};
     auto out_idx = size_t{0};
 
-    (..., [this, &out, &out_idx](value_type item) { out[out_idx++] = try_insert(std::move(item)); }(std::forward<Item_Ts>(items)));
+    (...,
+     [this, &out, &out_idx](value_type item) { out[out_idx++] = try_insert(std::move(item)); }(std::forward<Item_Ts>(items)));
 
     return out;
   }
@@ -101,14 +110,14 @@ class identifiable_item_collection {
     return out;
   }
 
-  template<typename... Arg_Ts>
+  template <typename... Arg_Ts>
   value_type& emplace(Arg_Ts&&... args) {
-    auto p = std::make_unique<value_type>(std::forward<Arg_Ts>(args)...);
-    auto [out, inserted_new_value] = _unchecked_insert(std::move(p));
+    auto p                         = std::make_unique<value_type>(std::forward<Arg_Ts>(args)...);
+    auto [out, inserted_new_value] = _try_unchecked_insert(std::move(p));
     if (not inserted_new_value) {
       throw std::logic_error{"identifiable_item_collection already contains this ID"};
     }
-    
+
     return *(out->second);
   }
 
@@ -136,18 +145,26 @@ class identifiable_item_collection {
   _WITE_NODISCARD bool contains(const id_type& id) const noexcept { return _items.contains(id); }
 
  private:
-
-   auto _unchecked_insert(std::unique_ptr<value_type> value) {
+  auto _try_unchecked_insert(std::unique_ptr<value_type> value) {
     auto id           = value->id();
-    auto item_pointer              = value.get();
-    const auto out = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(value)});
+    auto item_pointer = value.get();
+    const auto out    = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(value)});
     if (out.second) {
       _ordered_items.push_back(item_pointer);
     }
 
     _WITE_DEBUG_ASSERT(_items.size() == _ordered_items.size(), "item container size mismatch");
     return out;
-   }
+  }
+
+  void _unchecked_insert(std::unique_ptr<value_type> value) {
+    auto id           = value->id();
+    auto item_pointer = value.get();
+    _items.insert(typename _item_map_type::value_type{std::move(id), std::move(value)});
+    _ordered_items.push_back(item_pointer);
+
+    _WITE_DEBUG_ASSERT(_items.size() == _ordered_items.size(), "item container size mismatch");
+  }
 
   _item_map_type _items;
   _ordered_items_type _ordered_items;

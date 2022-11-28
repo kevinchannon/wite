@@ -148,6 +148,24 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
         REQUIRE(item_2 == items.at(item_2.id()));
       }
     }
+
+    SECTION("insert") {
+      REQUIRE_NOTHROW(items.insert(item_0));
+
+      REQUIRE(1 == items.size());
+
+      SECTION("and the collection is not empty") {
+        REQUIRE_FALSE(items.empty());
+      }
+
+      SECTION("and try_insert-ing another item with the same ID returns false") {
+        WITE_REQ_THROWS(items.insert(item_0), std::logic_error, "Insertion of duplicate ID into identifiable_item_collection");
+
+        SECTION("and the size does not change") {
+          REQUIRE(1 == items.size());
+        }
+      }
+    }
   }
 
   SECTION("emplacing items") {
