@@ -34,7 +34,7 @@ class identifiable_item_collection {
   _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _items.empty(); }
 
-  bool insert(Item_T item) {
+  bool try_insert(Item_T item) {
     auto p = std::make_unique<Item_T>(std::move(item));
 
     const auto [_, newly_inserted] = _unchecked_insert(std::move(p));
@@ -43,24 +43,24 @@ class identifiable_item_collection {
 
   template <std::ranges::forward_range Range_T>
     requires std::is_same_v<value_type, typename std::decay_t<Range_T>::value_type>
-  std::vector<bool> insert(Range_T&& values) {
+  std::vector<bool> try_insert(Range_T&& values) {
     auto out = std::vector<bool>{};
     if constexpr (common::is_sized_range_v<Range_T>) {
       out.reserve(values.size());
     }
 
     std::ranges::transform(
-        std::forward<Range_T>(values), std::back_inserter(out), [this](auto&& val) { return this->insert(val); });
+        std::forward<Range_T>(values), std::back_inserter(out), [this](auto&& val) { return this->try_insert(val); });
 
     return out;
   }
 
   template <identifiable... Item_Ts>
-  std::array<bool, sizeof...(Item_Ts)> insert(Item_Ts&&... items) {
+  std::array<bool, sizeof...(Item_Ts)> try_insert(Item_Ts&&... items) {
     auto out     = std::array<bool, sizeof...(Item_Ts)>{};
     auto out_idx = size_t{0};
 
-    (..., [this, &out, &out_idx](value_type item) { out[out_idx++] = insert(std::move(item)); }(std::forward<Item_Ts>(items)));
+    (..., [this, &out, &out_idx](value_type item) { out[out_idx++] = try_insert(std::move(item)); }(std::forward<Item_Ts>(items)));
 
     return out;
   }

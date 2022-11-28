@@ -50,7 +50,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 
   SECTION("inserting items") {
     SECTION("insert an item increases the size") {
-      REQUIRE(items.insert(item_0));
+      REQUIRE(items.try_insert(item_0));
 
       REQUIRE(1 == items.size());
 
@@ -59,7 +59,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       }
 
       SECTION("and inserting another item with the same ID returns false") {
-        REQUIRE_FALSE(items.insert(item_0));
+        REQUIRE_FALSE(items.try_insert(item_0));
 
         SECTION("and the size does not change") {
           REQUIRE(1 == items.size());
@@ -68,7 +68,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("inserted item can be retreived by ID") {
-      items.insert(item_0);
+      items.try_insert(item_0);
 
       const auto& retrieved_item = items.at(TestItem::id_type{1});
       REQUIRE(retrieved_item == item_0);
@@ -77,7 +77,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     SECTION("multiple items can be inserted and retreived") {
       const auto items_to_insert = std::forward_list{item_0, item_1, item_2};
 
-      const auto result = items.insert(items_to_insert);
+      const auto result = items.try_insert(items_to_insert);
       REQUIRE(std::vector{true, true, true} == result);
 
       for (const auto& expected : items_to_insert) {
@@ -89,9 +89,9 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     SECTION("result of range insert contains false values where insertions fail") {
       const auto items_to_insert = std::array{item_0, item_1, item_2};
 
-      items.insert(item_1);
+      items.try_insert(item_1);
 
-      const auto result = items.insert(items_to_insert);
+      const auto result = items.try_insert(items_to_insert);
       REQUIRE(std::vector{true, false, true} == result);
 
       for (const auto& expected : items_to_insert) {
@@ -103,7 +103,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     SECTION("multiple items can be inserted from a forward range") {
       const auto items_to_insert = std::forward_list{item_0, item_1, item_2};
 
-      const auto result = items.insert(items_to_insert);
+      const auto result = items.try_insert(items_to_insert);
       REQUIRE(std::vector{true, true, true} == result);
 
       for (const auto& expected : items_to_insert) {
@@ -118,7 +118,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("variadic insertion of items") {
-      const auto result = items.insert(item_0, item_1, item_2);
+      const auto result = items.try_insert(item_0, item_1, item_2);
       REQUIRE(std::array{true, true, true} == result);
 
       REQUIRE(3 == items.size());
@@ -136,9 +136,9 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       }));
       // clang-format on
 
-      REQUIRE(items.insert(existing_item));
+      REQUIRE(items.try_insert(existing_item));
 
-      const auto result = items.insert(item_0, item_1, item_2);
+      const auto result = items.try_insert(item_0, item_1, item_2);
       REQUIRE(expected_insertion_result == result);
 
       REQUIRE(3 == items.size());
@@ -179,7 +179,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     using idx_t = identifiable_item_collection<TestItem>::index_type;
 
     SECTION("items can be retreived by index") {
-      items.insert(item_0);
+      items.try_insert(item_0);
 
       const auto& retrieved_item = items.at(idx_t{0});
       REQUIRE(retrieved_item == item_0);
@@ -192,14 +192,14 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 
   SECTION("removing items") {
     SECTION("clear removes all items") {
-      items.insert(item_0, item_1, item_2);
+      items.try_insert(item_0, item_1, item_2);
 
       items.clear();
       REQUIRE(items.empty());
     }
 
     SECTION("erase item by ID") {
-      items.insert(item_0, item_1, item_2);
+      items.try_insert(item_0, item_1, item_2);
 
       REQUIRE(items.erase(item_1.id()));
       REQUIRE(2 == items.size());
@@ -210,7 +210,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("erasing a non-existent item returns false") {
-      items.insert(item_0, item_1, item_2);
+      items.try_insert(item_0, item_1, item_2);
 
       REQUIRE_FALSE(items.erase(TestItem::id_type{4}));
       REQUIRE(3 == items.size());
@@ -221,7 +221,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       const auto item_4 = TestItem{5};
       const auto item_5 = TestItem{6};
 
-      items.insert(item_0, item_1, item_2, item_3, item_4, item_5);
+      items.try_insert(item_0, item_1, item_2, item_3, item_4, item_5);
       const auto ids_to_erase = std::vector{item_1.id(), item_3.id(), item_4.id()};
 
       items.erase(ids_to_erase);
@@ -240,7 +240,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       const auto item_4 = TestItem{5};
       const auto item_5 = TestItem{6};
 
-      items.insert(item_0, item_1, item_2, item_3, item_4, item_5);
+      items.try_insert(item_0, item_1, item_2, item_3, item_4, item_5);
 
       items.erase(item_1.id(), item_3.id(), item_4.id());
       REQUIRE(3 == items.size());
@@ -255,7 +255,7 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
   }
 
   SECTION("finding items") {
-    items.insert(item_0, item_1, item_2);
+    items.try_insert(item_0, item_1, item_2);
 
     SECTION("contains returns true if there is an item with the target ID in the collection") {
       REQUIRE(items.contains(item_0.id()));
