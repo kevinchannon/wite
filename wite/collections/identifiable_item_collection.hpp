@@ -123,6 +123,24 @@ class identifiable_item_collection {
     return *(out->second);
   }
 
+  std::unique_ptr<value_type> excise(const id_type& id) {
+    auto id_and_item = _items.find(id);
+    if (_items.end() == id_and_item) {
+      return nullptr;
+    }
+
+    auto out = std::unique_ptr<value_type>{};
+    std::swap(out, id_and_item->second);
+    _items.erase(id_and_item);
+
+    const auto to_erase = std::find(_ordered_items.begin(), _ordered_items.end(), out.get());
+    _WITE_DEBUG_ASSERT(_ordered_items.end() != to_erase, "Failed to find item in orderer items that was found in associative items");
+
+    _ordered_items.erase(to_erase);
+    
+    return out;
+  }
+
   const value_type& at(const id_type& id) const {
     if (const auto item = _items.find(id); _items.end() != item) {
       return *(item->second);

@@ -281,6 +281,24 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
   }
 
+  SECTION("extracting items") {
+    const auto item_3 = TestItem{4};
+    const auto item_4 = TestItem{5};
+    const auto item_5 = TestItem{6};
+
+    items.try_insert(item_0, item_1, item_2, item_3, item_4, item_5);
+
+    SECTION("reduces the size of the collection") {
+      const auto item = items.excise(item_2.id());
+      REQUIRE(5 == items.size());
+      REQUIRE(item_2 == *item);
+    }
+
+    SECTION("returns NULL if the item does not exist") {
+      REQUIRE(nullptr == items.excise(TestItem::id_type{7}));
+    }
+  }
+
   SECTION("finding items") {
     items.try_insert(item_0, item_1, item_2);
 
