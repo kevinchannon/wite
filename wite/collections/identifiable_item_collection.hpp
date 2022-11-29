@@ -20,13 +20,15 @@ namespace wite::collections {
 template <typename T>
 concept identifiable = requires(T& t) { t.id(); };
 
-template <identifiable Item_T>
+template <identifiable Item_T,
+          typename AssocContainer_T = std::map<typename Item_T::id_type, std::unique_ptr<Item_T>>,
+          typename OrderedCont_T    = std::vector<Item_T*>>
 class identifiable_item_collection {
-  using _item_map_type      = std::map<typename Item_T::id_type, std::unique_ptr<Item_T>>;
-  using _ordered_items_type = std::vector<Item_T*>;
+  using _associative_storage_type      = AssocContainer_T;
+  using _ordered_storage_type = OrderedCont_T;
 
  public:
-  using size_type  = typename _item_map_type::size_type;
+  using size_type  = typename _associative_storage_type::size_type;
   using value_type = Item_T;
   using id_type    = typename value_type::id_type;
   using index_type = index<identifiable_item_collection<value_type>>;
@@ -148,7 +150,7 @@ class identifiable_item_collection {
   auto _try_unchecked_insert(std::unique_ptr<value_type> value) {
     auto id           = value->id();
     auto item_pointer = value.get();
-    const auto out    = _items.insert(typename _item_map_type::value_type{std::move(id), std::move(value)});
+    const auto out    = _items.insert(typename _associative_storage_type::value_type{std::move(id), std::move(value)});
     if (out.second) {
       _ordered_items.push_back(item_pointer);
     }
@@ -160,13 +162,13 @@ class identifiable_item_collection {
   void _unchecked_insert(std::unique_ptr<value_type> value) {
     auto id           = value->id();
     auto item_pointer = value.get();
-    _items.insert(typename _item_map_type::value_type{std::move(id), std::move(value)});
+    _items.insert(typename _associative_storage_type::value_type{std::move(id), std::move(value)});
     _ordered_items.push_back(item_pointer);
 
     _WITE_DEBUG_ASSERT(_items.size() == _ordered_items.size(), "item container size mismatch");
   }
 
-  _item_map_type _items;
-  _ordered_items_type _ordered_items;
+  _associative_storage_type _items;
+  _ordered_storage_type _ordered_items;
 };
 }  // namespace wite::collections

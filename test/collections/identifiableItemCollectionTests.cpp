@@ -150,19 +150,26 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     }
 
     SECTION("insert") {
-      REQUIRE_NOTHROW(items.insert(item_0));
+      SECTION("increases the size if successful") {
+        REQUIRE_NOTHROW(items.insert(item_0));
 
-      REQUIRE(1 == items.size());
+        REQUIRE(1 == items.size());
 
-      SECTION("and the collection is not empty") {
-        REQUIRE_FALSE(items.empty());
-      }
+        SECTION("and the collection is not empty") {
+          REQUIRE_FALSE(items.empty());
+        }
 
-      SECTION("and try_insert-ing another item with the same ID returns false") {
-        WITE_REQ_THROWS(items.insert(item_0), std::logic_error, "Insertion of duplicate ID into identifiable_item_collection");
+        SECTION("and try_insert-ing another item with the same ID returns false") {
+          WITE_REQ_THROWS(items.insert(item_0), std::logic_error, "Insertion of duplicate ID into identifiable_item_collection");
 
-        SECTION("and the size does not change") {
-          REQUIRE(1 == items.size());
+          SECTION("and the size does not change") {
+            REQUIRE(1 == items.size());
+          }
+        }
+
+        SECTION("item can be retreived by ID") {
+          const auto& retrieved_item = items.at(TestItem::id_type{1});
+          REQUIRE(retrieved_item == item_0);
         }
       }
     }
