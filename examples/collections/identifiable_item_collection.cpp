@@ -1,6 +1,7 @@
 #include <wite/collections/identifiable_item_collection.hpp>
 #include <wite/core/id.hpp>
 #include <wite/core/io.hpp>
+#include <wite/core/guid.hpp>
 
 #include <algorithm>
 #include <cassert>

@@ -40,7 +40,7 @@ add_executable(wite_test
 	"collections/makeVectorTests.cpp"
 	"collections/staticLookupTests.cpp"
 	"core/scopeTests.cpp"
- "core/indexTests.cpp" "core/idTests.cpp" "collections/identifiableItemCollectionTests.cpp")
+ "core/indexTests.cpp" "core/idTests.cpp" "collections/identifiableItemCollectionTests.cpp" "core/guidTests.cpp")
 
 target_compile_options(wite_test PRIVATE
 	$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
