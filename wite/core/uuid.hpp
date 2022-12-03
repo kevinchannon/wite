@@ -9,6 +9,9 @@
 #include <random>
 #include <string>
 #include <tuple>
+#if _WITE_FEATURE_USE_STD_FORMAT
+#include <format>
+#endif
 
 namespace wite {
 
@@ -45,9 +48,27 @@ struct uuid {
   }
 
   _WITE_NODISCARD std::string str() const {
+#if _WITE_FEATURE_USE_STD_FORMAT
+    auto out = std::string(38, ' ');
+    std::format_to(out.begin(),
+                   "{{{:08X}-{:04X}-{:04X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}}}",
+                   data_1,
+                   data_2,
+                   data_3,
+                   data_4[0],
+                   data_4[1],
+                   data_4[2],
+                   data_4[3],
+                   data_4[4],
+                   data_4[5],
+                   data_4[6],
+                   data_4[7]);
+    return out;
+#else
     char buffer[39] = {};
     std::ignore = into_c_str(buffer, 39);
     return {buffer};
+#endif
   }
 };
 
