@@ -32,11 +32,17 @@ TEST_CASE("Uuid tests", "[core]") {
   }
 
   SECTION("Write uuid into a C-string") {
-    char buffer[39] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\0'};
+    char buffer[39] = {};
+    const auto id   = uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
 
-    uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}}.into_str(buffer);
+    SECTION("succeeds if the buffer is sufficiently sized") {
+      REQUIRE(id.into_str(buffer, 39));
 
-    REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::string{buffer});
+      REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::string{buffer});
+    }
+
+    SECTION("fails if the buffer is too small") {
+      REQUIRE_FALSE(id.into_str(buffer, 38));
+    }
   }
 }

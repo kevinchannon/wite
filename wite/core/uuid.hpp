@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <random>
 #include <string>
+#include <tuple>
 
 namespace wite {
 
@@ -19,9 +20,13 @@ struct uuid {
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
-  void into_str(char* out) {
-    ::snprintf(out,
-               39,
+  _WITE_NODISCARD bool into_str(char* out, size_t size) const noexcept {
+    if (size < 39) {
+      return false;
+    }
+
+    std::ignore = ::snprintf(out,
+               size,
                "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
                data_1,
                data_2,
@@ -34,6 +39,9 @@ struct uuid {
                data_4[5],
                data_4[6],
                data_4[7]);
+    out[38]     = '\0';
+
+    return true;
   }
 };
 
