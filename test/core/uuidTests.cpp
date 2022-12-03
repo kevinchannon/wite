@@ -11,11 +11,25 @@
 using namespace wite;
 using namespace std::chrono_literals;
 
+struct FakeEngine {
+  using result_type = uint64_t;
+  constexpr static uint64_t min() { return 0; }
+  constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
+  uint64_t operator()() { return 0x0123456789ABCDEF; }
+};
+
 TEST_CASE("Uuid tests", "[core]") {
   SECTION("create random UUID") {
     const auto id_1 = make_uuid();
     const auto id_2 = make_uuid();
     REQUIRE(id_1 != id_2);
+  }
+
+  SECTION("construct using a random number generator") {
+    
+    const auto id = uuid{FakeEngine{}};
+
+    REQUIRE(uuid{0x89ABCDEF, 0x4567, 0x01A3, {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);
   }
 
   SECTION("Making a UUID doesn't take too long") {

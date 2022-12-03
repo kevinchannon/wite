@@ -35,7 +35,7 @@ concept guid_like = requires(T& t) {
                       t.Data4[7];
                     };
 template <typename T>
-concept uuid_like = (wite_uuid_like<T> || guid_like<T>);
+concept uuid_like = ((wite_uuid_like<T> or guid_like<T>) and sizeof(T) == 16);
 #endif
 
 struct uuid;
@@ -84,6 +84,17 @@ struct uuid {
              d4[6],
              d4[7]} {}
 
+  template <typename Engine_T>
+  explicit uuid(Engine_T&& engine) {
+    auto random_bits = std::uniform_int_distribution<uint64_t>{0x00, 0xFFFFFFFFFFFFFFFF};
+
+    *reinterpret_cast<uint64_t*>(&data) = random_bits(engine);
+    data[5]                             = static_cast<uint8_t>((data[5] & 0x0F) | 0x40);  // Version 4 UUID
+    data[6]                             = static_cast<uint8_t>((data[6] & 0x3F) | 0x80);  // Variant 1 UUID
+
+    *(reinterpret_cast<uint64_t*>(&data) + 1) = random_bits(engine);
+  }
+
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
   _WITE_NODISCARD bool into_c_str(char* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
@@ -91,16 +102,8 @@ struct uuid {
 };
 
 inline uuid make_uuid() {
-  static auto random_engine = std::mt19937_64(std::random_device{}());
-
-  auto random_bits = std::uniform_int_distribution<uint64_t>{0x00, 0xFFFFFFFFFFFFFFFF};
-
-  auto out                                = uuid{};
-  *reinterpret_cast<uint64_t*>(&out.data) = random_bits(random_engine);
-  out.data[5]                             = static_cast<uint8_t>((out.data[5] & 0x0F) | 0x40);  // Version 4 UUID
-  out.data[6]                             = static_cast<uint8_t>((out.data[5] & 0x3F) | 0x80);  // Variant 1 UUID
-
-  return out;
+  static thread_local auto random_engine = std::mt19937_64(std::random_device{}());
+  return uuid{random_engine};
 }
 
 #if _WITE_HAS_CONCEPTS
