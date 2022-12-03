@@ -43,6 +43,12 @@ struct uuid {
 
     return true;
   }
+
+  _WITE_NODISCARD std::string str() const {
+    char buffer[39] = {};
+    std::ignore = into_str(buffer, 39);
+    return {buffer};
+  }
 };
 
 #ifdef _WITE_HAS_CONCEPTS
