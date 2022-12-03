@@ -55,3 +55,12 @@ TEST_CASE("Uuid tests", "[core]") {
     REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == to_string(id));
   }
 }
+
+TEST_CASE("Uuid IO tests", "[core]") {
+  const auto id = uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+
+  std::stringstream ss;
+  ss << id;
+
+  REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == ss.str());
+}

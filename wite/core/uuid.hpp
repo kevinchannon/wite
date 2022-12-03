@@ -104,7 +104,7 @@ inline uuid make_uuid() {
            static_cast<uint8_t>(random_bits_8(random_engine))}};
 }
 
-_WITE_NODISCARD std::string to_string(const uuid& id) {
+_WITE_NODISCARD inline std::string to_string(const uuid& id) {
   return id.str();
 }
 
