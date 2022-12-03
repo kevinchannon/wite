@@ -37,17 +37,21 @@ TEST_CASE("Uuid tests", "[core]") {
     char buffer[39] = {};
 
     SECTION("succeeds if the buffer is sufficiently sized") {
-      REQUIRE(id.into_str(buffer, 39));
+      REQUIRE(id.into_c_str(buffer, 39));
 
       REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::string{buffer});
     }
 
     SECTION("fails if the buffer is too small") {
-      REQUIRE_FALSE(id.into_str(buffer, 38));
+      REQUIRE_FALSE(id.into_c_str(buffer, 38));
     }
   }
 
-  SECTION("Convert to std::string") {
+  SECTION("convert to std::string") {
     REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == id.str());
+  }
+
+  SECTION("convert to std::string via free function") {
+    REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == to_string(id));
   }
 }

@@ -20,7 +20,7 @@ struct uuid {
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
-  _WITE_NODISCARD bool into_str(char* out, size_t size) const noexcept {
+  _WITE_NODISCARD bool into_c_str(char* out, size_t size) const noexcept {
     if (size < 39) {
       return false;
     }
@@ -46,7 +46,7 @@ struct uuid {
 
   _WITE_NODISCARD std::string str() const {
     char buffer[39] = {};
-    std::ignore = into_str(buffer, 39);
+    std::ignore = into_c_str(buffer, 39);
     return {buffer};
   }
 };
@@ -81,6 +81,10 @@ inline uuid make_uuid() {
            static_cast<uint8_t>(random_bits_8(random_engine)),
            static_cast<uint8_t>(random_bits_8(random_engine)),
            static_cast<uint8_t>(random_bits_8(random_engine))}};
+}
+
+_WITE_NODISCARD std::string to_string(const uuid& id) {
+  return id.str();
 }
 
 }  // namespace wite
