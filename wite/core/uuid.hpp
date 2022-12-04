@@ -110,13 +110,20 @@ struct uuid {
     *(reinterpret_cast<uint64_t*>(&data) + 1) = random_bits(engine);
   }
 
+#ifndef WITE_NO_EXCEPTIONS
+  #define INVALID_UUID_FORMAT throw std::invalid_argument { "Invalid UUID format" }
+#else
+  #define INVALID_UUID_FORMAT return
+#endif
+
   explicit uuid(const std::string_view s) {
     if (s.length() != 36) {
-#ifndef WITE_NO_EXCEPTIONS
-      throw std::invalid_argument{"Invalid UUID format"};
-#else
-      return;
-#endif
+      INVALID_UUID_FORMAT;
+    }
+
+    constexpr auto valid_characters = std::string_view{"0123456789ABCDEF-"};
+    if (std::string::npos != s.find_first_not_of(valid_characters)) {
+      INVALID_UUID_FORMAT;
     }
   }
 
