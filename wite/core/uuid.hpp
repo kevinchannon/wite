@@ -55,15 +55,6 @@ _WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_bu
 #endif
 
 struct uuid {
-  std::array<uint8_t, 16> data{};
-
-  struct structured_data {
-    unsigned long Data1;
-    unsigned short Data2;
-    unsigned short Data3;
-    unsigned char Data4[8];
-  };
-
   WITE_DEFAULT_CONSTRUCTORS(uuid);
 
   uuid(unsigned long d1, unsigned short d2, unsigned short d3, std::array<unsigned char, 8> d4)
@@ -99,6 +90,8 @@ struct uuid {
 
   _WITE_NODISCARD bool into_c_str(char* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
   _WITE_NODISCARD std::string str() const { return to_string(*this); };
+
+  std::array<uint8_t, 16> data{};
 };
 
 inline uuid make_uuid() {
@@ -117,14 +110,14 @@ _WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_bu
     return false;
   }
 
-  const unsigned long& data_1  = *reinterpret_cast<const unsigned long*>(&id);
-  const unsigned short& data_2 = *reinterpret_cast<const unsigned short*>(reinterpret_cast<const unsigned char*>(&id) + 4);
-  const unsigned short& data_3 = *reinterpret_cast<const unsigned short*>(reinterpret_cast<const unsigned char*>(&id) + 6);
-  const unsigned char* data_4  = reinterpret_cast<const unsigned char*>(&id) + 8;
+  const uint32_t& data_1  = *reinterpret_cast<const uint32_t*>(&id);
+  const uint16_t& data_2 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 4);
+  const uint16_t& data_3 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 6);
+  const uint8_t* data_4  = reinterpret_cast<const uint8_t*>(&id) + 8;
 
   std::ignore = ::snprintf(buffer,
                            max_buffer_length,
-                           "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}",
+                           "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
                            data_1,
                            data_2,
                            data_3,
