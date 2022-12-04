@@ -68,8 +68,13 @@ TEST_CASE("Uuid tests", "[core]") {
     }
 
     SECTION("from string") {
-      SECTION("throws std::invalid_argument if the string is too short")
-      WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDE"}, std::invalid_argument, "string to short to construct UUID");
+      SECTION("throws std::invalid_argument if the string is too short") {
+        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDE"}, std::invalid_argument, "Invalid UUID format");
+      }
+
+      SECTION("throws std::invalid_argument if the string is too long") {
+        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDEF0"}, std::invalid_argument, "Invalid UUID format");
+      }
     }
   }
 

@@ -91,7 +91,7 @@ struct uuid {
              d4[3],
              d4[4],
              d4[5],
-             d4[6],
+             d4[6], 
              d4[7]} {}
 
 #if _WITE_HAS_CONCEPTS
@@ -111,9 +111,9 @@ struct uuid {
   }
 
   explicit uuid(const std::string_view s) {
-    if (s.length() < 37) {
+    if (s.length() != 36) {
 #ifndef WITE_NO_EXCEPTIONS
-      throw std::invalid_argument{"string to short to construct UUID"};
+      throw std::invalid_argument{"Invalid UUID format"};
 #else
       return;
 #endif
