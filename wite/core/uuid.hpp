@@ -9,10 +9,9 @@
 #include <cstdint>
 #include <random>
 #include <string>
+#include <string_view>
 #include <tuple>
-#if _WITE_FEATURE_USE_STD_FORMAT
-#include <format>
-#endif
+#include <regex>
 
 namespace wite {
 
@@ -100,6 +99,30 @@ struct uuid {
     *(reinterpret_cast<uint64_t*>(&data) + 1) = random_bits(engine);
   }
 
+  // explicit uuid(const std::string_view s) {
+  // 
+  //   uint32_t data_1;
+  //   uint16_t data_2;
+  //   uint16_t data_3;
+  //   std::array<uint8_t, 8> data_4;
+  // 
+  //   ::sscanf(s.data(),
+  //          "{%8x-%4hx-%4hx-%2hhx%2hhx-%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx}",
+  //          &data_1,
+  //          &data_2,
+  //          &data_3,
+  //          &data_4[0],
+  //          &data_4[1],
+  //          &data_4[2],
+  //          &data_4[3],
+  //          &data_4[4],
+  //          &data_4[5],
+  //          &data_4[6],
+  //          &data_4[7]);
+  // 
+  //   data = uuid{data_1, data_2, data_3, data_4}.data;
+  // }
+
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
   _WITE_NODISCARD bool into_c_str(char* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
@@ -123,8 +146,6 @@ namespace detail {
     if constexpr (std::is_same_v<Char_T, char>) {
       return "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
     } else {
-      static_assert(sizeof(Char_T) == 2, "Unknown multi-byte character format");
-
       return L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
     }
   }
@@ -137,8 +158,6 @@ namespace detail {
     if constexpr (std::is_same_v<Char_T, char>) {
       return ::snprintf;
     } else {
-      static_assert(sizeof(Char_T) == 2, "Unknown multi-byte character format");
-
       return ::swprintf;
     }
   }
@@ -149,8 +168,6 @@ namespace detail {
       if constexpr (std::is_same_v<Char_T, char>) {
         return '\0';
       } else {
-        static_assert(sizeof(Char_T) == 2, "Unknown multi-byte character format");
-
         return L'\0';
       }
     }
