@@ -11,12 +11,21 @@
 using namespace wite;
 using namespace std::chrono_literals;
 
+namespace {
 struct FakeEngine {
   using result_type = uint64_t;
   constexpr static uint64_t min() { return 0; }
   constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
   uint64_t operator()() { return 0x0123456789ABCDEF; }
 };
+
+struct GUID {
+  unsigned long Data1;
+  unsigned short Data2;
+  unsigned short Data3;
+  unsigned char Data4[8];
+};
+}  // namespace
 
 TEST_CASE("Uuid tests", "[core]") {
   SECTION("create random UUID") {
@@ -26,7 +35,6 @@ TEST_CASE("Uuid tests", "[core]") {
   }
 
   SECTION("construct using a random number generator") {
-    
     const auto id = uuid{FakeEngine{}};
 
     REQUIRE(uuid{0x89ABCDEF, 0x4567, 0x01A3, {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);
@@ -69,13 +77,6 @@ TEST_CASE("Uuid tests", "[core]") {
     REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == to_string(id));
 
     SECTION("works for some alternative UUID implementation") {
-      struct GUID {
-        unsigned long Data1;
-        unsigned short Data2;
-        unsigned short Data3;
-        unsigned char Data4[8];
-      };
-
       const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
       REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == to_string(guid));
     }
