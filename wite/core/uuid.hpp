@@ -42,6 +42,13 @@ struct uuid;
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length);
+#else
+_WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length);
+#endif
+
+#if _WITE_HAS_CONCEPTS
+template <wite::uuid_like Uuid_T>
 _WITE_NODISCARD std::string to_string(const Uuid_T& id);
 #else
 _WITE_NODISCARD inline std::string to_string(const uuid& id);
@@ -49,9 +56,9 @@ _WITE_NODISCARD inline std::string to_string(const uuid& id);
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length);
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length);
 #else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length);
+_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length);
 #endif
 
 struct uuid {
@@ -89,6 +96,7 @@ struct uuid {
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
   _WITE_NODISCARD bool into_c_str(char* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
+  _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
   _WITE_NODISCARD std::string str() const { return to_string(*this); };
 
   std::array<uint8_t, 16> data{};
@@ -144,6 +152,41 @@ _WITE_NODISCARD inline std::string to_string(const uuid& id)
   char buffer[39] = {};
   std::ignore     = to_c_str(id, buffer, 39);
   return {buffer};
+}
+
+#if _WITE_HAS_CONCEPTS
+template <wite::uuid_like Uuid_T>
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length)
+#else
+_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length)
+#endif
+{
+  if (max_buffer_length < 37) {
+    return false;
+  }
+
+  const uint32_t& data_1 = *reinterpret_cast<const uint32_t*>(&id);
+  const uint16_t& data_2 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 4);
+  const uint16_t& data_3 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 6);
+  const uint8_t* data_4  = reinterpret_cast<const uint8_t*>(&id) + 8;
+
+  std::ignore = ::swprintf(buffer,
+                           max_buffer_length,
+                           L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                           data_1,
+                           data_2,
+                           data_3,
+                           data_4[0],
+                           data_4[1],
+                           data_4[2],
+                           data_4[3],
+                           data_4[4],
+                           data_4[5],
+                           data_4[6],
+                           data_4[7]);
+  buffer[36]  = L'\0';
+
+  return true;
 }
 
 }  // namespace wite
