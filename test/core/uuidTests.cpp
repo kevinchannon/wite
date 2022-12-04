@@ -25,6 +25,9 @@ struct GUID {
   unsigned short Data3;
   unsigned char Data4[8];
 };
+
+char (*__kaboom)[sizeof(GUID)] = '\0';
+
 }  // namespace
 
 TEST_CASE("Uuid tests", "[core]") {
