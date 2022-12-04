@@ -115,39 +115,90 @@ inline uuid make_uuid() {
   return uuid{random_engine};
 }
 
+namespace detail {
+  template <typename Char_T>
+  _WITE_CONSTEVAL auto _uuid_format() {
+    if constexpr (std::is_same_v<Char_T, char>) {
+      return "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+    } else {
+      static_assert(sizeof(Char_T) == 2, "Unknown multi-byte character format");
+
+      return L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+    }
+  }
+
+  template <typename Char_T>
+  using _uuid_sprintf_t = int (*)(Char_T* const _Buffer, size_t const _BufferCount, Char_T const* const _Format, ...);
+
+  template <typename Char_T>
+  constexpr _uuid_sprintf_t<Char_T> _uuid_sprintf() {
+    if constexpr (std::is_same_v<Char_T, char>) {
+      return ::snprintf;
+    } else {
+      static_assert(sizeof(Char_T) == 2, "Unknown multi-byte character format");
+
+      return ::swprintf;
+    }
+  }
+
+  template <typename Char_T>
+  struct _uuid_null_char {
+    _WITE_CONSTEVAL static auto value() {
+      if constexpr (std::is_same_v<Char_T, char>) {
+        return '\0';
+      } else {
+        static_assert(sizeof(Char_T) == 2, "Unknown multi-byte character format");
+
+        return L'\0';
+      }
+    }
+  };
+
+#if _WITE_HAS_CONCEPTS
+  template <typename Char_T, wite::uuid_like Uuid_T>
+  _WITE_NODISCARD bool _to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length)
+#else
+  template <typename Char_T>
+  _WITE_NODISCARD bool _to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length)
+#endif
+  {
+    if (max_buffer_length < 37) {
+      return false;
+    }
+
+    const uint32_t& data_1 = *reinterpret_cast<const uint32_t*>(&id);
+    const uint16_t& data_2 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 4);
+    const uint16_t& data_3 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 6);
+    const uint8_t* data_4  = reinterpret_cast<const uint8_t*>(&id) + 8;
+
+    std::ignore = detail::_uuid_sprintf<Char_T>()(buffer,
+                                                max_buffer_length,
+                                                detail::_uuid_format<Char_T>(),
+                                                data_1,
+                                                data_2,
+                                                data_3,
+                                                data_4[0],
+                                                data_4[1],
+                                                data_4[2],
+                                                data_4[3],
+                                                data_4[4],
+                                                data_4[5],
+                                                data_4[6],
+                                                data_4[7]);
+    buffer[36]  = detail::_uuid_null_char<Char_T>::value();
+
+    return true;
+  }
+}  // namespace detail
+
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
 _WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length)
 #else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length)
+_WITE_NODISCARD bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length)
 #endif
 {
-  if (max_buffer_length < 37) {
-    return false;
-  }
-
-  const uint32_t& data_1  = *reinterpret_cast<const uint32_t*>(&id);
-  const uint16_t& data_2 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 4);
-  const uint16_t& data_3 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 6);
-  const uint8_t* data_4  = reinterpret_cast<const uint8_t*>(&id) + 8;
-
-  std::ignore = ::snprintf(buffer,
-                           max_buffer_length,
-                           "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                           data_1,
-                           data_2,
-                           data_3,
-                           data_4[0],
-                           data_4[1],
-                           data_4[2],
-                           data_4[3],
-                           data_4[4],
-                           data_4[5],
-                           data_4[6],
-                           data_4[7]);
-  buffer[36]  = '\0';
-
-  return true;
+  return detail::_to_c_str(id, buffer, max_buffer_length);
 }
 
 #if _WITE_HAS_CONCEPTS
@@ -169,32 +220,7 @@ _WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buff
 _WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length)
 #endif
 {
-  if (max_buffer_length < 37) {
-    return false;
-  }
-
-  const uint32_t& data_1 = *reinterpret_cast<const uint32_t*>(&id);
-  const uint16_t& data_2 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 4);
-  const uint16_t& data_3 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 6);
-  const uint8_t* data_4  = reinterpret_cast<const uint8_t*>(&id) + 8;
-
-  std::ignore = ::swprintf(buffer,
-                           max_buffer_length,
-                           L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                           data_1,
-                           data_2,
-                           data_3,
-                           data_4[0],
-                           data_4[1],
-                           data_4[2],
-                           data_4[3],
-                           data_4[4],
-                           data_4[5],
-                           data_4[6],
-                           data_4[7]);
-  buffer[36]  = L'\0';
-
-  return true;
+  return detail::_to_c_str(id, buffer, max_buffer_length);
 }
 
 #if _WITE_HAS_CONCEPTS
@@ -205,7 +231,7 @@ _WITE_NODISCARD inline std::wstring to_wstring(const uuid& id)
 #endif
 {
   wchar_t buffer[39] = {};
-  std::ignore     = to_c_str(id, buffer, 37);
+  std::ignore        = to_c_str(id, buffer, 37);
   return {buffer};
 }
 
