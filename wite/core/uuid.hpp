@@ -61,6 +61,13 @@ _WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buff
 _WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length);
 #endif
 
+#if _WITE_HAS_CONCEPTS
+template <wite::uuid_like Uuid_T>
+_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id);
+#else
+_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id);
+#endif
+
 struct uuid {
   WITE_DEFAULT_CONSTRUCTORS(uuid);
 
@@ -98,6 +105,7 @@ struct uuid {
   _WITE_NODISCARD bool into_c_str(char* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
   _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
   _WITE_NODISCARD std::string str() const { return to_string(*this); };
+  _WITE_NODISCARD std::wstring wstr() const { return to_wstring(*this); };
 
   std::array<uint8_t, 16> data{};
 };
@@ -150,7 +158,7 @@ _WITE_NODISCARD inline std::string to_string(const uuid& id)
 #endif
 {
   char buffer[39] = {};
-  std::ignore     = to_c_str(id, buffer, 39);
+  std::ignore     = to_c_str(id, buffer, 37);
   return {buffer};
 }
 
@@ -187,6 +195,18 @@ _WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max
   buffer[36]  = L'\0';
 
   return true;
+}
+
+#if _WITE_HAS_CONCEPTS
+template <wite::uuid_like Uuid_T>
+_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id)
+#else
+_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id)
+#endif
+{
+  wchar_t buffer[39] = {};
+  std::ignore     = to_c_str(id, buffer, 37);
+  return {buffer};
 }
 
 }  // namespace wite

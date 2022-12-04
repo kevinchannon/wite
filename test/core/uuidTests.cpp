@@ -87,7 +87,13 @@ TEST_CASE("Uuid tests", "[core]") {
   }
 
   SECTION("convert to std::string") {
-    REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == id.str());
+    SECTION("narrow string") {
+      REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == id.str());
+    }
+
+    SECTION("wide string") {
+      REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == id.wstr());
+    }
   }
 
   SECTION("convert to std::string via free function") {
