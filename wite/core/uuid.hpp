@@ -106,7 +106,7 @@ _WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_
 _WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length)
 #endif
 {
-  if (max_buffer_length < 39) {
+  if (max_buffer_length < 37) {
     return false;
   }
 
@@ -117,7 +117,7 @@ _WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_bu
 
   std::ignore = ::snprintf(buffer,
                            max_buffer_length,
-                           "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+                           "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
                            data_1,
                            data_2,
                            data_3,
@@ -129,7 +129,7 @@ _WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_bu
                            data_4[5],
                            data_4[6],
                            data_4[7]);
-  buffer[38]  = '\0';
+  buffer[36]  = '\0';
 
   return true;
 }

@@ -62,24 +62,24 @@ TEST_CASE("Uuid tests", "[core]") {
     SECTION("succeeds if the buffer is sufficiently sized") {
       REQUIRE(id.into_c_str(buffer, 39));
 
-      REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::string{buffer});
+      REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == std::string{buffer});
     }
 
     SECTION("fails if the buffer is too small") {
-      REQUIRE_FALSE(id.into_c_str(buffer, 38));
+      REQUIRE_FALSE(id.into_c_str(buffer, 36));
     }
   }
 
   SECTION("convert to std::string") {
-    REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == id.str());
+    REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == id.str());
   }
 
   SECTION("convert to std::string via free function") {
-    REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == to_string(id));
+    REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(id));
 
     SECTION("works for some alternative UUID implementation") {
       const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
-      REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == to_string(guid));
+      REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(guid));
     }
   }
 }
@@ -90,5 +90,5 @@ TEST_CASE("Uuid IO tests", "[core]") {
   std::stringstream ss;
   ss << id;
 
-  REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == ss.str());
+  REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == ss.str());
 }
