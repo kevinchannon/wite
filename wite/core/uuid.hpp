@@ -12,6 +12,12 @@
 #include <string_view>
 #include <tuple>
 #include <regex>
+#ifndef WITE_NO_EXCEPTIONS
+#include <stdexcept>
+#endif
+#if _WITE_HAS_CONCEPTS
+#include <concepts>
+#endif
 
 namespace wite {
 
@@ -88,8 +94,13 @@ struct uuid {
              d4[6],
              d4[7]} {}
 
-  template <typename Engine_T>
-  explicit uuid(Engine_T&& engine) {
+#if _WITE_HAS_CONCEPTS
+  template <std::invocable Engine_T>
+  explicit uuid(Engine_T&& engine)
+#else
+  explicit uuid(std::default_random_engine& engine)
+#endif
+  {
     auto random_bits = std::uniform_int_distribution<uint64_t>{0x00, 0xFFFFFFFFFFFFFFFF};
 
     *reinterpret_cast<uint64_t*>(&data) = random_bits(engine);
@@ -99,29 +110,15 @@ struct uuid {
     *(reinterpret_cast<uint64_t*>(&data) + 1) = random_bits(engine);
   }
 
-  // explicit uuid(const std::string_view s) {
-  // 
-  //   uint32_t data_1;
-  //   uint16_t data_2;
-  //   uint16_t data_3;
-  //   std::array<uint8_t, 8> data_4;
-  // 
-  //   ::sscanf(s.data(),
-  //          "{%8x-%4hx-%4hx-%2hhx%2hhx-%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx}",
-  //          &data_1,
-  //          &data_2,
-  //          &data_3,
-  //          &data_4[0],
-  //          &data_4[1],
-  //          &data_4[2],
-  //          &data_4[3],
-  //          &data_4[4],
-  //          &data_4[5],
-  //          &data_4[6],
-  //          &data_4[7]);
-  // 
-  //   data = uuid{data_1, data_2, data_3, data_4}.data;
-  // }
+  explicit uuid(const std::string_view s) {
+    if (s.length() < 37) {
+#ifndef WITE_NO_EXCEPTIONS
+      throw std::invalid_argument{"string to short to construct UUID"};
+#else
+      return;
+#endif
+    }
+  }
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 

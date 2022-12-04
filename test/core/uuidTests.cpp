@@ -1,6 +1,7 @@
 #include <wite/core/io.hpp>
 #include <wite/core/uuid.hpp>
 #include <wite/env/environment.hpp>
+#include <test/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -66,10 +67,10 @@ TEST_CASE("Uuid tests", "[core]") {
       REQUIRE(100ms > std::chrono::duration_cast<std::chrono::milliseconds>(duration));
     }
 
-    // SECTION("from string") {
-    //   const auto id = uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"};
-    //   REQUIRE(uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}} == id);
-    // }
+    SECTION("from string") {
+      SECTION("throws std::invalid_argument if the string is too short")
+      WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDE"}, std::invalid_argument, "string to short to construct UUID");
+    }
   }
 
   const auto id = uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
