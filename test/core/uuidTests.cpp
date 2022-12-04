@@ -97,11 +97,22 @@ TEST_CASE("Uuid tests", "[core]") {
   }
 
   SECTION("convert to std::string via free function") {
-    REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(id));
+    SECTION("narrow string") {
+      REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(id));
 
-    SECTION("works for some alternative UUID implementation") {
-      const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
-      REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(guid));
+      SECTION("works for some alternative UUID implementation") {
+        const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+        REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(guid));
+      }
+    }
+
+    SECTION("wide string") {
+      REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == to_wstring(id));
+
+      SECTION("works for some alternative UUID implementation") {
+        const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+        REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == to_wstring(guid));
+      }
     }
   }
 }
