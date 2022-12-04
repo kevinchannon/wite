@@ -110,6 +110,8 @@ struct uuid {
   std::array<uint8_t, 16> data{};
 };
 
+constexpr static auto nulluuid = uuid{};
+
 inline uuid make_uuid() {
   static thread_local auto random_engine = std::mt19937_64(std::random_device{}());
   return uuid{random_engine};

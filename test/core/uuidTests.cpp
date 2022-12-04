@@ -29,29 +29,42 @@ struct GUID {
 }  // namespace
 
 TEST_CASE("Uuid tests", "[core]") {
-  SECTION("create random UUID") {
-    const auto id_1 = make_uuid();
-    const auto id_2 = make_uuid();
-    REQUIRE(id_1 != id_2);
+  SECTION("NULL UUID is all zero") {
+    REQUIRE(uuid{0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}} == nulluuid);
   }
 
-  SECTION("construct using a random number generator") {
-    const auto id = uuid{FakeEngine{}};
-
-    REQUIRE(uuid{0x89ABCDEF, 0x4567, 0x01A3, {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);
+  SECTION("default constructed uuid is all zeros") {
+    REQUIRE(uuid{0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}} == uuid{});
   }
 
-  SECTION("Making a UUID doesn't take too long") {
-    const auto start = std::chrono::high_resolution_clock::now();
-
-    for (auto i = 0u; i < 100'000; ++i) {
-      const auto id = make_uuid();
-      (void)id;
+  SECTION("construction") {
+    SECTION("default construct is NULL") {
     }
 
-    const auto duration = std::chrono::high_resolution_clock::now() - start;
+    SECTION("create random UUID") {
+      const auto id_1 = make_uuid();
+      const auto id_2 = make_uuid();
+      REQUIRE(id_1 != id_2);
+    }
 
-    REQUIRE(100ms > std::chrono::duration_cast<std::chrono::milliseconds>(duration));
+    SECTION("using a random number generator") {
+      const auto id = uuid{FakeEngine{}};
+
+      REQUIRE(uuid{0x89ABCDEF, 0x4567, 0x01A3, {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);
+    }
+
+    SECTION("Making a UUID doesn't take too long") {
+      const auto start = std::chrono::high_resolution_clock::now();
+
+      for (auto i = 0u; i < 100'000; ++i) {
+        const auto id = make_uuid();
+        (void)id;
+      }
+
+      const auto duration = std::chrono::high_resolution_clock::now() - start;
+
+      REQUIRE(100ms > std::chrono::duration_cast<std::chrono::milliseconds>(duration));
+    }
   }
 
   const auto id = uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
