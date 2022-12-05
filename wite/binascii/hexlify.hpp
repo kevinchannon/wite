@@ -112,4 +112,28 @@ _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view 
   return out;
 }
 
+template <typename Result_T>
+_WITE_NODISCARD Result_T unsafe_from_hex_chars(const std::string_view str) {
+  auto out = Result_T{};
+
+  auto write_byte = reinterpret_cast<uint8_t*>(&out);
+  const auto end  = write_byte + sizeof(Result_T);
+  auto read_pos   = str.begin();
+
+  for (auto b = write_byte; b != end; ++b, read_pos += 2) {
+    *b = static_cast<uint8_t>(detail::high_nibble(*read_pos) | detail::low_nibble(*std::next(read_pos)));
+  }
+
+  return out;
+}
+
+template<typename Result_T>
+_WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
+  if (str.length() != 2 * sizeof(Result_T)) {
+    throw std::invalid_argument{"Invalid sequence length for type"};
+  }
+
+  return unsafe_from_hex_chars<Result_T>(str);
+}
+
 }  // namespace wite::binascii

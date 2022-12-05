@@ -13,6 +13,7 @@ FetchContent_MakeAvailable(Catch2)
 enable_testing()
 
 add_executable(wite_test 
+	"binascii/binasciiTests.cpp"
 	"collections/stackVectorTests.cpp"
 	"collections/identifiableItemCollectionTests.cpp"
 	"collections/makeVectorTests.cpp"

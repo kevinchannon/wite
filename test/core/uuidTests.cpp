@@ -81,6 +81,7 @@ TEST_CASE("Uuid tests", "[core]") {
         WITE_REQ_THROWS(uuid{"01234567-89AX-CDEF-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
         WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123_456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
         WITE_REQ_THROWS(uuid{"01234567-89AB-CDEX-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
+        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEX-0123-456789AXCDEF"}, std::invalid_argument, "Invalid UUID format");
       }
     }
   }

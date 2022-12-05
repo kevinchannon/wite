@@ -1,5 +1,6 @@
 #pragma once
 
+#include <wite/binascii/hexlify.hpp>
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/features.hpp>
 
@@ -8,10 +9,10 @@
 #include <compare>
 #include <cstdint>
 #include <random>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <regex>
 #ifndef WITE_NO_EXCEPTIONS
 #include <stdexcept>
 #endif
@@ -24,24 +25,26 @@ namespace wite {
 
 #ifdef _WITE_HAS_CONCEPTS
 template <typename T>
-concept wite_uuid_like = requires(T& t) { t.data; };
+concept wite_uuid_like = requires(T& t) {
+  t.data;
+};
 
 template <typename T>
 concept guid_like = requires(T& t) {
-                      t.Data1;
-                      t.Data2;
-                      t.Data3;
-                      t.Data4[0];
-                      t.Data4[1];
-                      t.Data4[2];
-                      t.Data4[3];
-                      t.Data4[4];
-                      t.Data4[5];
-                      t.Data4[6];
-                      t.Data4[7];
-                    };
+  t.Data1;
+  t.Data2;
+  t.Data3;
+  t.Data4[0];
+  t.Data4[1];
+  t.Data4[2];
+  t.Data4[3];
+  t.Data4[4];
+  t.Data4[5];
+  t.Data4[6];
+  t.Data4[7];
+};
 template <typename T>
-concept uuid_like = ((wite_uuid_like<T> or guid_like<T>) and sizeof(T) == 16);
+concept uuid_like = ((wite_uuid_like<T> or guid_like<T>)and sizeof(T) == 16);
 #endif
 
 struct uuid;
@@ -92,7 +95,7 @@ struct uuid {
              d4[3],
              d4[4],
              d4[5],
-             d4[6], 
+             d4[6],
              d4[7]} {}
 
 #if _WITE_HAS_CONCEPTS
@@ -112,9 +115,10 @@ struct uuid {
   }
 
 #ifndef WITE_NO_EXCEPTIONS
-  #define INVALID_UUID_FORMAT throw std::invalid_argument { "Invalid UUID format" }
+#define INVALID_UUID_FORMAT \
+  throw std::invalid_argument { "Invalid UUID format" }
 #else
-  #define INVALID_UUID_FORMAT return
+#define INVALID_UUID_FORMAT return
 #endif
 
   explicit uuid(const std::string_view s) {
@@ -129,7 +133,7 @@ struct uuid {
     }
 
     const auto extract = []<typename T>(auto begin, auto end) {
-      auto out                 = T{};
+      auto out          = T{};
       const auto result = std::from_chars(begin, end, out, 16);
       if (result.ptr != end) {
         INVALID_UUID_FORMAT;
@@ -138,11 +142,22 @@ struct uuid {
       return out;
     };
 
-    const auto data_1 = extract.template operator()<uint32_t>(s.data(), s.data() + 8);
-    const auto data_2 = extract.template operator()<uint16_t>(s.data() + 9, s.data() + 13);
-    const auto data_3 = extract.template operator()<uint16_t>(s.data() + 14, s.data() + 18);
-
-    data = uuid{data_1, data_2, data_3, {0,0,0,0,0,0,0,0}}.data;
+    try {
+      data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
+                  binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
+                  binascii::from_hex_chars<uint16_t>(s.substr(14, 4)),
+                  {binascii::from_hex_chars<uint8_t>(s.substr(19, 2)),
+                   binascii::from_hex_chars<uint8_t>(s.substr(21, 2)),
+                   binascii::from_hex_chars<uint8_t>(s.substr(24, 2)),
+                   binascii::from_hex_chars<uint8_t>(s.substr(26, 2)),
+                   binascii::from_hex_chars<uint8_t>(s.substr(28, 2)),
+                   binascii::from_hex_chars<uint8_t>(s.substr(30, 2)),
+                   binascii::from_hex_chars<uint8_t>(s.substr(32, 2)),
+                   binascii::from_hex_chars<uint8_t>(s.substr(34, 2))}}
+                 .data;
+    } catch (const std::invalid_argument&) {
+      INVALID_UUID_FORMAT;
+    }
   }
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
@@ -213,19 +228,19 @@ namespace detail {
     const uint8_t* data_4  = reinterpret_cast<const uint8_t*>(&id) + 8;
 
     std::ignore = detail::_uuid_sprintf<Char_T>()(buffer,
-                                                max_buffer_length,
-                                                detail::_uuid_format<Char_T>(),
-                                                data_1,
-                                                data_2,
-                                                data_3,
-                                                data_4[0],
-                                                data_4[1],
-                                                data_4[2],
-                                                data_4[3],
-                                                data_4[4],
-                                                data_4[5],
-                                                data_4[6],
-                                                data_4[7]);
+                                                  max_buffer_length,
+                                                  detail::_uuid_format<Char_T>(),
+                                                  data_1,
+                                                  data_2,
+                                                  data_3,
+                                                  data_4[0],
+                                                  data_4[1],
+                                                  data_4[2],
+                                                  data_4[3],
+                                                  data_4[4],
+                                                  data_4[5],
+                                                  data_4[6],
+                                                  data_4[7]);
     buffer[36]  = detail::_uuid_null_char<Char_T>::value();
 
     return true;
