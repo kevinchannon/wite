@@ -1,7 +1,8 @@
 #pragma once
 
-#include "wite/env/environment.hpp"
-#include "wite/io/types.hpp"
+#include <wite/env/environment.hpp>
+#include <wite/io/types.hpp>
+#include <wite/core/result.hpp>
 
 #ifdef WITE_NO_EXCEPTIONS
 #error "Exceptions are required if binascii/hexlify.hpp is included"
@@ -11,8 +12,11 @@
 #include <string>
 #include <string_view>
 #include <stdexcept>
+#include <iostream>
 
 namespace wite::binascii {
+
+static constexpr auto valid_hex_chars = std::string_view{"0123456789ABCDEFabcdef"};
 
 namespace detail {
   // clang-format off
@@ -36,6 +40,8 @@ namespace detail {
   };
   // clang-format on
 
+  constexpr auto _invalid_nibble = std::byte{0xFF};
+
   inline io::byte low_nibble(char c){
     switch(c) {
       case '0': return io::byte(0x00);
@@ -55,7 +61,7 @@ namespace detail {
       case 'E': case 'e': return io::byte(0x0E);
       case 'F': case 'f': return io::byte(0x0F);
       default:
-        throw std::invalid_argument{"Invalid hex char"};
+        return _invalid_nibble;
     }
   }
 
@@ -78,10 +84,56 @@ namespace detail {
       case 'E': case 'e': return io::byte(0xE0);
       case 'F': case 'f': return io::byte(0xF0);
       default:
-        throw std::invalid_argument{"Invalid hex char"};
+        return _invalid_nibble;
     }
   }
 }  // namespace detail
+
+template <typename Result_T>
+_WITE_NODISCARD Result_T unsafe_from_hex_chars(const std::string_view str) noexcept {
+  auto out = Result_T{};
+
+  auto write_byte = reinterpret_cast<uint8_t*>(&out);
+  const auto end  = write_byte + sizeof(Result_T);
+  auto read_pos   = str.begin();
+
+  for (auto b = write_byte; b != end; ++b, read_pos += 2) {
+    *b = static_cast<uint8_t>(detail::high_nibble(*read_pos) | detail::low_nibble(*std::next(read_pos)));
+  }
+
+  return out;
+}
+
+template <typename Result_T>
+_WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
+  if (str.length() != 2 * sizeof(Result_T)) {
+    throw std::invalid_argument{"Invalid sequence length for type"};
+  }
+
+  if (std::string::npos != str.find_first_not_of(valid_hex_chars)) {
+    throw std::invalid_argument{"Invalid hex char"};
+  }
+
+  return unsafe_from_hex_chars<Result_T>(str);
+}
+
+enum class from_hex_chars_error { invalid_sequence_length, invalid_hex_char };
+
+template <typename Result_T>
+using from_hex_chars_result_t = result<Result_T, from_hex_chars_error>;
+
+template <typename Result_T>
+_WITE_NODISCARD from_hex_chars_result_t<Result_T> try_from_hex_chars(const std::string_view str) noexcept {
+  if (str.length() != 2 * sizeof(Result_T)) {
+    return from_hex_chars_result_t<Result_T>{from_hex_chars_error::invalid_sequence_length};
+  }
+
+  if (std::string::npos != str.find_first_not_of(valid_hex_chars)) {
+    return from_hex_chars_result_t<Result_T>{from_hex_chars_error::invalid_hex_char};
+  }
+
+  return unsafe_from_hex_chars<Result_T>(str);
+}
 
 template <typename Range_T>
 _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
@@ -104,36 +156,12 @@ _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view 
   auto out = io::dynamic_byte_buffer(str.length() / 2, io::byte{});
   auto read_pos = str.begin();
 
-  for (auto& b : out){
-    b = detail::high_nibble(*read_pos) | detail::low_nibble(*std::next(read_pos));
-    read_pos += 2;
+  for (auto& b : out) {
+    b = from_hex_chars<io::byte>(std::string_view(read_pos, std::next(read_pos, 2)));
+    std::advance(read_pos, 2);
   }
 
   return out;
-}
-
-template <typename Result_T>
-_WITE_NODISCARD Result_T unsafe_from_hex_chars(const std::string_view str) {
-  auto out = Result_T{};
-
-  auto write_byte = reinterpret_cast<uint8_t*>(&out);
-  const auto end  = write_byte + sizeof(Result_T);
-  auto read_pos   = str.begin();
-
-  for (auto b = write_byte; b != end; ++b, read_pos += 2) {
-    *b = static_cast<uint8_t>(detail::high_nibble(*read_pos) | detail::low_nibble(*std::next(read_pos)));
-  }
-
-  return out;
-}
-
-template<typename Result_T>
-_WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
-  if (str.length() != 2 * sizeof(Result_T)) {
-    throw std::invalid_argument{"Invalid sequence length for type"};
-  }
-
-  return unsafe_from_hex_chars<Result_T>(str);
 }
 
 }  // namespace wite::binascii
