@@ -18,6 +18,7 @@
 #if _WITE_HAS_CONCEPTS
 #include <concepts>
 #endif
+#include <charconv>
 
 namespace wite {
 
@@ -121,8 +122,15 @@ struct uuid {
       INVALID_UUID_FORMAT;
     }
 
-    constexpr auto valid_characters = std::string_view{"0123456789ABCDEF-"};
-    if (std::string::npos != s.find_first_not_of(valid_characters)) {
+    const auto is_not_dash = [](auto c) { return '-' != c; };
+
+    if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
+      INVALID_UUID_FORMAT;
+    }
+
+    auto data_1 = uint32_t{};
+    const auto data_1_result = std::from_chars(s.data(), s.data() + 8, data_1, 16);
+    if (data_1_result.ptr != s.data() + 8) {
       INVALID_UUID_FORMAT;
     }
   }

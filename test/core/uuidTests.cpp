@@ -76,8 +76,8 @@ TEST_CASE("Uuid tests", "[core]") {
         WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDEF0"}, std::invalid_argument, "Invalid UUID format");
       }
 
-      SECTION("throws std::invalid_argument if the string doesn't contain non-hex pr dash characters") {
-        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDEG"}, std::invalid_argument, "Invalid UUID format");
+      SECTION("throws std::invalid_argument if the string doesn't contain non-hex 0r dash characters") {
+        WITE_REQ_THROWS(uuid{"0123456X-89AB-CDEF-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
         WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123_456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
       }
     }
