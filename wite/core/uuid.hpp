@@ -128,11 +128,21 @@ struct uuid {
       INVALID_UUID_FORMAT;
     }
 
-    auto data_1 = uint32_t{};
-    const auto data_1_result = std::from_chars(s.data(), s.data() + 8, data_1, 16);
-    if (data_1_result.ptr != s.data() + 8) {
-      INVALID_UUID_FORMAT;
-    }
+    const auto extract = []<typename T>(auto begin, auto end) {
+      auto out                 = T{};
+      const auto result = std::from_chars(begin, end, out, 16);
+      if (result.ptr != end) {
+        INVALID_UUID_FORMAT;
+      }
+
+      return out;
+    };
+
+    const auto data_1 = extract.template operator()<uint32_t>(s.data(), s.data() + 8);
+    const auto data_2 = extract.template operator()<uint16_t>(s.data() + 9, s.data() + 13);
+    const auto data_3 = extract.template operator()<uint16_t>(s.data() + 14, s.data() + 18);
+
+    data = uuid{data_1, data_2, data_3, {0,0,0,0,0,0,0,0}}.data;
   }
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
