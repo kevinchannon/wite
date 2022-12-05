@@ -40,7 +40,7 @@ namespace detail {
   };
   // clang-format on
 
-  constexpr auto _invalid_nibble = std::byte{0xFF};
+  constexpr auto _invalid_nibble = io::byte{0xFF};
 
   inline io::byte low_nibble(char c){
     switch(c) {

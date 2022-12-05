@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bit>
+#include <cstddef>
 
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #define _WITE_CPP20

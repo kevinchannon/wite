@@ -132,16 +132,6 @@ struct uuid {
       INVALID_UUID_FORMAT;
     }
 
-    const auto extract = []<typename T>(auto begin, auto end) {
-      auto out          = T{};
-      const auto result = std::from_chars(begin, end, out, 16);
-      if (result.ptr != end) {
-        INVALID_UUID_FORMAT;
-      }
-
-      return out;
-    };
-
     try {
       data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
                   binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
