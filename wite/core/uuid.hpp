@@ -132,6 +132,7 @@ struct uuid {
       INVALID_UUID_FORMAT;
     }
 
+#ifndef WITE_NO_EXCEPTIONS
     try {
       data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
                   binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
@@ -146,8 +147,29 @@ struct uuid {
                    binascii::from_hex_chars<uint8_t>(s.substr(34, 2))}}
                  .data;
     } catch (const std::invalid_argument&) {
-      INVALID_UUID_FORMAT;
+      throw std::invalid_argument{"Invalid UUID format"};
     }
+#else
+    const auto data_1 = binascii::try_from_hex_chars<uint32_t>(s.substr(0, 8));
+    if (data_1.is_error()) {
+      return;
+    }
+
+    const auto data_2 = binascii::try_from_hex_chars<uint16_t>(s.substr(9, 4));
+    if (data_2.is_error()) {
+      return;
+    }
+
+    const auto data_3 = binascii::try_from_hex_chars<uint16_t>(s.substr(14, 4);
+    if (data_2.is_error()) {
+      return;
+    }
+
+    const auto data_4 = binascii::unhexlify<8>(s.substr(14, 4);
+    if (data_2.is_error()) {
+      return;
+    }
+#endif
   }
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;

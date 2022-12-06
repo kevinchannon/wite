@@ -187,6 +187,12 @@ TEST_CASE("Unhexlify fixed size data", "[binascii]") {
   SECTION("6 io::byte values") {
     REQUIRE(
         std::array<io::byte, 6>{io::byte{0xFE}, io::byte{0xDC}, io::byte{0xBA}, io::byte{0x98}, io::byte{0x76}, io::byte{0x54}} ==
-        binascii::unhexlify<6, io::byte>("FEDCBA9876543210"));
+        binascii::unhexlify<6, io::byte>("FEDCBA987654"));
+  }
+
+  SECTION("throws std::invalid_argument if the output size doesn't match the sequence length") {
+    const auto thrower = [](const char* s) { std::ignore = binascii::unhexlify<10, uint8_t>(s); };
+    WITE_REQ_THROWS(thrower("1234567891234567891"), std::invalid_argument, "Invalid sequence length");
+    WITE_REQ_THROWS(thrower("123456789123456789100"), std::invalid_argument, "Invalid sequence length");
   }
 }

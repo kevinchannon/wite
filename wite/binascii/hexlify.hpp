@@ -14,11 +14,20 @@
 #include <stdexcept>
 #include <iostream>
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace wite::binascii {
+
+///////////////////////////////////////////////////////////////////////////////
 
 static constexpr auto valid_hex_chars = std::string_view{"0123456789ABCDEFabcdef"};
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail {
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // 
   // clang-format off
   constexpr auto upper_case_bytes = std::array{
       "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
@@ -40,7 +49,11 @@ namespace detail {
   };
   // clang-format on
 
+///////////////////////////////////////////////////////////////////////////////
+
   constexpr auto _invalid_nibble = io::byte{0xFF};
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   inline io::byte low_nibble(char c){
     switch(c) {
@@ -65,6 +78,8 @@ namespace detail {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   inline io::byte high_nibble(char c){
     switch(c) {
       case '0': return io::byte(0x00);
@@ -87,7 +102,12 @@ namespace detail {
         return _invalid_nibble;
     }
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
 }  // namespace detail
+
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename Result_T>
 _WITE_NODISCARD Result_T unsafe_from_hex_chars(const std::string_view str) noexcept {
@@ -104,6 +124,8 @@ _WITE_NODISCARD Result_T unsafe_from_hex_chars(const std::string_view str) noexc
   return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Result_T>
 _WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
   if (str.length() != 2 * sizeof(Result_T)) {
@@ -116,6 +138,8 @@ _WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
 
   return unsafe_from_hex_chars<Result_T>(str);
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 enum class from_hex_chars_error { invalid_sequence_length, invalid_hex_char };
 
@@ -135,6 +159,8 @@ _WITE_NODISCARD from_hex_chars_result_t<Result_T> try_from_hex_chars(const std::
   return unsafe_from_hex_chars<Result_T>(str);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename Range_T>
 _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
   auto out       = std::string(2 * bytes.size(), char{});
@@ -152,6 +178,8 @@ _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
   return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view str) {
   auto out = io::dynamic_byte_buffer(str.length() / 2, io::byte{});
   auto read_pos = str.begin();
@@ -164,9 +192,15 @@ _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view 
   return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 template<size_t N, typename Value_T>
   requires(sizeof(Value_T) == 1)
 _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
+  if (str.length() != 2 * N) {
+    throw std::invalid_argument{"Invalid sequence length"};
+  }
+
   auto out      = std::array<Value_T, N>{};
   auto read_pos = str.begin();
 
@@ -177,5 +211,7 @@ _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
 
   return out;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace wite::binascii
