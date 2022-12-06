@@ -1,18 +1,18 @@
 #pragma once
 
+#include <wite/core/result.hpp>
 #include <wite/env/environment.hpp>
 #include <wite/io/types.hpp>
-#include <wite/core/result.hpp>
 
 #ifdef WITE_NO_EXCEPTIONS
 #error "Exceptions are required if binascii/hexlify.hpp is included"
 #endif
 
 #include <array>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <stdexcept>
-#include <iostream>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -22,12 +22,17 @@ namespace wite::binascii {
 
 static constexpr auto valid_hex_chars = std::string_view{"0123456789ABCDEFabcdef"};
 
+enum class error { invalid_sequence_length, invalid_hex_char };
+
+template <typename Result_T>
+using result_t = result<Result_T, error>;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace detail {
 
   ///////////////////////////////////////////////////////////////////////////////
-  // 
+  //
   // clang-format off
   constexpr auto upper_case_bytes = std::array{
       "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
@@ -49,30 +54,52 @@ namespace detail {
   };
   // clang-format on
 
-///////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////
 
   constexpr auto _invalid_nibble = io::byte{0xFF};
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  inline io::byte low_nibble(char c){
-    switch(c) {
-      case '0': return io::byte(0x00);
-      case '1': return io::byte(0x01);
-      case '2': return io::byte(0x02);
-      case '3': return io::byte(0x03);
-      case '4': return io::byte(0x04);
-      case '5': return io::byte(0x05);
-      case '6': return io::byte(0x06);
-      case '7': return io::byte(0x07);
-      case '8': return io::byte(0x08);
-      case '9': return io::byte(0x09);
-      case 'A': case 'a': return io::byte(0x0A);
-      case 'B': case 'b': return io::byte(0x0B);
-      case 'C': case 'c': return io::byte(0x0C);
-      case 'D': case 'd': return io::byte(0x0D);
-      case 'E': case 'e': return io::byte(0x0E);
-      case 'F': case 'f': return io::byte(0x0F);
+  inline io::byte low_nibble(char c) {
+    switch (c) {
+      case '0':
+        return io::byte(0x00);
+      case '1':
+        return io::byte(0x01);
+      case '2':
+        return io::byte(0x02);
+      case '3':
+        return io::byte(0x03);
+      case '4':
+        return io::byte(0x04);
+      case '5':
+        return io::byte(0x05);
+      case '6':
+        return io::byte(0x06);
+      case '7':
+        return io::byte(0x07);
+      case '8':
+        return io::byte(0x08);
+      case '9':
+        return io::byte(0x09);
+      case 'A':
+      case 'a':
+        return io::byte(0x0A);
+      case 'B':
+      case 'b':
+        return io::byte(0x0B);
+      case 'C':
+      case 'c':
+        return io::byte(0x0C);
+      case 'D':
+      case 'd':
+        return io::byte(0x0D);
+      case 'E':
+      case 'e':
+        return io::byte(0x0E);
+      case 'F':
+      case 'f':
+        return io::byte(0x0F);
       default:
         return _invalid_nibble;
     }
@@ -80,24 +107,46 @@ namespace detail {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  inline io::byte high_nibble(char c){
-    switch(c) {
-      case '0': return io::byte(0x00);
-      case '1': return io::byte(0x10);
-      case '2': return io::byte(0x20);
-      case '3': return io::byte(0x30);
-      case '4': return io::byte(0x40);
-      case '5': return io::byte(0x50);
-      case '6': return io::byte(0x60);
-      case '7': return io::byte(0x70);
-      case '8': return io::byte(0x80);
-      case '9': return io::byte(0x90);
-      case 'A': case 'a': return io::byte(0xA0);
-      case 'B': case 'b': return io::byte(0xB0);
-      case 'C': case 'c': return io::byte(0xC0);
-      case 'D': case 'd': return io::byte(0xD0);
-      case 'E': case 'e': return io::byte(0xE0);
-      case 'F': case 'f': return io::byte(0xF0);
+  inline io::byte high_nibble(char c) {
+    switch (c) {
+      case '0':
+        return io::byte(0x00);
+      case '1':
+        return io::byte(0x10);
+      case '2':
+        return io::byte(0x20);
+      case '3':
+        return io::byte(0x30);
+      case '4':
+        return io::byte(0x40);
+      case '5':
+        return io::byte(0x50);
+      case '6':
+        return io::byte(0x60);
+      case '7':
+        return io::byte(0x70);
+      case '8':
+        return io::byte(0x80);
+      case '9':
+        return io::byte(0x90);
+      case 'A':
+      case 'a':
+        return io::byte(0xA0);
+      case 'B':
+      case 'b':
+        return io::byte(0xB0);
+      case 'C':
+      case 'c':
+        return io::byte(0xC0);
+      case 'D':
+      case 'd':
+        return io::byte(0xD0);
+      case 'E':
+      case 'e':
+        return io::byte(0xE0);
+      case 'F':
+      case 'f':
+        return io::byte(0xF0);
       default:
         return _invalid_nibble;
     }
@@ -141,19 +190,14 @@ _WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-enum class from_hex_chars_error { invalid_sequence_length, invalid_hex_char };
-
 template <typename Result_T>
-using from_hex_chars_result_t = result<Result_T, from_hex_chars_error>;
-
-template <typename Result_T>
-_WITE_NODISCARD from_hex_chars_result_t<Result_T> try_from_hex_chars(const std::string_view str) noexcept {
+_WITE_NODISCARD result_t<Result_T> try_from_hex_chars(const std::string_view str) noexcept {
   if (str.length() != 2 * sizeof(Result_T)) {
-    return from_hex_chars_result_t<Result_T>{from_hex_chars_error::invalid_sequence_length};
+    return result_t<Result_T>{error::invalid_sequence_length};
   }
 
   if (std::string::npos != str.find_first_not_of(valid_hex_chars)) {
-    return from_hex_chars_result_t<Result_T>{from_hex_chars_error::invalid_hex_char};
+    return result_t<Result_T>{error::invalid_hex_char};
   }
 
   return unsafe_from_hex_chars<Result_T>(str);
@@ -181,7 +225,7 @@ _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
 ///////////////////////////////////////////////////////////////////////////////
 
 _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view str) {
-  auto out = io::dynamic_byte_buffer(str.length() / 2, io::byte{});
+  auto out      = io::dynamic_byte_buffer(str.length() / 2, io::byte{});
   auto read_pos = str.begin();
 
   for (auto& b : out) {
@@ -194,7 +238,23 @@ _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<size_t N, typename Value_T>
+template <size_t N, typename Value_T>
+  requires(sizeof(Value_T) == 1)
+_WITE_NODISCARD std::array<Value_T, N> unsafe_unhexlify(const std::string_view str) noexcept {
+  auto out      = std::array<Value_T, N>{};
+  auto read_pos = str.begin();
+
+  for (auto& b : out) {
+    b = unsafe_from_hex_chars<Value_T>(std::string_view(read_pos, std::next(read_pos, 2)));
+    std::advance(read_pos, 2);
+  }
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <size_t N, typename Value_T>
   requires(sizeof(Value_T) == 1)
 _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
   if (str.length() != 2 * N) {
@@ -205,15 +265,23 @@ _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
     throw std::invalid_argument{"Invalid hex char"};
   }
 
-  auto out      = std::array<Value_T, N>{};
-  auto read_pos = str.begin();
+  return unsafe_unhexlify<N, Value_T>(str);
+}
 
-  for (auto& b : out) {
-    b = unsafe_from_hex_chars<Value_T>(std::string_view(read_pos, std::next(read_pos, 2)));
-    std::advance(read_pos, 2);
+///////////////////////////////////////////////////////////////////////////////
+
+template <size_t N, typename Value_T>
+  requires(sizeof(Value_T) == 1)
+_WITE_NODISCARD result_t<std::array<Value_T, N>> try_unhexlify(const std::string_view str) noexcept {
+  if (str.length() != 2 * N) {
+    return error::invalid_sequence_length;
   }
 
-  return out;
+  if (std::string::npos != str.find_first_not_of(valid_hex_chars)) {
+    return error::invalid_hex_char;
+  }
+
+  return unsafe_unhexlify<N, Value_T>(str);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

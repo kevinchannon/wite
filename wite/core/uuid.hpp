@@ -165,7 +165,7 @@ struct uuid {
       return;
     }
 
-    const auto data_4 = binascii::unhexlify<8>(s.substr(14, 4);
+    const auto data_4 = binascii::unhexlify<2, uint8_t>(s.substr(14, 4);
     if (data_2.is_error()) {
       return;
     }
