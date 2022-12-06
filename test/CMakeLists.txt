@@ -14,6 +14,7 @@ enable_testing()
 
 add_executable(wite_test 
 	"binascii/binasciiTests.cpp"
+  "binascii/binasciiTests_noExceptions.cpp"
 	"collections/stackVectorTests.cpp"
 	"collections/identifiableItemCollectionTests.cpp"
 	"collections/makeVectorTests.cpp"
@@ -23,6 +24,7 @@ add_executable(wite_test
 	"core/indexTests.cpp"
 	"core/idTests.cpp"
 	"core/uuidTests.cpp"
+	"core/uuidTests_noExceptions.cpp"
 	"geometry/PointTests.cpp"
 	"geometry/IoTests.cpp"
 	"io/byteBufferTests.cpp"
@@ -45,7 +47,7 @@ add_executable(wite_test
 	"maths/ioTests.cpp"
 	"maths/numericTests.cpp"
 	"maths/boundedValueTests.cpp"
-	)
+)
 
 target_compile_options(wite_test PRIVATE
 	$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>

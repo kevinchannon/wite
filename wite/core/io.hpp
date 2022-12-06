@@ -34,8 +34,7 @@ std::ostream& operator<<(std::ostream& os, const Uuid_T& id) {
 #else
 inline std::ostream& operator<<(std::ostream& os, const wite::uuid& id) {
 #endif
-  const auto s = wite::to_string(id); 
-  os << s;
+  os << wite::to_string(id);
   return os;
 }
 

@@ -4,15 +4,14 @@
 #include <wite/env/environment.hpp>
 #include <wite/io/types.hpp>
 
-#ifdef WITE_NO_EXCEPTIONS
-#error "Exceptions are required if binascii/hexlify.hpp is included"
-#endif
-
 #include <array>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
+
+#ifndef WITE_NO_EXCEPTIONS
+#include<stdexcept>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -175,6 +174,7 @@ _WITE_NODISCARD Result_T unsafe_from_hex_chars(const std::string_view str) noexc
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
 template <typename Result_T>
 _WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
   if (str.length() != 2 * sizeof(Result_T)) {
@@ -187,6 +187,7 @@ _WITE_NODISCARD Result_T from_hex_chars(const std::string_view str) {
 
   return unsafe_from_hex_chars<Result_T>(str);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -205,6 +206,7 @@ _WITE_NODISCARD result_t<Result_T> try_from_hex_chars(const std::string_view str
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
 template <typename Range_T>
 _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
   auto out       = std::string(2 * bytes.size(), char{});
@@ -221,9 +223,11 @@ _WITE_NODISCARD std::string hexlify(Range_T&& bytes) {
 
   return out;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
 _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view str) {
   auto out      = io::dynamic_byte_buffer(str.length() / 2, io::byte{});
   auto read_pos = str.begin();
@@ -235,6 +239,7 @@ _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view 
 
   return out;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -254,6 +259,7 @@ _WITE_NODISCARD std::array<Value_T, N> unsafe_unhexlify(const std::string_view s
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_NO_EXCEPTIONS
 template <size_t N, typename Value_T>
   requires(sizeof(Value_T) == 1)
 _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
@@ -267,6 +273,7 @@ _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
 
   return unsafe_unhexlify<N, Value_T>(str);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
