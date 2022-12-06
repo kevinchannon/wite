@@ -177,3 +177,16 @@ TEST_CASE("Try from hex chars tests", "[binascii]") {
     }
   }
 }
+
+TEST_CASE("Unhexlify fixed size data", "[binascii]") {
+  SECTION("8 uint8_t values") {
+    REQUIRE(std::array<uint8_t, 8>{0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10} ==
+            binascii::unhexlify<8, uint8_t>("FEDCBA9876543210"));
+  }
+
+  SECTION("6 io::byte values") {
+    REQUIRE(
+        std::array<io::byte, 6>{io::byte{0xFE}, io::byte{0xDC}, io::byte{0xBA}, io::byte{0x98}, io::byte{0x76}, io::byte{0x54}} ==
+        binascii::unhexlify<6, io::byte>("FEDCBA9876543210"));
+  }
+}

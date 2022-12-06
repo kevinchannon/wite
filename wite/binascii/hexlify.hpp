@@ -164,4 +164,18 @@ _WITE_NODISCARD inline io::dynamic_byte_buffer unhexlify(const std::string_view 
   return out;
 }
 
+template<size_t N, typename Value_T>
+  requires(sizeof(Value_T) == 1)
+_WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
+  auto out      = std::array<Value_T, N>{};
+  auto read_pos = str.begin();
+
+  for (auto& b : out) {
+    b = from_hex_chars<Value_T>(std::string_view(read_pos, std::next(read_pos, 2)));
+    std::advance(read_pos, 2);
+  }
+
+  return out;
+}
+
 }  // namespace wite::binascii
