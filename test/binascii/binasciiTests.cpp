@@ -195,4 +195,9 @@ TEST_CASE("Unhexlify fixed size data", "[binascii]") {
     WITE_REQ_THROWS(thrower("1234567891234567891"), std::invalid_argument, "Invalid sequence length");
     WITE_REQ_THROWS(thrower("123456789123456789100"), std::invalid_argument, "Invalid sequence length");
   }
+
+  SECTION("throws std::invalid_argument if any of the input characters are not valid hex chars") {
+    const auto thrower = [](const char* s) { std::ignore = binascii::unhexlify<4, uint8_t>(s); };
+    WITE_REQ_THROWS(thrower("76543X10"), std::invalid_argument, "Invalid hex char");
+  }
 }

@@ -201,6 +201,10 @@ _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
     throw std::invalid_argument{"Invalid sequence length"};
   }
 
+  if (std::string::npos != str.find_first_not_of(valid_hex_chars)) {
+    throw std::invalid_argument{"Invalid hex char"};
+  }
+
   auto out      = std::array<Value_T, N>{};
   auto read_pos = str.begin();
 
