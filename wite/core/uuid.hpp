@@ -25,26 +25,24 @@ namespace wite {
 
 #ifdef _WITE_HAS_CONCEPTS
 template <typename T>
-concept wite_uuid_like = requires(T& t) {
-  t.data;
-};
+concept wite_uuid_like = requires(T& t) { t.data; };
 
 template <typename T>
 concept guid_like = requires(T& t) {
-  t.Data1;
-  t.Data2;
-  t.Data3;
-  t.Data4[0];
-  t.Data4[1];
-  t.Data4[2];
-  t.Data4[3];
-  t.Data4[4];
-  t.Data4[5];
-  t.Data4[6];
-  t.Data4[7];
-};
+                      t.Data1;
+                      t.Data2;
+                      t.Data3;
+                      t.Data4[0];
+                      t.Data4[1];
+                      t.Data4[2];
+                      t.Data4[3];
+                      t.Data4[4];
+                      t.Data4[5];
+                      t.Data4[6];
+                      t.Data4[7];
+                    };
 template <typename T>
-concept uuid_like = ((wite_uuid_like<T> or guid_like<T>)and sizeof(T) == 16);
+concept uuid_like = ((wite_uuid_like<T> or guid_like<T>) and sizeof(T) == 16);
 #endif
 
 struct uuid;
@@ -134,17 +132,13 @@ struct uuid {
 
 #ifndef WITE_NO_EXCEPTIONS
     try {
+      const auto data_4a = binascii::unhexlify<2, uint8_t>(s.substr(19, 4));
+      const auto data_4b = binascii::unhexlify<6, uint8_t>(s.substr(24, 12));
+
       data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
                   binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
                   binascii::from_hex_chars<uint16_t>(s.substr(14, 4)),
-                  {binascii::from_hex_chars<uint8_t>(s.substr(19, 2)),
-                   binascii::from_hex_chars<uint8_t>(s.substr(21, 2)),
-                   binascii::from_hex_chars<uint8_t>(s.substr(24, 2)),
-                   binascii::from_hex_chars<uint8_t>(s.substr(26, 2)),
-                   binascii::from_hex_chars<uint8_t>(s.substr(28, 2)),
-                   binascii::from_hex_chars<uint8_t>(s.substr(30, 2)),
-                   binascii::from_hex_chars<uint8_t>(s.substr(32, 2)),
-                   binascii::from_hex_chars<uint8_t>(s.substr(34, 2))}}
+                  {data_4a[0], data_4a[1], data_4b[0], data_4b[1], data_4b[2], data_4b[3], data_4b[4], data_4b[5]}}
                  .data;
     } catch (const std::invalid_argument&) {
       throw std::invalid_argument{"Invalid UUID format"};
@@ -165,10 +159,20 @@ struct uuid {
       return;
     }
 
-    const auto data_4 = binascii::unhexlify<2, uint8_t>(s.substr(14, 4);
-    if (data_2.is_error()) {
+    const auto data_4a = binascii::try_unhexlify<2, uint8_t>(s.substr(19, 4);
+    if (data_4.is_error()) {
       return;
     }
+
+    const auto data_ba = binascii::try_unhexlify<6, uint8_t>(s.substr(24, 12);
+    if (data_4.is_error()) {
+      return;
+    }
+
+    data = uuid{data_1.value(), data_2.value(), data_3.value(), 
+      {data_4a[0].value(), data_4a[1].value(), data_4b[0].value(), data_4b[1].value(),
+       data_4b[2].value(), data_4b[3].value(), data_4b[4].value(), data_4b[5].value()}
+    }.data;
 #endif
   }
 
