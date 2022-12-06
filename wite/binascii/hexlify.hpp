@@ -209,7 +209,7 @@ _WITE_NODISCARD std::array<Value_T, N> unhexlify(const std::string_view str) {
   auto read_pos = str.begin();
 
   for (auto& b : out) {
-    b = from_hex_chars<Value_T>(std::string_view(read_pos, std::next(read_pos, 2)));
+    b = unsafe_from_hex_chars<Value_T>(std::string_view(read_pos, std::next(read_pos, 2)));
     std::advance(read_pos, 2);
   }
 
