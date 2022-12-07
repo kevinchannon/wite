@@ -49,30 +49,30 @@ struct uuid;
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length);
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length, char format = 'D');
 #else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length);
+_WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length, char format = 'D');
 #endif
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::string to_string(const Uuid_T& id);
+_WITE_NODISCARD std::string to_string(const Uuid_T& id, char format = 'D');
 #else
-_WITE_NODISCARD inline std::string to_string(const uuid& id);
+_WITE_NODISCARD inline std::string to_string(const uuid& id, char format = 'D');
 #endif
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length);
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length, char format = 'D');
 #else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length);
+_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length, char format = 'D');
 #endif
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id);
+_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format = 'D');
 #else
-_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id);
+_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format = 'D');
 #endif
 
 struct uuid {
@@ -141,10 +141,12 @@ struct uuid {
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
-  _WITE_NODISCARD bool into_c_str(char* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
-  _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size) const noexcept { return to_c_str(*this, out, size); }
-  _WITE_NODISCARD std::string str() const { return to_string(*this); };
-  _WITE_NODISCARD std::wstring wstr() const { return to_wstring(*this); };
+  _WITE_NODISCARD bool into_c_str(char* out, size_t size, char format ='D') const noexcept { return to_c_str(*this, out, size, format); }
+  _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size, char format = 'D') const noexcept {
+    return to_c_str(*this, out, size, format);
+  }
+  _WITE_NODISCARD std::string str(char format = 'D') const { return to_string(*this, format); };
+  _WITE_NODISCARD std::wstring wstr(char format = 'D') const { return to_wstring(*this, format); };
 
   std::array<uint8_t, 16> data{};
 };
@@ -206,12 +208,48 @@ inline uuid try_make_uuid(std::string_view s) noexcept {
 }
 
 namespace detail {
-  template <typename Char_T>
+  template <typename Char_T, char FMT_TYPE>
   _WITE_CONSTEVAL auto _uuid_format() {
     if constexpr (std::is_same_v<Char_T, char>) {
-      return "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+      if constexpr ('D' == FMT_TYPE) {
+        return "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+      } else if constexpr ('N' == FMT_TYPE) {
+        return "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X";
+      } else if constexpr ('B' == FMT_TYPE) {
+        return "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}";
+      } else if constexpr ('P' == FMT_TYPE) {
+        return "(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
+      } else if constexpr ('X' == FMT_TYPE) {
+        return "{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
+      } 
     } else {
-      return L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+      if constexpr ('D' == FMT_TYPE) {
+        return L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+      } else if constexpr ('N' == FMT_TYPE) {
+        return L"%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X";
+      } else if constexpr ('B' == FMT_TYPE) {
+        return L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}";
+      } else if constexpr ('P' == FMT_TYPE) {
+        return L"(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
+      } else if constexpr ('X' == FMT_TYPE) {
+        return L"{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
+      } 
+    }
+  }
+
+  
+  template <char FMT_TYPE>
+  _WITE_CONSTEVAL size_t _uuid_strlen() {
+    if constexpr ('D' == FMT_TYPE) {
+      return 36 + 1;
+    } else if constexpr ('N' == FMT_TYPE) {
+      return 32 + 1;
+    } else if constexpr ('B' == FMT_TYPE) {
+      return 38 + 1;
+    } else if constexpr ('P' == FMT_TYPE) {
+      return 38 + 1;
+    } else if constexpr ('X' == FMT_TYPE) {
+      return 69 + 1;
     }
   }
 
@@ -227,26 +265,15 @@ namespace detail {
     }
   }
 
-  template <typename Char_T>
-  struct _uuid_null_char {
-    _WITE_CONSTEVAL static auto value() {
-      if constexpr (std::is_same_v<Char_T, char>) {
-        return '\0';
-      } else {
-        return L'\0';
-      }
-    }
-  };
-
 #if _WITE_HAS_CONCEPTS
-  template <typename Char_T, wite::uuid_like Uuid_T>
+  template <typename Char_T, wite::uuid_like Uuid_T, char FMT_TYPE>
   _WITE_NODISCARD bool _to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length)
 #else
   template <typename Char_T>
   _WITE_NODISCARD bool _to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length)
 #endif
   {
-    if (max_buffer_length < 37) {
+    if (max_buffer_length < detail::_uuid_strlen<FMT_TYPE>()) {
       return false;
     }
 
@@ -257,7 +284,7 @@ namespace detail {
 
     std::ignore = detail::_uuid_sprintf<Char_T>()(buffer,
                                                   max_buffer_length,
-                                                  detail::_uuid_format<Char_T>(),
+                                                  detail::_uuid_format<Char_T, FMT_TYPE>(),
                                                   data_1,
                                                   data_2,
                                                   data_3,
@@ -269,7 +296,6 @@ namespace detail {
                                                   data_4[5],
                                                   data_4[6],
                                                   data_4[7]);
-    buffer[36]  = detail::_uuid_null_char<Char_T>::value();
 
     return true;
   }
@@ -277,45 +303,73 @@ namespace detail {
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length)
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length, char format) {
+  using uuid_t = Uuid_T;
 #else
-_WITE_NODISCARD bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length)
+_WITE_NODISCARD bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length, char format) {
+  using uuid_t = uuid;
 #endif
-{
-  return detail::_to_c_str(id, buffer, max_buffer_length);
+  switch (format) { 
+    case 'D':
+      return detail::_to_c_str<char, uuid_t, 'D'>(id, buffer, max_buffer_length);
+    case 'N':
+      return detail::_to_c_str<char, uuid_t, 'N'>(id, buffer, max_buffer_length);
+    case 'B':
+      return detail::_to_c_str<char, uuid_t, 'B'>(id, buffer, max_buffer_length);
+    case 'P':
+      return detail::_to_c_str<char, uuid_t, 'P'>(id, buffer, max_buffer_length);
+    case 'X':
+      return detail::_to_c_str<char, uuid_t, 'X'>(id, buffer, max_buffer_length);
+    default:
+      return false;
+  }
 }
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::string to_string(const Uuid_T& id)
+_WITE_NODISCARD std::string to_string(const Uuid_T& id, char format)
 #else
-_WITE_NODISCARD inline std::string to_string(const uuid& id)
+_WITE_NODISCARD inline std::string to_string(const uuid& id, char format)
 #endif
 {
   char buffer[39] = {};
-  std::ignore     = to_c_str(id, buffer, 37);
+  std::ignore     = to_c_str(id, buffer, 37, format);
   return {buffer};
 }
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length)
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length, char format) {
+  using uuid_t = Uuid_T;
 #else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length)
+_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length, char format) {
+  using uuid_t = uuid;
 #endif
-{
-  return detail::_to_c_str(id, buffer, max_buffer_length);
+  switch (format) {
+    case 'D':
+      return detail::_to_c_str<wchar_t, uuid_t, 'D'>(id, buffer, max_buffer_length);
+    case 'N':
+      return detail::_to_c_str<wchar_t, uuid_t, 'N'>(id, buffer, max_buffer_length);
+    case 'B':
+      return detail::_to_c_str<wchar_t, uuid_t, 'B'>(id, buffer, max_buffer_length);
+    case 'P':
+      return detail::_to_c_str<wchar_t, uuid_t, 'P'>(id, buffer, max_buffer_length);
+    case 'X':
+      return detail::_to_c_str<wchar_t, uuid_t, 'X'>(id, buffer, max_buffer_length);
+    default:
+      return false;
+  }
 }
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id)
+_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format)
 #else
-_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id)
+_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format)
 #endif
 {
   wchar_t buffer[39] = {};
-  std::ignore        = to_c_str(id, buffer, 37);
+  std::ignore        = to_c_str(id, buffer, 37, format);
   return {buffer};
 }
 

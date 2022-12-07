@@ -90,30 +90,121 @@ TEST_CASE("Uuid tests", "[core]") {
 
   SECTION("Write uuid into a C-string") {
     SECTION("narrow chars") {
-      char buffer[39] = {};
+      char buffer[70] = {};
 
-      SECTION("succeeds if the buffer is sufficiently sized") {
-        REQUIRE(id.into_c_str(buffer, 37));
+      SECTION("D-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 37, 'D'));
+          REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == std::string{buffer});
+        }
 
-        REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == std::string{buffer});
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 36, 'D'));
+        }
       }
 
-      SECTION("fails if the buffer is too small") {
-        REQUIRE_FALSE(id.into_c_str(buffer, 36));
+      SECTION("N-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 33, 'N'));
+          REQUIRE("0123456789ABCDEF0123456789ABCDEF" == std::string{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 32, 'N'));
+        }
+      }
+
+      SECTION("B-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 39, 'B'));
+          REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::string{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
+        }
+      }
+
+      SECTION("P-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 39, 'P'));
+          REQUIRE("(01234567-89AB-CDEF-0123-456789ABCDEF)" == std::string{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
+        }
+      }
+
+      SECTION("X-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 70, 'X'));
+          REQUIRE("{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}" == std::string{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 69, 'X'));
+        }
       }
     }
 
     SECTION("wide chars") {
-      wchar_t buffer[39] = {};
+      wchar_t buffer[70] = {};
 
-      SECTION("succeeds if the buffer is sufficiently sized") {
-        REQUIRE(id.into_c_str(buffer, 37));
+      SECTION("D-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 37));
 
-        REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == std::wstring{buffer});
+          REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == std::wstring{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 36));
+        }
       }
 
-      SECTION("fails if the buffer is too small") {
-        REQUIRE_FALSE(id.into_c_str(buffer, 36));
+      SECTION("N-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 33, 'N'));
+          REQUIRE(L"0123456789ABCDEF0123456789ABCDEF" == std::wstring{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 32, 'N'));
+        }
+      }
+
+      SECTION("B-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 39, 'B'));
+          REQUIRE(L"{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::wstring{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
+        }
+      }
+
+      SECTION("P-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 39, 'P'));
+          REQUIRE(L"(01234567-89AB-CDEF-0123-456789ABCDEF)" == std::wstring{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
+        }
+      }
+
+      SECTION("X-format") {
+        SECTION("succeeds if the buffer is sufficiently sized") {
+          REQUIRE(id.into_c_str(buffer, 70, 'X'));
+          REQUIRE(L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}" == std::wstring{buffer});
+        }
+
+        SECTION("fails if the buffer is too small") {
+          REQUIRE_FALSE(id.into_c_str(buffer, 69, 'X'));
+        }
       }
     }
   }
