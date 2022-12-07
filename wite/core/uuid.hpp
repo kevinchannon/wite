@@ -363,7 +363,7 @@ _WITE_NODISCARD inline std::string to_string(const uuid& id, char format) {
       return detail::_to_string<char, uuid_t, 'X'>(id);
   }
 
-  return {};
+  throw std::invalid_argument{"Invalid UUID format type"};
 }
 
 #if _WITE_HAS_CONCEPTS
@@ -411,7 +411,7 @@ _WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format) {
       return detail::_to_string<wchar_t, uuid_t, 'X'>(id);
   }
 
-  return {};
+  throw std::invalid_argument{"Invalid UUID format type"};
 }
 
 }  // namespace wite

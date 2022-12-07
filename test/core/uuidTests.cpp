@@ -154,15 +154,21 @@ TEST_CASE("Uuid tests", "[core]") {
         REQUIRE(id.str('D') == id.str());
       }
 
-      auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const char*, char>(
-          {{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
-           {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
-           {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
-           {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
-           {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+      SECTION("succeeds for valid format types") {
+        auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const char*, char>(
+            {{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+             {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
+             {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+             {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
 
-      SECTION(test_name) {
-        REQUIRE(expected_output == id.str(format_char));
+        SECTION(test_name) {
+          REQUIRE(expected_output == id.str(format_char));
+        }
+      }
+
+      SECTION("throws std::invalid_argument if the format type is not valid") {
+        WITE_REQ_THROWS(id.str('A'), std::invalid_argument, "Invalid UUID format type");
       }
     }
 
@@ -171,15 +177,21 @@ TEST_CASE("Uuid tests", "[core]") {
         REQUIRE(id.wstr('D') == id.wstr());
       }
 
-      auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const wchar_t*, char>(
-          {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
-           {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
-           {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
-           {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
-           {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+      SECTION("succeeds for valid format types") {
+        auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const wchar_t*, char>(
+            {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+             {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
+             {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+             {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
 
-      SECTION(test_name) {
-        REQUIRE(expected_output == id.wstr(format_char));
+        SECTION(test_name) {
+          REQUIRE(expected_output == id.wstr(format_char));
+        }
+      }
+
+      SECTION("throws std::invalid_argument if the format type is not valid") {
+        WITE_REQ_THROWS(id.wstr('A'), std::invalid_argument, "Invalid UUID format type");
       }
     }
   }
