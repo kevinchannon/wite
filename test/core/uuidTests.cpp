@@ -90,46 +90,60 @@ TEST_CASE("Uuid tests", "[core]") {
 
   SECTION("Write uuid into a C-string") {
     SECTION("narrow chars") {
-      auto [test_name, expected_output, size, format_char] = GENERATE(
-          table<const char*, const char*, size_t, char>({{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 37, 'D'},
-                                                         {"N-format", "0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
-                                                         {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
-                                                         {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
-                                                         {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
+      SECTION("succeeds for valid format types") {
+        auto [test_name, expected_output, size, format_char] = GENERATE(table<const char*, const char*, size_t, char>(
+            {{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 37, 'D'},
+             {"N-format", "0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
+             {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
+             {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
+             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
 
-      char buffer[70] = {};
+        char buffer[70] = {};
 
-      SECTION(test_name) {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, size, format_char));
-          REQUIRE(expected_output == std::string{buffer});
+        SECTION(test_name) {
+          SECTION("succeeds if the buffer is sufficiently sized") {
+            REQUIRE(id.into_c_str(buffer, size, format_char));
+            REQUIRE(expected_output == std::string{buffer});
+          }
+
+          SECTION("fails if the buffer is too small") {
+            REQUIRE_FALSE(id.into_c_str(buffer, size - 1, format_char));
+          }
         }
+      }
 
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, size - 1, format_char));
-        }
+      SECTION("Fails for invalid format") {
+        char buffer[70] = {};
+        REQUIRE_FALSE(id.into_c_str(buffer, 70, 'A'));
       }
     }
 
     SECTION("wide chars") {
-      auto [test_name, expected_output, size, format_char] = GENERATE(table<const char*, const wchar_t*, size_t, char>(
-          {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 37, 'D'},
-           {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
-           {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
-           {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
-           {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
+      SECTION("succeeds for valid format types") {
+        auto [test_name, expected_output, size, format_char] = GENERATE(table<const char*, const wchar_t*, size_t, char>(
+            {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 37, 'D'},
+             {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
+             {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
+             {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
+             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
 
-      wchar_t buffer[70] = {};
+        wchar_t buffer[70] = {};
 
-      SECTION(test_name) {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, size, format_char));
-          REQUIRE(expected_output == std::wstring{buffer});
+        SECTION(test_name) {
+          SECTION("succeeds if the buffer is sufficiently sized") {
+            REQUIRE(id.into_c_str(buffer, size, format_char));
+            REQUIRE(expected_output == std::wstring{buffer});
+          }
+
+          SECTION("fails if the buffer is too small") {
+            REQUIRE_FALSE(id.into_c_str(buffer, size - 1, format_char));
+          }
         }
+      }
 
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, size - 1, format_char));
-        }
+      SECTION("Fails for invalid format") {
+        wchar_t buffer[70] = {};
+        REQUIRE_FALSE(id.into_c_str(buffer, 70, 'A'));
       }
     }
   }
