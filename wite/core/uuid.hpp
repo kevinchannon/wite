@@ -241,6 +241,16 @@ namespace detail {
         return "(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
       } else if constexpr ('X' == FMT_TYPE) {
         return "{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
+      } else if constexpr ('d' == FMT_TYPE) {
+        return "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
+      } else if constexpr ('n' == FMT_TYPE) {
+        return "%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x";
+      } else if constexpr ('b' == FMT_TYPE) {
+        return "{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}";
+      } else if constexpr ('p' == FMT_TYPE) {
+        return "(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)";
+      } else if constexpr ('x' == FMT_TYPE) {
+        return "{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}";
       }
     } else {
       if constexpr ('D' == FMT_TYPE) {
@@ -253,6 +263,16 @@ namespace detail {
         return L"(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
       } else if constexpr ('X' == FMT_TYPE) {
         return L"{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
+      } else if constexpr ('d' == FMT_TYPE) {
+        return L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
+      } else if constexpr ('n' == FMT_TYPE) {
+        return L"%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x";
+      } else if constexpr ('b' == FMT_TYPE) {
+        return L"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}";
+      } else if constexpr ('p' == FMT_TYPE) {
+        return L"(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)";
+      } else if constexpr ('x' == FMT_TYPE) {
+        return L"{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}";
       }
     }
   }
@@ -261,15 +281,15 @@ namespace detail {
 
   template <char FMT_TYPE>
   _WITE_CONSTEVAL size_t _uuid_strlen() {
-    if constexpr ('D' == FMT_TYPE) {
+    if constexpr ('D' == FMT_TYPE or 'd' == FMT_TYPE) {
       return 36 + 1;
-    } else if constexpr ('N' == FMT_TYPE) {
+    } else if constexpr ('N' == FMT_TYPE or 'n' == FMT_TYPE) {
       return 32 + 1;
-    } else if constexpr ('B' == FMT_TYPE) {
+    } else if constexpr ('B' == FMT_TYPE or 'b' == FMT_TYPE) {
       return 38 + 1;
-    } else if constexpr ('P' == FMT_TYPE) {
+    } else if constexpr ('P' == FMT_TYPE or 'p' == FMT_TYPE) {
       return 38 + 1;
-    } else if constexpr ('X' == FMT_TYPE) {
+    } else if constexpr ('X' == FMT_TYPE or 'x' == FMT_TYPE) {
       return 69 + 1;
     }
   }
@@ -364,6 +384,16 @@ namespace detail {
         return _to_string<Char_T, uuid_t, 'P'>(id);
       case 'X':
         return _to_string<Char_T, uuid_t, 'X'>(id);
+      case 'd':
+        return _to_string<Char_T, uuid_t, 'd'>(id);
+      case 'n':
+        return _to_string<Char_T, uuid_t, 'n'>(id);
+      case 'b':
+        return _to_string<Char_T, uuid_t, 'b'>(id);
+      case 'p':
+        return _to_string<Char_T, uuid_t, 'p'>(id);
+      case 'x':
+        return _to_string<Char_T, uuid_t, 'x'>(id);
     }
 
     throw std::invalid_argument{"Invalid UUID format type"};
@@ -395,6 +425,16 @@ _WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_
       return detail::_to_c_str<Char_T, uuid_t, 'P'>(id, buffer, max_buffer_length);
     case 'X':
       return detail::_to_c_str<Char_T, uuid_t, 'X'>(id, buffer, max_buffer_length);
+    case 'd':
+      return detail::_to_c_str<Char_T, uuid_t, 'd'>(id, buffer, max_buffer_length);
+    case 'n':
+      return detail::_to_c_str<Char_T, uuid_t, 'n'>(id, buffer, max_buffer_length);
+    case 'b':
+      return detail::_to_c_str<Char_T, uuid_t, 'b'>(id, buffer, max_buffer_length);
+    case 'p':
+      return detail::_to_c_str<Char_T, uuid_t, 'p'>(id, buffer, max_buffer_length);
+    case 'x':
+      return detail::_to_c_str<Char_T, uuid_t, 'x'>(id, buffer, max_buffer_length);
     default:
       return false;
   }

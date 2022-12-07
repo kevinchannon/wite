@@ -160,7 +160,12 @@ TEST_CASE("Uuid tests", "[core]") {
              {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
              {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
              {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
-             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'},
+             {"d-format", "01234567-89ab-cdef-0123-456789abcdef", 'd'},
+             {"n-format", "0123456789abcdef0123456789abcdef", 'n'},
+             {"b-format", "{01234567-89ab-cdef-0123-456789abcdef}", 'b'},
+             {"p-format", "(01234567-89ab-cdef-0123-456789abcdef)", 'p'},
+             {"x-format", "{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 'x'}}));
 
         SECTION(test_name) {
           REQUIRE(expected_output == id.str(format_char));
@@ -183,7 +188,12 @@ TEST_CASE("Uuid tests", "[core]") {
              {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
              {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
              {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
-             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'},
+             {"d-format", L"01234567-89ab-cdef-0123-456789abcdef", 'd'},
+             {"n-format", L"0123456789abcdef0123456789abcdef", 'n'},
+             {"b-format", L"{01234567-89ab-cdef-0123-456789abcdef}", 'b'},
+             {"p-format", L"(01234567-89ab-cdef-0123-456789abcdef)", 'p'},
+             {"x-format", L"{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 'x'}}));
 
         SECTION(test_name) {
           REQUIRE(expected_output == id.wstr(format_char));
