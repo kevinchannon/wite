@@ -19,9 +19,12 @@
 #if _WITE_HAS_CONCEPTS
 #include <concepts>
 #endif
-#include <charconv>
+
+///////////////////////////////////////////////////////////////////////////////
 
 namespace wite {
+
+///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _WITE_HAS_CONCEPTS
 template <typename T>
@@ -45,7 +48,11 @@ template <typename T>
 concept uuid_like = ((wite_uuid_like<T> or guid_like<T>) and sizeof(T) == 16);
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+
 struct uuid;
+
+///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
 template <typename Char_T, wite::uuid_like Uuid_T>
@@ -55,6 +62,8 @@ template<typename Char_T>
 _WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length, char format = 'D');
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
 _WITE_NODISCARD std::string to_string(const Uuid_T& id, char format = 'D');
@@ -62,12 +71,16 @@ _WITE_NODISCARD std::string to_string(const Uuid_T& id, char format = 'D');
 _WITE_NODISCARD inline std::string to_string(const uuid& id, char format = 'D');
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
 _WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format = 'D');
 #else
 _WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format = 'D');
 #endif
+
+///////////////////////////////////////////////////////////////////////////////
 
 struct uuid {
   WITE_DEFAULT_CONSTRUCTORS(uuid);
@@ -147,12 +160,18 @@ struct uuid {
   std::array<uint8_t, 16> data{};
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 constexpr static auto nulluuid = uuid{};
+
+///////////////////////////////////////////////////////////////////////////////
 
 inline uuid make_uuid() {
   static thread_local auto random_engine = std::mt19937_64(std::random_device{}());
   return uuid{random_engine};
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 inline uuid try_make_uuid(std::string_view s) noexcept {
   if (s.length() != 36) {
@@ -203,7 +222,12 @@ inline uuid try_make_uuid(std::string_view s) noexcept {
                data_4b.value()[5]}};
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace detail {
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   template <typename Char_T, char FMT_TYPE>
   _WITE_CONSTEVAL auto _uuid_format() {
     if constexpr (std::is_same_v<Char_T, char>) {
@@ -233,6 +257,8 @@ namespace detail {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   template <char FMT_TYPE>
   _WITE_CONSTEVAL size_t _uuid_strlen() {
     if constexpr ('D' == FMT_TYPE) {
@@ -248,6 +274,8 @@ namespace detail {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   template <typename Char_T>
   using _uuid_sprintf_t = int (*)(Char_T* const _Buffer, size_t const _BufferCount, Char_T const* const _Format, ...);
 
@@ -259,6 +287,8 @@ namespace detail {
       return ::swprintf;
     }
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
   template <typename Char_T, wite::uuid_like Uuid_T, char FMT_TYPE>
@@ -295,6 +325,8 @@ namespace detail {
     return true;
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
 #if _WITE_HAS_CONCEPTS
   template <typename Char_T, wite::uuid_like Uuid_T, char FMT_TYPE>
   _WITE_NODISCARD std::basic_string<Char_T> _to_string(const Uuid_T& id) {
@@ -309,6 +341,8 @@ namespace detail {
     std::ignore = _to_c_str<Char_T, uuid_t, FMT_TYPE>(id, buffer, buffer_length);
     return {buffer};
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
   template <typename Char_T, wite::uuid_like Uuid_T>
@@ -335,7 +369,11 @@ namespace detail {
     throw std::invalid_argument{"Invalid UUID format type"};
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
 }  // namespace detail
+
+///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
 template <typename Char_T, wite::uuid_like Uuid_T>
@@ -362,6 +400,8 @@ _WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
 _WITE_NODISCARD std::string to_string(const Uuid_T& id, char format) {
@@ -372,6 +412,8 @@ _WITE_NODISCARD inline std::string to_string(const uuid& id, char format) {
 #endif
   return detail::_to_string<char, uuid_t>(id, format);
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
@@ -384,4 +426,8 @@ _WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format) {
   return detail::_to_string<wchar_t, uuid_t>(id, format);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 }  // namespace wite
+
+///////////////////////////////////////////////////////////////////////////////
