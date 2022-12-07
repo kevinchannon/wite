@@ -309,11 +309,36 @@ namespace detail {
   _WITE_NODISCARD inline std::string to_string(const uuid& id) {
     using uuid_t = uuid;
 #endif
-    constexpr auto buffer_length = detail::_uuid_strlen<FMT_TYPE>(); 
+    constexpr auto buffer_length = _uuid_strlen<FMT_TYPE>(); 
     Char_T buffer[buffer_length] = {};
 
     std::ignore = _to_c_str<Char_T, uuid_t, FMT_TYPE>(id, buffer, buffer_length);
     return {buffer};
+  }
+
+#if _WITE_HAS_CONCEPTS
+  template <typename Char_T, wite::uuid_like Uuid_T>
+  _WITE_NODISCARD std::basic_string<Char_T> _to_string(const Uuid_T& id, char format) {
+    using uuid_t = Uuid_T;
+#else
+  template <typename Char_T>
+  _WITE_NODISCARD std::basic_string<Char_T> _to_string(const uuid& id, char format) {
+    using uuid_t = uuid;
+#endif
+    switch (format) {
+      case 'D':
+        return _to_string<Char_T, uuid_t, 'D'>(id);
+      case 'N':
+        return _to_string<Char_T, uuid_t, 'N'>(id);
+      case 'B':
+        return _to_string<Char_T, uuid_t, 'B'>(id);
+      case 'P':
+        return _to_string<Char_T, uuid_t, 'P'>(id);
+      case 'X':
+        return _to_string<Char_T, uuid_t, 'X'>(id);
+    }
+
+    throw std::invalid_argument{"Invalid UUID format type"};
   }
 
 }  // namespace detail
@@ -350,20 +375,7 @@ _WITE_NODISCARD std::string to_string(const Uuid_T& id, char format) {
 _WITE_NODISCARD inline std::string to_string(const uuid& id, char format) {
   using uuid_t = uuid;
 #endif
-  switch (format) {
-    case 'D':
-      return detail::_to_string<char, uuid_t, 'D'>(id);
-    case 'N':
-      return detail::_to_string<char, uuid_t, 'N'>(id);
-    case 'B':
-      return detail::_to_string<char, uuid_t, 'B'>(id);
-    case 'P':
-      return detail::_to_string<char, uuid_t, 'P'>(id);
-    case 'X':
-      return detail::_to_string<char, uuid_t, 'X'>(id);
-  }
-
-  throw std::invalid_argument{"Invalid UUID format type"};
+  return detail::_to_string<char, uuid_t>(id, format);
 }
 
 #if _WITE_HAS_CONCEPTS
@@ -398,20 +410,7 @@ _WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format) {
 _WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format) {
   using uuid_t = uuid;
 #endif
-  switch (format) {
-    case 'D':
-      return detail::_to_string<wchar_t, uuid_t, 'D'>(id);
-    case 'N':
-      return detail::_to_string<wchar_t, uuid_t, 'N'>(id);
-    case 'B':
-      return detail::_to_string<wchar_t, uuid_t, 'B'>(id);
-    case 'P':
-      return detail::_to_string<wchar_t, uuid_t, 'P'>(id);
-    case 'X':
-      return detail::_to_string<wchar_t, uuid_t, 'X'>(id);
-  }
-
-  throw std::invalid_argument{"Invalid UUID format type"};
+  return detail::_to_string<wchar_t, uuid_t>(id, format);
 }
 
 }  // namespace wite
