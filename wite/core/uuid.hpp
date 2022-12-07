@@ -48,10 +48,11 @@ concept uuid_like = ((wite_uuid_like<T> or guid_like<T>) and sizeof(T) == 16);
 struct uuid;
 
 #if _WITE_HAS_CONCEPTS
-template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length, char format = 'D');
+template <typename Char_T, wite::uuid_like Uuid_T>
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length, char format = 'D');
 #else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length, char format = 'D');
+template<typename Char_T>
+_WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length, char format = 'D');
 #endif
 
 #if _WITE_HAS_CONCEPTS
@@ -59,13 +60,6 @@ template <wite::uuid_like Uuid_T>
 _WITE_NODISCARD std::string to_string(const Uuid_T& id, char format = 'D');
 #else
 _WITE_NODISCARD inline std::string to_string(const uuid& id, char format = 'D');
-#endif
-
-#if _WITE_HAS_CONCEPTS
-template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length, char format = 'D');
-#else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length, char format = 'D');
 #endif
 
 #if _WITE_HAS_CONCEPTS
@@ -344,24 +338,25 @@ namespace detail {
 }  // namespace detail
 
 #if _WITE_HAS_CONCEPTS
-template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_length, char format) {
+template <typename Char_T, wite::uuid_like Uuid_T>
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length, char format) {
   using uuid_t = Uuid_T;
 #else
-_WITE_NODISCARD bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length, char format) {
+template<typename Char_T>
+_WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length, char format) {
   using uuid_t = uuid;
 #endif
   switch (format) {
     case 'D':
-      return detail::_to_c_str<char, uuid_t, 'D'>(id, buffer, max_buffer_length);
+      return detail::_to_c_str<Char_T, uuid_t, 'D'>(id, buffer, max_buffer_length);
     case 'N':
-      return detail::_to_c_str<char, uuid_t, 'N'>(id, buffer, max_buffer_length);
+      return detail::_to_c_str<Char_T, uuid_t, 'N'>(id, buffer, max_buffer_length);
     case 'B':
-      return detail::_to_c_str<char, uuid_t, 'B'>(id, buffer, max_buffer_length);
+      return detail::_to_c_str<Char_T, uuid_t, 'B'>(id, buffer, max_buffer_length);
     case 'P':
-      return detail::_to_c_str<char, uuid_t, 'P'>(id, buffer, max_buffer_length);
+      return detail::_to_c_str<Char_T, uuid_t, 'P'>(id, buffer, max_buffer_length);
     case 'X':
-      return detail::_to_c_str<char, uuid_t, 'X'>(id, buffer, max_buffer_length);
+      return detail::_to_c_str<Char_T, uuid_t, 'X'>(id, buffer, max_buffer_length);
     default:
       return false;
   }
@@ -376,30 +371,6 @@ _WITE_NODISCARD inline std::string to_string(const uuid& id, char format) {
   using uuid_t = uuid;
 #endif
   return detail::_to_string<char, uuid_t>(id, format);
-}
-
-#if _WITE_HAS_CONCEPTS
-template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, wchar_t* buffer, size_t max_buffer_length, char format) {
-  using uuid_t = Uuid_T;
-#else
-_WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max_buffer_length, char format) {
-  using uuid_t = uuid;
-#endif
-  switch (format) {
-    case 'D':
-      return detail::_to_c_str<wchar_t, uuid_t, 'D'>(id, buffer, max_buffer_length);
-    case 'N':
-      return detail::_to_c_str<wchar_t, uuid_t, 'N'>(id, buffer, max_buffer_length);
-    case 'B':
-      return detail::_to_c_str<wchar_t, uuid_t, 'B'>(id, buffer, max_buffer_length);
-    case 'P':
-      return detail::_to_c_str<wchar_t, uuid_t, 'P'>(id, buffer, max_buffer_length);
-    case 'X':
-      return detail::_to_c_str<wchar_t, uuid_t, 'X'>(id, buffer, max_buffer_length);
-    default:
-      return false;
-  }
 }
 
 #if _WITE_HAS_CONCEPTS
