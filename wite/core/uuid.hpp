@@ -22,6 +22,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef WITE_DEFAULT_UUID_FMT
+#define WITE_DEFAULT_UUID_FMT 'D'
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace wite {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,32 +58,34 @@ concept uuid_like = ((wite_uuid_like<T> or guid_like<T>) and sizeof(T) == 16);
 
 struct uuid;
 
+constexpr auto default_uuid_format = WITE_DEFAULT_UUID_FMT;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
 template <typename Char_T, wite::uuid_like Uuid_T>
-_WITE_NODISCARD bool to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length, char format = 'D');
+_WITE_NODISCARD bool to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length, char format = default_uuid_format);
 #else
 template<typename Char_T>
-_WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length, char format = 'D');
+_WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length, char format = default_uuid_format);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::string to_string(const Uuid_T& id, char format = 'D');
+_WITE_NODISCARD std::string to_string(const Uuid_T& id, char format = default_uuid_format);
 #else
-_WITE_NODISCARD inline std::string to_string(const uuid& id, char format = 'D');
+_WITE_NODISCARD inline std::string to_string(const uuid& id, char format = default_uuid_format);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format = 'D');
+_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format = default_uuid_format);
 #else
-_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format = 'D');
+_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format = default_uuid_format);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -148,14 +156,14 @@ struct uuid {
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
-  _WITE_NODISCARD bool into_c_str(char* out, size_t size, char format = 'D') const noexcept {
+  _WITE_NODISCARD bool into_c_str(char* out, size_t size, char format = default_uuid_format) const noexcept {
     return to_c_str(*this, out, size, format);
   }
-  _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size, char format = 'D') const noexcept {
+  _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size, char format = default_uuid_format) const noexcept {
     return to_c_str(*this, out, size, format);
   }
-  _WITE_NODISCARD std::string str(char format = 'D') const { return to_string(*this, format); };
-  _WITE_NODISCARD std::wstring wstr(char format = 'D') const { return to_wstring(*this, format); };
+  _WITE_NODISCARD std::string str(char format = default_uuid_format) const { return to_string(*this, format); };
+  _WITE_NODISCARD std::wstring wstr(char format = default_uuid_format) const { return to_wstring(*this, format); };
 
   std::array<uint8_t, 16> data{};
 };

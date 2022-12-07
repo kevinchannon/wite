@@ -96,7 +96,12 @@ TEST_CASE("Uuid tests", "[core]") {
              {"N-format", "0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
              {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
              {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
-             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
+             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'},
+             {"d-format", "01234567-89ab-cdef-0123-456789abcdef", 37, 'd'},
+             {"n-format", "0123456789abcdef0123456789abcdef", 33, 'n'},
+             {"b-format", "{01234567-89ab-cdef-0123-456789abcdef}", 39, 'b'},
+             {"p-format", "(01234567-89ab-cdef-0123-456789abcdef)", 39, 'p'},
+             {"x-format", "{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 70, 'x'}}));
 
         char buffer[70] = {};
 
@@ -125,7 +130,12 @@ TEST_CASE("Uuid tests", "[core]") {
              {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
              {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
              {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
-             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
+             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'},
+             {"d-format", L"01234567-89ab-cdef-0123-456789abcdef", 37, 'd'},
+             {"n-format", L"0123456789abcdef0123456789abcdef", 33, 'n'},
+             {"b-format", L"{01234567-89ab-cdef-0123-456789abcdef}", 39, 'b'},
+             {"p-format", L"(01234567-89ab-cdef-0123-456789abcdef)", 39, 'p'},
+             {"x-format", L"{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 70, 'x'}}));
 
         wchar_t buffer[70] = {};
 
@@ -150,8 +160,8 @@ TEST_CASE("Uuid tests", "[core]") {
 
   SECTION("convert to std::string") {
     SECTION("narrow string") {
-      SECTION("default format is 'D'") {
-        REQUIRE(id.str('D') == id.str());
+      SECTION("default format is used") {
+        REQUIRE(id.str(default_uuid_format) == id.str());
       }
 
       SECTION("succeeds for valid format types") {
@@ -178,8 +188,8 @@ TEST_CASE("Uuid tests", "[core]") {
     }
 
     SECTION("wide string") {
-      SECTION("default format is 'D'") {
-        REQUIRE(id.wstr('D') == id.wstr());
+      SECTION("default format is used") {
+        REQUIRE(id.wstr(default_uuid_format) == id.wstr());
       }
 
       SECTION("succeeds for valid format types") {
@@ -208,8 +218,8 @@ TEST_CASE("Uuid tests", "[core]") {
 
   SECTION("convert to std::string via free function") {
     SECTION("narrow string") {
-      SECTION("default format is 'D'") {
-        REQUIRE(to_string(id, 'D') == to_string(id));
+      SECTION("default format is used") {
+        REQUIRE(to_string(id, default_uuid_format) == to_string(id));
       }
 
       auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const char*, char>(
@@ -230,8 +240,8 @@ TEST_CASE("Uuid tests", "[core]") {
     }
 
     SECTION("wide string") {
-      SECTION("default format is 'D'") {
-        REQUIRE(to_wstring(id, 'D') == to_wstring(id));
+      SECTION("default format is used") {
+        REQUIRE(to_wstring(id, default_uuid_format) == to_wstring(id));
       }
 
       auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const wchar_t*, char>(
