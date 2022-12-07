@@ -141,7 +141,9 @@ struct uuid {
 
   constexpr auto operator<=>(const uuid&) const noexcept = default;
 
-  _WITE_NODISCARD bool into_c_str(char* out, size_t size, char format ='D') const noexcept { return to_c_str(*this, out, size, format); }
+  _WITE_NODISCARD bool into_c_str(char* out, size_t size, char format = 'D') const noexcept {
+    return to_c_str(*this, out, size, format);
+  }
   _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size, char format = 'D') const noexcept {
     return to_c_str(*this, out, size, format);
   }
@@ -221,7 +223,7 @@ namespace detail {
         return "(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
       } else if constexpr ('X' == FMT_TYPE) {
         return "{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
-      } 
+      }
     } else {
       if constexpr ('D' == FMT_TYPE) {
         return L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
@@ -233,11 +235,10 @@ namespace detail {
         return L"(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
       } else if constexpr ('X' == FMT_TYPE) {
         return L"{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
-      } 
+      }
     }
   }
 
-  
   template <char FMT_TYPE>
   _WITE_CONSTEVAL size_t _uuid_strlen() {
     if constexpr ('D' == FMT_TYPE) {
@@ -299,6 +300,22 @@ namespace detail {
 
     return true;
   }
+
+#if _WITE_HAS_CONCEPTS
+  template <typename Char_T, wite::uuid_like Uuid_T, char FMT_TYPE>
+  _WITE_NODISCARD std::basic_string<Char_T> _to_string(const Uuid_T& id) {
+    using uuid_t = Uuid_T;
+#else
+  _WITE_NODISCARD inline std::string to_string(const uuid& id) {
+    using uuid_t = uuid;
+#endif
+    constexpr auto buffer_length = detail::_uuid_strlen<FMT_TYPE>(); 
+    Char_T buffer[buffer_length] = {};
+
+    std::ignore = _to_c_str<Char_T, uuid_t, FMT_TYPE>(id, buffer, buffer_length);
+    return {buffer};
+  }
+
 }  // namespace detail
 
 #if _WITE_HAS_CONCEPTS
@@ -309,7 +326,7 @@ _WITE_NODISCARD bool to_c_str(const Uuid_T& id, char* buffer, size_t max_buffer_
 _WITE_NODISCARD bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_length, char format) {
   using uuid_t = uuid;
 #endif
-  switch (format) { 
+  switch (format) {
     case 'D':
       return detail::_to_c_str<char, uuid_t, 'D'>(id, buffer, max_buffer_length);
     case 'N':
@@ -327,14 +344,26 @@ _WITE_NODISCARD bool to_c_str(const uuid& id, char* buffer, size_t max_buffer_le
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::string to_string(const Uuid_T& id, char format)
+_WITE_NODISCARD std::string to_string(const Uuid_T& id, char format) {
+  using uuid_t = Uuid_T;
 #else
-_WITE_NODISCARD inline std::string to_string(const uuid& id, char format)
+_WITE_NODISCARD inline std::string to_string(const uuid& id, char format) {
+  using uuid_t = uuid;
 #endif
-{
-  char buffer[39] = {};
-  std::ignore     = to_c_str(id, buffer, 37, format);
-  return {buffer};
+  switch (format) {
+    case 'D':
+      return detail::_to_string<char, uuid_t, 'D'>(id);
+    case 'N':
+      return detail::_to_string<char, uuid_t, 'N'>(id);
+    case 'B':
+      return detail::_to_string<char, uuid_t, 'B'>(id);
+    case 'P':
+      return detail::_to_string<char, uuid_t, 'P'>(id);
+    case 'X':
+      return detail::_to_string<char, uuid_t, 'X'>(id);
+  }
+
+  return {};
 }
 
 #if _WITE_HAS_CONCEPTS
@@ -363,14 +392,26 @@ _WITE_NODISCARD inline bool to_c_str(const uuid& id, wchar_t* buffer, size_t max
 
 #if _WITE_HAS_CONCEPTS
 template <wite::uuid_like Uuid_T>
-_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format)
+_WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format) {
+  using uuid_t = Uuid_T;
 #else
-_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format)
+_WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format) {
+  using uuid_t = uuid;
 #endif
-{
-  wchar_t buffer[39] = {};
-  std::ignore        = to_c_str(id, buffer, 37, format);
-  return {buffer};
+  switch (format) {
+    case 'D':
+      return detail::_to_string<wchar_t, uuid_t, 'D'>(id);
+    case 'N':
+      return detail::_to_string<wchar_t, uuid_t, 'N'>(id);
+    case 'B':
+      return detail::_to_string<wchar_t, uuid_t, 'B'>(id);
+    case 'P':
+      return detail::_to_string<wchar_t, uuid_t, 'P'>(id);
+    case 'X':
+      return detail::_to_string<wchar_t, uuid_t, 'X'>(id);
+  }
+
+  return {};
 }
 
 }  // namespace wite

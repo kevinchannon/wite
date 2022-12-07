@@ -136,30 +136,82 @@ TEST_CASE("Uuid tests", "[core]") {
 
   SECTION("convert to std::string") {
     SECTION("narrow string") {
-      REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == id.str());
+      SECTION("default format is 'D'") {
+        REQUIRE(id.str('D') == id.str());
+      }
+
+      auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const char*, char>(
+          {{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+           {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
+           {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+           {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+           {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+
+      SECTION(test_name) {
+        REQUIRE(expected_output == id.str(format_char));
+      }
     }
 
     SECTION("wide string") {
-      REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == id.wstr());
+      SECTION("default format is 'D'") {
+        REQUIRE(id.wstr('D') == id.wstr());
+      }
+
+      auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const wchar_t*, char>(
+          {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+           {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
+           {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+           {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+           {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+
+      SECTION(test_name) {
+        REQUIRE(expected_output == id.wstr(format_char));
+      }
     }
   }
 
   SECTION("convert to std::string via free function") {
     SECTION("narrow string") {
-      REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(id));
+      SECTION("default format is 'D'") {
+        REQUIRE(to_string(id, 'D') == to_string(id));
+      }
 
-      SECTION("works for some alternative UUID implementation") {
-        const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
-        REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == to_string(guid));
+      auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const char*, char>(
+          {{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+           {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
+           {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+           {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+           {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+
+      SECTION(test_name) {
+        REQUIRE(expected_output == to_string(id, format_char));
+
+        SECTION("works for some alternative UUID implementation") {
+          const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+          REQUIRE(expected_output == to_string(guid, format_char));
+        }
       }
     }
 
     SECTION("wide string") {
-      REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == to_wstring(id));
+      SECTION("default format is 'D'") {
+        REQUIRE(to_wstring(id, 'D') == to_wstring(id));
+      }
 
-      SECTION("works for some alternative UUID implementation") {
-        const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
-        REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == to_wstring(guid));
+      auto [test_name, expected_output, format_char] = GENERATE(table<const char*, const wchar_t*, char>(
+          {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+           {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
+           {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+           {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+           {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}}));
+
+      SECTION(test_name) {
+        REQUIRE(expected_output == to_wstring(id, format_char));
+
+        SECTION("works for some alternative UUID implementation") {
+          const auto guid = GUID{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+          REQUIRE(expected_output == to_wstring(guid, format_char));
+        }
       }
     }
   }
