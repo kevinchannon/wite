@@ -1,9 +1,10 @@
+#include <test/utils.hpp>
 #include <wite/core/io.hpp>
 #include <wite/core/uuid.hpp>
 #include <wite/env/environment.hpp>
-#include <test/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <chrono>
 #include <iostream>
@@ -39,8 +40,7 @@ TEST_CASE("Uuid tests", "[core]") {
   }
 
   SECTION("construction") {
-    SECTION("default construct is NULL") {
-    }
+    SECTION("default construct is NULL") {}
 
     SECTION("create random UUID") {
       const auto id_1 = make_uuid();
@@ -90,120 +90,45 @@ TEST_CASE("Uuid tests", "[core]") {
 
   SECTION("Write uuid into a C-string") {
     SECTION("narrow chars") {
+      auto [test_name, expected_output, size, format_char] = GENERATE(
+          table<const char*, const char*, size_t, char>({{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 37, 'D'},
+                                                         {"N-format", "0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
+                                                         {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
+                                                         {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
+                                                         {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
+
       char buffer[70] = {};
 
-      SECTION("D-format") {
+      SECTION(test_name) {
         SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 37, 'D'));
-          REQUIRE("01234567-89AB-CDEF-0123-456789ABCDEF" == std::string{buffer});
+          REQUIRE(id.into_c_str(buffer, size, format_char));
+          REQUIRE(expected_output == std::string{buffer});
         }
 
         SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 36, 'D'));
-        }
-      }
-
-      SECTION("N-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 33, 'N'));
-          REQUIRE("0123456789ABCDEF0123456789ABCDEF" == std::string{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 32, 'N'));
-        }
-      }
-
-      SECTION("B-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 39, 'B'));
-          REQUIRE("{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::string{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
-        }
-      }
-
-      SECTION("P-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 39, 'P'));
-          REQUIRE("(01234567-89AB-CDEF-0123-456789ABCDEF)" == std::string{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
-        }
-      }
-
-      SECTION("X-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 70, 'X'));
-          REQUIRE("{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}" == std::string{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 69, 'X'));
+          REQUIRE_FALSE(id.into_c_str(buffer, size - 1, format_char));
         }
       }
     }
 
     SECTION("wide chars") {
+      auto [test_name, expected_output, size, format_char] = GENERATE(table<const char*, const wchar_t*, size_t, char>(
+          {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 37, 'D'},
+           {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
+           {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
+           {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
+           {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'}}));
+
       wchar_t buffer[70] = {};
 
-      SECTION("D-format") {
+      SECTION(test_name) {
         SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 37));
-
-          REQUIRE(L"01234567-89AB-CDEF-0123-456789ABCDEF" == std::wstring{buffer});
+          REQUIRE(id.into_c_str(buffer, size, format_char));
+          REQUIRE(expected_output == std::wstring{buffer});
         }
 
         SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 36));
-        }
-      }
-
-      SECTION("N-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 33, 'N'));
-          REQUIRE(L"0123456789ABCDEF0123456789ABCDEF" == std::wstring{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 32, 'N'));
-        }
-      }
-
-      SECTION("B-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 39, 'B'));
-          REQUIRE(L"{01234567-89AB-CDEF-0123-456789ABCDEF}" == std::wstring{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
-        }
-      }
-
-      SECTION("P-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 39, 'P'));
-          REQUIRE(L"(01234567-89AB-CDEF-0123-456789ABCDEF)" == std::wstring{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 38, 'B'));
-        }
-      }
-
-      SECTION("X-format") {
-        SECTION("succeeds if the buffer is sufficiently sized") {
-          REQUIRE(id.into_c_str(buffer, 70, 'X'));
-          REQUIRE(L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}" == std::wstring{buffer});
-        }
-
-        SECTION("fails if the buffer is too small") {
-          REQUIRE_FALSE(id.into_c_str(buffer, 69, 'X'));
+          REQUIRE_FALSE(id.into_c_str(buffer, size - 1, format_char));
         }
       }
     }
