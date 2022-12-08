@@ -90,148 +90,6 @@ _WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format = def
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct uuid {
-  WITE_DEFAULT_CONSTRUCTORS(uuid);
-
-  uuid(unsigned long d1, unsigned short d2, unsigned short d3, std::array<unsigned char, 8> d4)
-      : data{*((uint8_t*)(&d1)),
-             *((uint8_t*)(&d1) + 1),
-             *((uint8_t*)(&d1) + 2),
-             *((uint8_t*)(&d1) + 3),
-             *((uint8_t*)(&d2)),
-             *((uint8_t*)(&d2) + 1),
-             *((uint8_t*)(&d3)),
-             *((uint8_t*)(&d3) + 1),
-             d4[0],
-             d4[1],
-             d4[2],
-             d4[3],
-             d4[4],
-             d4[5],
-             d4[6],
-             d4[7]} {}
-
-#if _WITE_HAS_CONCEPTS
-  template <std::invocable Engine_T>
-  explicit uuid(Engine_T&& engine)
-#else
-  explicit uuid(std::default_random_engine& engine)
-#endif
-  {
-    auto random_bits = std::uniform_int_distribution<uint64_t>{0x00, 0xFFFFFFFFFFFFFFFF};
-
-    *reinterpret_cast<uint64_t*>(&data) = random_bits(engine);
-    data[5]                             = static_cast<uint8_t>((data[5] & 0x0F) | 0x40);  // Version 4 UUID
-    data[6]                             = static_cast<uint8_t>((data[6] & 0x3F) | 0x80);  // Variant 1 UUID
-
-    *(reinterpret_cast<uint64_t*>(&data) + 1) = random_bits(engine);
-  }
-
-#ifndef WITE_NO_EXCEPTIONS
-  explicit uuid(const std::string_view s) : uuid{} {
-    if (s.length() != 36) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-
-    const auto is_not_dash = [](auto c) { return '-' != c; };
-
-    if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-
-    try {
-      const auto data_4a = binascii::unhexlify<2, uint8_t>(s.substr(19, 4));
-      const auto data_4b = binascii::unhexlify<6, uint8_t>(s.substr(24, 12));
-
-      data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
-                  binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
-                  binascii::from_hex_chars<uint16_t>(s.substr(14, 4)),
-                  {data_4a[0], data_4a[1], data_4b[0], data_4b[1], data_4b[2], data_4b[3], data_4b[4], data_4b[5]}}
-                 .data;
-    } catch (const std::invalid_argument&) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-  }
-#endif
-
-  constexpr auto operator<=>(const uuid&) const noexcept = default;
-
-  _WITE_NODISCARD bool into_c_str(char* out, size_t size, char format = default_uuid_format) const noexcept {
-    return to_c_str(*this, out, size, format);
-  }
-  _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size, char format = default_uuid_format) const noexcept {
-    return to_c_str(*this, out, size, format);
-  }
-  _WITE_NODISCARD std::string str(char format = default_uuid_format) const { return to_string(*this, format); };
-  _WITE_NODISCARD std::wstring wstr(char format = default_uuid_format) const { return to_wstring(*this, format); };
-
-  std::array<uint8_t, 16> data{};
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-constexpr static auto nulluuid = uuid{};
-
-///////////////////////////////////////////////////////////////////////////////
-
-inline uuid make_uuid() {
-  static thread_local auto random_engine = std::mt19937_64(std::random_device{}());
-  return uuid{random_engine};
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-inline uuid try_make_uuid(std::string_view s) noexcept {
-  if (s.length() != 36) {
-    return nulluuid;
-  }
-
-  const auto is_not_dash = [](auto c) { return '-' != c; };
-
-  if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
-    return nulluuid;
-  }
-
-  const auto data_1 = binascii::try_from_hex_chars<uint32_t>(s.substr(0, 8));
-  if (data_1.is_error()) {
-    return nulluuid;
-  }
-
-  const auto data_2 = binascii::try_from_hex_chars<uint16_t>(s.substr(9, 4));
-  if (data_2.is_error()) {
-    return nulluuid;
-  }
-
-  const auto data_3 = binascii::try_from_hex_chars<uint16_t>(s.substr(14, 4));
-  if (data_3.is_error()) {
-    return nulluuid;
-  }
-
-  const auto data_4a = binascii::try_unhexlify<2, uint8_t>(s.substr(19, 4));
-  if (data_4a.is_error()) {
-    return nulluuid;
-  }
-
-  const auto data_4b = binascii::try_unhexlify<6, uint8_t>(s.substr(24, 12));
-  if (data_4b.is_error()) {
-    return nulluuid;
-  }
-
-  return uuid{data_1.value(),
-              data_2.value(),
-              data_3.value(),
-              {data_4a.value()[0],
-               data_4a.value()[1],
-               data_4b.value()[0],
-               data_4b.value()[1],
-               data_4b.value()[2],
-               data_4b.value()[3],
-               data_4b.value()[4],
-               data_4b.value()[5]}};
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 namespace detail {
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -301,6 +159,167 @@ namespace detail {
       return 69 + 1;
     }
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+}  // namespace detail
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct uuid {
+  WITE_DEFAULT_CONSTRUCTORS(uuid);
+
+  uuid(unsigned long d1, unsigned short d2, unsigned short d3, std::array<unsigned char, 8> d4)
+      : data{*((uint8_t*)(&d1)),
+             *((uint8_t*)(&d1) + 1),
+             *((uint8_t*)(&d1) + 2),
+             *((uint8_t*)(&d1) + 3),
+             *((uint8_t*)(&d2)),
+             *((uint8_t*)(&d2) + 1),
+             *((uint8_t*)(&d3)),
+             *((uint8_t*)(&d3) + 1),
+             d4[0],
+             d4[1],
+             d4[2],
+             d4[3],
+             d4[4],
+             d4[5],
+             d4[6],
+             d4[7]} {}
+
+#if _WITE_HAS_CONCEPTS
+  template <std::invocable Engine_T>
+  explicit uuid(Engine_T&& engine)
+#else
+  explicit uuid(std::default_random_engine& engine)
+#endif
+  {
+    auto random_bits = std::uniform_int_distribution<uint64_t>{0x00, 0xFFFFFFFFFFFFFFFF};
+
+    *reinterpret_cast<uint64_t*>(&data) = random_bits(engine);
+    data[5]                             = static_cast<uint8_t>((data[5] & 0x0F) | 0x40);  // Version 4 UUID
+    data[6]                             = static_cast<uint8_t>((data[6] & 0x3F) | 0x80);  // Variant 1 UUID
+
+    *(reinterpret_cast<uint64_t*>(&data) + 1) = random_bits(engine);
+  }
+
+#ifndef WITE_NO_EXCEPTIONS
+  explicit uuid(const std::string_view s, char format = default_uuid_format) : uuid{} {
+    switch (format) {
+      case 'D':
+      case 'd':
+        _init_from_d_fmt_string(s);
+    }
+  }
+#endif
+
+  constexpr auto operator<=>(const uuid&) const noexcept = default;
+
+  _WITE_NODISCARD bool into_c_str(char* out, size_t size, char format = default_uuid_format) const noexcept {
+    return to_c_str(*this, out, size, format);
+  }
+  _WITE_NODISCARD bool into_c_str(wchar_t* out, size_t size, char format = default_uuid_format) const noexcept {
+    return to_c_str(*this, out, size, format);
+  }
+  _WITE_NODISCARD std::string str(char format = default_uuid_format) const { return to_string(*this, format); };
+  _WITE_NODISCARD std::wstring wstr(char format = default_uuid_format) const { return to_wstring(*this, format); };
+
+  std::array<uint8_t, 16> data{};
+
+private:
+#ifndef WITE_NO_EXCEPTIONS
+  void _init_from_d_fmt_string(std::string_view s) {
+    if (s.length() != detail::_uuid_strlen<'D'>() - 1) {
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+
+    const auto is_not_dash = [](auto c) { return '-' != c; };
+
+    if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+
+    try {
+      const auto data_4a = binascii::unhexlify<2, uint8_t>(s.substr(19, 4));
+      const auto data_4b = binascii::unhexlify<6, uint8_t>(s.substr(24, 12));
+
+      data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
+                  binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
+                  binascii::from_hex_chars<uint16_t>(s.substr(14, 4)),
+                  {data_4a[0], data_4a[1], data_4b[0], data_4b[1], data_4b[2], data_4b[3], data_4b[4], data_4b[5]}}
+                 .data;
+    } catch (const std::invalid_argument&) {
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+  }
+#endif
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+constexpr static auto nulluuid = uuid{};
+
+///////////////////////////////////////////////////////////////////////////////
+
+inline uuid make_uuid() {
+  static thread_local auto random_engine = std::mt19937_64(std::random_device{}());
+  return uuid{random_engine};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+inline uuid try_make_uuid(std::string_view s) noexcept {
+  if (s.length() != 36) {
+    return nulluuid;
+  }
+
+  const auto is_not_dash = [](auto c) { return '-' != c; };
+
+  if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
+    return nulluuid;
+  }
+
+  const auto data_1 = binascii::try_from_hex_chars<uint32_t>(s.substr(0, 8));
+  if (data_1.is_error()) {
+    return nulluuid;
+  }
+
+  const auto data_2 = binascii::try_from_hex_chars<uint16_t>(s.substr(9, 4));
+  if (data_2.is_error()) {
+    return nulluuid;
+  }
+
+  const auto data_3 = binascii::try_from_hex_chars<uint16_t>(s.substr(14, 4));
+  if (data_3.is_error()) {
+    return nulluuid;
+  }
+
+  const auto data_4a = binascii::try_unhexlify<2, uint8_t>(s.substr(19, 4));
+  if (data_4a.is_error()) {
+    return nulluuid;
+  }
+
+  const auto data_4b = binascii::try_unhexlify<6, uint8_t>(s.substr(24, 12));
+  if (data_4b.is_error()) {
+    return nulluuid;
+  }
+
+  return uuid{data_1.value(),
+              data_2.value(),
+              data_3.value(),
+              {data_4a.value()[0],
+               data_4a.value()[1],
+               data_4b.value()[0],
+               data_4b.value()[1],
+               data_4b.value()[2],
+               data_4b.value()[3],
+               data_4b.value()[4],
+               data_4b.value()[5]}};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace detail {
 
   ///////////////////////////////////////////////////////////////////////////////
 
