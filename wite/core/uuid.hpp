@@ -66,7 +66,7 @@ constexpr auto default_uuid_format = WITE_DEFAULT_UUID_FMT;
 template <typename Char_T, wite::uuid_like Uuid_T>
 _WITE_NODISCARD bool to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length, char format = default_uuid_format);
 #else
-template<typename Char_T>
+template <typename Char_T>
 _WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length, char format = default_uuid_format);
 #endif
 
@@ -207,8 +207,13 @@ struct uuid {
   explicit uuid(const std::string_view s, char format = default_uuid_format) : uuid{} {
     switch (format) {
       case 'D':
-      case 'd':
+      case 'd': {
         _init_from_d_fmt_string(s);
+      }
+      case 'N':
+      case 'n': {
+        _init_from_n_fmt_string(s);
+      }
     }
   }
 #endif
@@ -226,10 +231,11 @@ struct uuid {
 
   std::array<uint8_t, 16> data{};
 
-private:
+ private:
 #ifndef WITE_NO_EXCEPTIONS
   void _init_from_d_fmt_string(std::string_view s) {
     if (s.length() != detail::_uuid_strlen<'D'>() - 1) {
+      std::cout << "length = " << s.length() << std::endl;
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
@@ -240,8 +246,8 @@ private:
     }
 
     try {
-      const auto data_4a = binascii::unhexlify<2, uint8_t>(s.substr(19, 4));
-      const auto data_4b = binascii::unhexlify<6, uint8_t>(s.substr(24, 12));
+    const auto data_4a = binascii::unhexlify<2, uint8_t>(s.substr(19, 4));
+    const auto data_4b = binascii::unhexlify<6, uint8_t>(s.substr(24, 12));
 
       data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
                   binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
@@ -249,6 +255,20 @@ private:
                   {data_4a[0], data_4a[1], data_4b[0], data_4b[1], data_4b[2], data_4b[3], data_4b[4], data_4b[5]}}
                  .data;
     } catch (const std::invalid_argument&) {
+      std::cout << "welp 1" << std::endl;
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+  }
+
+  void _init_from_n_fmt_string(std::string_view s) {
+    if (s.length() != detail::_uuid_strlen<'N'>() - 1) {
+      std::cout << "length = " << s.length() << std::endl;
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+    try {
+      data = binascii::unhexlify<16, uint8_t>(s);
+    } catch (const std::invalid_argument&) {
+      std::cout << "welp" << std::endl;
       throw std::invalid_argument{"Invalid UUID format"};
     }
   }
@@ -382,7 +402,7 @@ namespace detail {
   _WITE_NODISCARD inline std::string to_string(const uuid& id) {
     using uuid_t = uuid;
 #endif
-    constexpr auto buffer_length = _uuid_strlen<FMT_TYPE>(); 
+    constexpr auto buffer_length = _uuid_strlen<FMT_TYPE>();
     Char_T buffer[buffer_length] = {};
 
     std::ignore = _to_c_str<Char_T, uuid_t, FMT_TYPE>(id, buffer, buffer_length);
@@ -437,7 +457,7 @@ template <typename Char_T, wite::uuid_like Uuid_T>
 _WITE_NODISCARD bool to_c_str(const Uuid_T& id, Char_T* buffer, size_t max_buffer_length, char format) {
   using uuid_t = Uuid_T;
 #else
-template<typename Char_T>
+template <typename Char_T>
 _WITE_NODISCARD bool to_c_str(const uuid& id, Char_T* buffer, size_t max_buffer_length, char format) {
   using uuid_t = uuid;
 #endif

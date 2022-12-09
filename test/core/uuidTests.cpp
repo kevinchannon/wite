@@ -68,20 +68,47 @@ TEST_CASE("Uuid tests", "[core]") {
     }
 
     SECTION("from string") {
+      SECTION("D-format") {
+        // SECTION("succeeds for valid string") {
+        //   REQUIRE(uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}} ==
+        //           uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"});
+        // }
+
+        SECTION("throws std::invalid_argument if the string is too short") {
+          WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDE"}, std::invalid_argument, "Invalid UUID format");
+        }
+
+        SECTION("throws std::invalid_argument if the string is too long") {
+          WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDEF0"}, std::invalid_argument, "Invalid UUID format");
+        }
+
+        SECTION("throws std::invalid_argument if the string contains non-hex or dash characters") {
+          WITE_REQ_THROWS(uuid{"0123456X-89AB-CDEF-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"01234567-89AX-CDEF-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123_456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"01234567-89AB-CDEX-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"01234567-89AB-CDEX-0123-456789AXCDEF"}, std::invalid_argument, "Invalid UUID format");
+        }
+      }
+    }
+
+    SECTION("N-format") {
+      // SECTION("succeeds for valid string") {
+      //   REQUIRE(uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}} ==
+      //           uuid{"0123456789ABCDEF0123456789ABCDEF", 'N'});
+      // }
+      const auto thrower = [](auto s) { uuid{s, 'N'}; };
+
       SECTION("throws std::invalid_argument if the string is too short") {
-        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDE"}, std::invalid_argument, "Invalid UUID format");
+        WITE_REQ_THROWS(thrower("0123456789ABCDEF0123456789ABCDE"), std::invalid_argument, "Invalid UUID format");
       }
 
       SECTION("throws std::invalid_argument if the string is too long") {
-        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123-456789ABCDEF0"}, std::invalid_argument, "Invalid UUID format");
+        WITE_REQ_THROWS(thrower("0123456789ABCDEF0123456789ABCDEF0"), std::invalid_argument, "Invalid UUID format");
       }
 
-      SECTION("throws std::invalid_argument if the string doesn't contain non-hex or dash characters") {
-        WITE_REQ_THROWS(uuid{"0123456X-89AB-CDEF-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
-        WITE_REQ_THROWS(uuid{"01234567-89AX-CDEF-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
-        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEF-0123_456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
-        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEX-0123-456789ABCDEF"}, std::invalid_argument, "Invalid UUID format");
-        WITE_REQ_THROWS(uuid{"01234567-89AB-CDEX-0123-456789AXCDEF"}, std::invalid_argument, "Invalid UUID format");
+      SECTION("throws std::invalid_argument if the string contains non-hex characters") {
+        WITE_REQ_THROWS(thrower("0123456X89ABCDEF0123456789ABCDEF"), std::invalid_argument, "Invalid UUID format");
       }
     }
   }
