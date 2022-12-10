@@ -38,7 +38,7 @@ _WITE_CONCEPT is_iterator_v = is_input_iterator<T>::value;
 
 #if _WITE_HAS_CONCEPTS
 template <typename T>
-concept contiguous_range_type = requires(T& t) {
+concept contiguous_range_like = requires(T& t) {
                                   t.begin();
                                   t.end();
                                   t.data();

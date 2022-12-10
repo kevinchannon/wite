@@ -283,7 +283,7 @@ Result_T to_bytes(Value_T&& value) {
 
 template <typename Value_T>
   requires is_buffer_writeable<Value_T>
-size_t write(std::span<io::byte> buffer, Value_T value, endian endianness) {
+size_t write_with_endian(std::span<io::byte> buffer, Value_T value, endian endianness) {
   if (endian::little == endianness) {
     return write(buffer, little_endian{value});
   } else {

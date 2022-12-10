@@ -70,6 +70,7 @@ TEST_CASE("Uuid tests", "[core]") {
     SECTION("from string") {
       SECTION("D-format") {
         // SECTION("succeeds for valid string") {
+        //   const auto test_id = uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"};
         //   REQUIRE(uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}} ==
         //           uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"});
         // }
@@ -93,10 +94,13 @@ TEST_CASE("Uuid tests", "[core]") {
     }
 
     SECTION("N-format") {
-      // SECTION("succeeds for valid string") {
-      //   REQUIRE(uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}} ==
-      //           uuid{"0123456789ABCDEF0123456789ABCDEF", 'N'});
-      // }
+      //SECTION("succeeds for valid string") {
+      //  const auto test_id = uuid{"0123456789ABCDEF0123456789ABCDEF", 'N'};
+      //  const auto expected_id = uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+      //  REQUIRE(uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}} ==
+      //          test_id);
+      //}
+
       const auto thrower = [](auto s) { uuid{s, 'N'}; };
 
       SECTION("throws std::invalid_argument if the string is too short") {

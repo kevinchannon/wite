@@ -79,7 +79,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
 
           SECTION("Write int at start of buffer (dynamic endianness)") {
             auto buffer = io::byte_write_buffer_view{array_buffer};
-            REQUIRE(sizeof(uint32_t) == buffer.write(0x89ABCDEF, io::endian::little));
+            REQUIRE(sizeof(uint32_t) == buffer.write_with_endian(0x89ABCDEF, io::endian::little));
             REQUIRE(4 == buffer.write_position());
 
             REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[0]));
@@ -115,7 +115,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
                     std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
                 SECTION("and then another write throws std::out_of_range") {
-                  REQUIRE_THROWS_AS(buffer.write(0x01234567, io::endian::little), std::out_of_range);
+                  REQUIRE_THROWS_AS(buffer.write_with_endian(0x01234567, io::endian::little), std::out_of_range);
 
                   SECTION("and the buffer is not written to") {
                     REQUIRE(12 == buffer.write_position());
@@ -133,7 +133,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
 
           SECTION("Write int at start of buffer (dynamic endianness)") {
             auto buffer = io::byte_write_buffer_view{array_buffer};
-            REQUIRE(sizeof(uint32_t) == buffer.write(0x89ABCDEF, io::endian::big));
+            REQUIRE(sizeof(uint32_t) == buffer.write_with_endian(0x89ABCDEF, io::endian::big));
             REQUIRE(4 == buffer.write_position());
 
             REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[0]));
@@ -157,7 +157,7 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
                   std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == io::byte{0}; }));
 
               SECTION("and then another write throws std::out_of_range") {
-                REQUIRE_THROWS_AS(buffer.write(0x01234567, io::endian::big), std::out_of_range);
+                REQUIRE_THROWS_AS(buffer.write_with_endian(0x01234567, io::endian::big), std::out_of_range);
 
                 SECTION("and the buffer is not written to") {
                   REQUIRE(8 == buffer.write_position());

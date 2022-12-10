@@ -12,6 +12,9 @@ namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename T>
+concept byte_like = requires(T& t) { sizeof(t) == 1; };
+
 template <typename T>
 _WITE_CONCEPT is_encoded = std::is_base_of_v<io::encoding, T>;
 

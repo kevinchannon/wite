@@ -40,7 +40,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
       SECTION("Little-endian") {
         SECTION("Write int at start of buffer") {
           SECTION("Dynamic endianness") {
-            REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF, io::endian::little));
+            REQUIRE(sizeof(uint32_t) == io::write_with_endian(array_buffer, 0x89ABCDEF, io::endian::little));
 
             REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[0]));
             REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[1]));
@@ -77,8 +77,9 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
         }
 
         SECTION("Write int not at start of buffer") {
-          REQUIRE(sizeof(uint32_t) ==
-                  io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::little));
+          REQUIRE(sizeof(uint32_t) == io::write_with_endian({std::next(array_buffer.begin(), 2), array_buffer.end()},
+                                                            0x89ABCDEF,
+                                                            io::endian::little));
 
           REQUIRE(0xEF == io::to_integer<uint8_t>(array_buffer[2]));
           REQUIRE(0xCD == io::to_integer<uint8_t>(array_buffer[3]));
@@ -91,14 +92,15 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
         }
 
         SECTION("Write past the end of the buffer fails with std::out_of_range exception") {
-          REQUIRE_THROWS_AS(io::write({std::next(array_buffer.begin(), 7), array_buffer.end()}, 0x89ABCDEF, io::endian::little),
+          REQUIRE_THROWS_AS(
+              io::write_with_endian({std::next(array_buffer.begin(), 7), array_buffer.end()}, 0x89ABCDEF, io::endian::little),
                             std::out_of_range);
         }
       }
 
       SECTION("Big-endian") {
         SECTION("Write int at start of buffer") {
-          REQUIRE(sizeof(uint32_t) == io::write(array_buffer, 0x89ABCDEF, io::endian::big));
+          REQUIRE(sizeof(uint32_t) == io::write_with_endian(array_buffer, 0x89ABCDEF, io::endian::big));
 
           REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[0]));
           REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[1]));
@@ -110,7 +112,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
 
         SECTION("Write int not at start of buffer") {
           REQUIRE(sizeof(uint32_t) ==
-                  io::write({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::big));
+                  io::write_with_endian({std::next(array_buffer.begin(), 2), array_buffer.end()}, 0x89ABCDEF, io::endian::big));
 
           REQUIRE(0x89 == io::to_integer<uint8_t>(array_buffer[2]));
           REQUIRE(0xAB == io::to_integer<uint8_t>(array_buffer[3]));
@@ -123,7 +125,8 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
         }
 
         SECTION("Write past the end of the buffer fails with std::out_of_range exception") {
-          REQUIRE_THROWS_AS(io::write({std::next(array_buffer.begin(), 7), array_buffer.end()}, 0x89ABCDEF, io::endian::big),
+          REQUIRE_THROWS_AS(
+              io::write_with_endian({std::next(array_buffer.begin(), 7), array_buffer.end()}, 0x89ABCDEF, io::endian::big),
                             std::out_of_range);
         }
       }

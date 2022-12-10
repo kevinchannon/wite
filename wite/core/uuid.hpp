@@ -3,11 +3,13 @@
 #include <wite/binascii/hexlify.hpp>
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/features.hpp>
+#include <wite/io/byte_buffer.hpp>
 
 #include <algorithm>
 #include <array>
 #include <compare>
 #include <cstdint>
+#include <cctype>
 #include <random>
 #include <regex>
 #include <string>
@@ -235,7 +237,6 @@ struct uuid {
 #ifndef WITE_NO_EXCEPTIONS
   void _init_from_d_fmt_string(std::string_view s) {
     if (s.length() != detail::_uuid_strlen<'D'>() - 1) {
-      std::cout << "length = " << s.length() << std::endl;
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
@@ -246,31 +247,27 @@ struct uuid {
     }
 
     try {
-    const auto data_4a = binascii::unhexlify<2, uint8_t>(s.substr(19, 4));
-    const auto data_4b = binascii::unhexlify<6, uint8_t>(s.substr(24, 12));
-
-      data = uuid{binascii::from_hex_chars<uint32_t>(s.substr(0, 8)),
-                  binascii::from_hex_chars<uint16_t>(s.substr(9, 4)),
-                  binascii::from_hex_chars<uint16_t>(s.substr(14, 4)),
-                  {data_4a[0], data_4a[1], data_4b[0], data_4b[1], data_4b[2], data_4b[3], data_4b[4], data_4b[5]}}
-                 .data;
+      data = _unsafe_generic_from_string(s);
     } catch (const std::invalid_argument&) {
-      std::cout << "welp 1" << std::endl;
       throw std::invalid_argument{"Invalid UUID format"};
     }
   }
 
   void _init_from_n_fmt_string(std::string_view s) {
     if (s.length() != detail::_uuid_strlen<'N'>() - 1) {
-      std::cout << "length = " << s.length() << std::endl;
       throw std::invalid_argument{"Invalid UUID format"};
     }
     try {
-      data = binascii::unhexlify<16, uint8_t>(s);
+      data = _unsafe_generic_from_string(s);
     } catch (const std::invalid_argument&) {
-      std::cout << "welp" << std::endl;
       throw std::invalid_argument{"Invalid UUID format"};
     }
+  }
+
+  [[nodiscard]] static std::array<uint8_t, 16> _unsafe_generic_from_string(std::string_view s) {
+    auto c = std::array<char, 38>{};
+    std::ranges::copy_if(s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<unsigned char>(ch)); });
+    return binascii::unhexlify<16, uint8_t>(const_cast<const char*>(&c.front()));
   }
 #endif
 };

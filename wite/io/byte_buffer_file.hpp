@@ -48,14 +48,14 @@ _WITE_NODISCARD inline FILE* get_write_file_pointer(const std::filesystem::path&
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<common::contiguous_range_type Range_T>
+template<common::contiguous_range_like Range_T>
  inline void unsafe_read(FILE* file_pointer, Range_T& out) noexcept {
   std::fread(out.data(), 1, out.size(), file_pointer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <common::contiguous_range_type Range_T>
+template <common::contiguous_range_like Range_T>
 inline void unsafe_write(FILE* file_pointer, size_t count, Range_T&& bytes) noexcept {
   std::fwrite(bytes.data(), 1, count, file_pointer);
 }
@@ -91,7 +91,7 @@ _WITE_NODISCARD inline dynamic_byte_buffer read(const std::filesystem::path& pat
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<common::contiguous_range_type Range_T>
+template<common::contiguous_range_like Range_T>
 _WITE_NODISCARD inline read_result_t<typename Range_T::size_type> try_read(const std::filesystem::path& path, Range_T& out) noexcept {
   auto file_pointer = detail::get_read_file_pointer(path.string().c_str());
   if (nullptr == file_pointer) {
@@ -111,7 +111,7 @@ _WITE_NODISCARD inline read_result_t<typename Range_T::size_type> try_read(const
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef WITE_NO_EXCEPTIONS
-template<common::contiguous_range_type Range_T>
+template<common::contiguous_range_like Range_T>
 void write(const std::filesystem::path& path, size_t count, Range_T&& bytes) {
   auto file_pointer = detail::get_write_file_pointer(path);
   if (nullptr == file_pointer) {
@@ -124,7 +124,7 @@ void write(const std::filesystem::path& path, size_t count, Range_T&& bytes) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <common::contiguous_range_type Range_T>
+template <common::contiguous_range_like Range_T>
 void write(const std::filesystem::path& path, Range_T&& bytes) {
   auto file_pointer = detail::get_write_file_pointer(path);
   if (nullptr == file_pointer) {
@@ -139,7 +139,7 @@ void write(const std::filesystem::path& path, Range_T&& bytes) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <common::contiguous_range_type Range_T>
+template <common::contiguous_range_like Range_T>
 bool try_write(const std::filesystem::path& path, size_t count, Range_T&& bytes) noexcept {
   auto file_pointer = detail::get_write_file_pointer(path);
   if (nullptr == file_pointer) {
@@ -154,7 +154,7 @@ bool try_write(const std::filesystem::path& path, size_t count, Range_T&& bytes)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <common::contiguous_range_type Range_T>
+template <common::contiguous_range_like Range_T>
 bool try_write(const std::filesystem::path& path, Range_T&& bytes) {
   auto file_pointer = detail::get_write_file_pointer(path);
   if (nullptr == file_pointer) {
