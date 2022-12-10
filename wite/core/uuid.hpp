@@ -211,11 +211,14 @@ struct uuid {
       case 'D':
       case 'd': {
         _init_from_d_fmt_string(s);
+        break;
       }
       case 'N':
       case 'n': {
         _init_from_n_fmt_string(s);
+        break;
       }
+      default:;
     }
   }
 #endif
