@@ -230,8 +230,8 @@ namespace detail::buffer::write {
 
 #ifndef WITE_NO_EXCEPTIONS
 
-template <typename... Value_Ts>
-size_t write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... values) {
+template <byte_range_like ByteRange_T, typename... Value_Ts>
+size_t write_at(size_t position, ByteRange_T&& buffer, Value_Ts&&... values) {
   const auto write_end_pos = position + byte_count(values...);
   if (write_end_pos < position) {
     throw std::invalid_argument{"Buffer read position exceeds allowed value"};
