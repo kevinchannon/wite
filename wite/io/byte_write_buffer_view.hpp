@@ -65,7 +65,7 @@ class byte_write_buffer_view {
 
   template <typename... Value_Ts>
   size_t write(Value_Ts&&... values) {
-    const auto bytes_written = io::write({_put_pos, _data.end()}, std::forward<Value_Ts>(values)...);
+    const auto bytes_written = io::write(_put_pos, _data.end(), std::forward<Value_Ts>(values)...);
     std::advance(_put_pos, bytes_written);
 
     return bytes_written;
@@ -73,7 +73,7 @@ class byte_write_buffer_view {
 
   template <typename Value_T>
   size_t write_with_endian(Value_T value, endian endianness) {
-    const auto bytes_written = io::write_with_endian({_put_pos, _data.end()}, value, endianness);
+    const auto bytes_written = io::write_with_endian(_put_pos, _data.end(), value, endianness);
     std::advance(_put_pos, bytes_written);
 
     return bytes_written;

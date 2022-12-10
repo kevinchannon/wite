@@ -13,7 +13,27 @@ namespace wite::io {
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-concept byte_like = requires(T& t) { sizeof(t) == 1; };
+constexpr bool is_byte_like_v = sizeof(T) == 1;
+
+template<typename T>
+concept byte_range_like = requires(T& t) {
+                            is_byte_like_v<typename std::decay_t<T>::value_type>;
+                            t.begin();
+                            t.rbegin();
+                            t.end();
+                            t.rend();
+                          };
+
+template <typename T>
+concept byte_iterator_like = requires(T& t) {
+                               ++t;
+                               --t;
+                               t += 1;
+                               t -= 1;
+                               t + 1;
+                               t - 1;
+                               sizeof(*t) == 1;
+                          };
 
 template <typename T>
 _WITE_CONCEPT is_encoded = std::is_base_of_v<io::encoding, T>;
