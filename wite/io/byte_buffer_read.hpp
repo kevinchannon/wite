@@ -18,7 +18,7 @@
 #include <utility>
 
 #if !_WITE_HAS_CONCEPTS
-#error "C++20 concepts are require, but the compiler doesn't support them"
+#error "C++20 concepts are required, but the compiler doesn't support them"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,9 +27,9 @@ namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
+template <typename Value_T, byte_iterator_like ByteIter_T>
   requires is_buffer_readable<Value_T>
-auto unchecked_read(auto buffer_iterator) noexcept
+auto unchecked_read(ByteIter_T buffer_iterator) noexcept
 {
   if constexpr (io::is_encoded<Value_T>) {
     auto out = Value_T{};
@@ -38,7 +38,7 @@ auto unchecked_read(auto buffer_iterator) noexcept
 
   } else {
     auto out = Value_T{};
-    std::copy_n(buffer_iterator, value_size<Value_T>(), reinterpret_cast<io::byte*>(&out));
+    std::copy_n(buffer_iterator, value_size<Value_T>(), reinterpret_cast<std::decay_t<decltype(*buffer_iterator)>*>(&out));
     return std::pair<Value_T, decltype(buffer_iterator)>{out, std::next(buffer_iterator, value_size(out))};
   }
 }
