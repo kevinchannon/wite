@@ -23,17 +23,18 @@ namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<byte_range_like ByteRange_T>
 class byte_write_buffer_view {
  public:
-  using buffer_type = std::span<io::byte>;
-  using size_type   = typename std::span<const io::byte>::size_type;
+  using buffer_type = std::decay_t<ByteRange_T>;
+  using size_type   = buffer_type::size_type;
 
-  explicit byte_write_buffer_view(buffer_type buf) : _data{std::move(buf)}, _put_pos{_data.begin()} {}
+  explicit byte_write_buffer_view(buffer_type& buf) : _data{buf}, _put_pos{_data.begin()} {}
 
   #ifndef WITE_NO_EXCEPTIONS
 
-  byte_write_buffer_view(buffer_type buf, size_type offset)
-      : byte_write_buffer_view{std::move(buf)} {
+  byte_write_buffer_view(buffer_type& buf, size_type offset)
+      : byte_write_buffer_view{buf} {
     seek(offset);
   }
 
@@ -92,9 +93,17 @@ class byte_write_buffer_view {
   }
 
 private:
-  buffer_type _data;
+  buffer_type& _data;
   buffer_type::iterator _put_pos;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<byte_range_like R>
+byte_write_buffer_view(const R& r)->byte_write_buffer_view<R>;
+
+template <byte_range_like R>
+byte_write_buffer_view(const R& r, size_t) -> byte_write_buffer_view<R>;
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -24,7 +24,7 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 }
 #endif
 
-TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
+TEST_CASE("byte_write_buffer_view byte buffer tests", "[bufer_io]") {
   SECTION("construction") {
     SECTION("initialises the write position to the start of the buffer") {
       auto data = io::static_byte_buffer<5>{};
@@ -355,4 +355,324 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
     }
   }
 
+}
+
+TEST_CASE("byte_write_buffer_view non-byte buffer tests", "[bufer_io]") {
+  SECTION("construction") {
+    SECTION("initialises the write position to the start of the buffer") {
+      auto data = std::array<uint8_t, 5>{};
+      REQUIRE(0 == io::byte_write_buffer_view(data).write_position());
+    }
+
+    SECTION("intialises the write position to the correct position if an offset is specified") {
+      auto data = std::array<uint8_t, 5>{};
+      REQUIRE(2 == io::byte_write_buffer_view(data, 2).write_position());
+    }
+
+    SECTION("throws std::out_of_range if the offset is past the end of the buffer") {
+      auto data = std::array<uint8_t, 10>{};
+      REQUIRE_THROWS_AS(io::byte_write_buffer_view(data, 11), std::out_of_range);
+    }
+  }
+
+  SECTION("byte_write_buffer_view::seek") {
+    auto data = std::vector<uint8_t>(10, 0);
+    auto view = io::byte_write_buffer_view{data};
+
+    SECTION("moves the view to the correct position") {
+      view.seek(2);
+      REQUIRE(2 == view.write_position());
+    }
+
+    SECTION("throws std::out_of_range if the position is past the end of the buffer") {
+      REQUIRE_THROWS_AS(view.seek(11), std::out_of_range);
+    }
+  }
+
+  SECTION("byte_write_buffer_view::try_seek") {
+    auto data = std::vector<unsigned char>(10, 0);
+    auto view = io::byte_write_buffer_view{data};
+
+    SECTION("moves the view to the correct position") {
+      const auto result = view.try_seek(2);
+      REQUIRE(result.ok());
+      REQUIRE(2 == view.write_position());
+    }
+
+    SECTION("returns write_error::invalid_position_offset if the position is past the end of the buffer") {
+      REQUIRE(io::write_error::invalid_position_offset == view.try_seek(11).error());
+    }
+  }
+
+  SECTION("write") {
+    SECTION("single value") {
+      SECTION("scalar value") {
+        SECTION("Little-endian") {
+          auto array_buffer = std::array<uint8_t, 14>{};
+
+          SECTION("Write int at start of buffer (dynamic endianness)") {
+            auto buffer = io::byte_write_buffer_view{array_buffer};
+            REQUIRE(sizeof(uint32_t) == buffer.write_with_endian(0x89ABCDEF, io::endian::little));
+            REQUIRE(4 == buffer.write_position());
+
+            REQUIRE(0xEF == array_buffer[0]);
+            REQUIRE(0xCD == array_buffer[1]);
+            REQUIRE(0xAB == array_buffer[2]);
+            REQUIRE(0x89 == array_buffer[3]);
+
+            REQUIRE(
+                std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == 0; }));
+
+            SECTION("and then another write to the buffer (static endianness)") {
+              REQUIRE(sizeof(uint32_t) == buffer.write(io::little_endian{0x01234567}));
+              REQUIRE(8 == buffer.write_position());
+
+              REQUIRE(0x67 == array_buffer[4]);
+              REQUIRE(0x45 == array_buffer[5]);
+              REQUIRE(0x23 == array_buffer[6]);
+              REQUIRE(0x01 == array_buffer[7]);
+
+              REQUIRE(
+                  std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == 0; }));
+
+              SECTION("and then another write to the buffer (default endianness)") {
+                REQUIRE(sizeof(uint32_t) == buffer.write(0x463235F9));
+                REQUIRE(12 == buffer.write_position());
+
+                REQUIRE((io::endian::native == io::endian::little ? 0xF9 : 0x46) == array_buffer[8]);
+                REQUIRE((io::endian::native == io::endian::little ? 0x35 : 0x32) == array_buffer[9]);
+                REQUIRE((io::endian::native == io::endian::little ? 0x32 : 0x35) == array_buffer[10]);
+                REQUIRE((io::endian::native == io::endian::little ? 0x46 : 0xF9) == array_buffer[11]);
+
+                REQUIRE(std::all_of(
+                    std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == 0; }));
+
+                SECTION("and then another write throws std::out_of_range") {
+                  REQUIRE_THROWS_AS(buffer.write_with_endian(0x01234567, io::endian::little), std::out_of_range);
+
+                  SECTION("and the buffer is not written to") {
+                    REQUIRE(12 == buffer.write_position());
+                    REQUIRE(std::all_of(
+                        std::next(array_buffer.begin(), 12), array_buffer.end(), [](auto&& x) { return x == 0; }));
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        SECTION("Big-endian") {
+          auto array_buffer = std::array<unsigned char, 10>{};
+
+          SECTION("Write int at start of buffer (dynamic endianness)") {
+            auto buffer = io::byte_write_buffer_view{array_buffer};
+            REQUIRE(sizeof(uint32_t) == buffer.write_with_endian(0x89ABCDEF, io::endian::big));
+            REQUIRE(4 == buffer.write_position());
+
+            REQUIRE(0x89 == array_buffer[0]);
+            REQUIRE(0xAB == array_buffer[1]);
+            REQUIRE(0xCD == array_buffer[2]);
+            REQUIRE(0xEF == array_buffer[3]);
+
+            REQUIRE(
+                std::all_of(std::next(array_buffer.begin(), 4), array_buffer.end(), [](auto&& x) { return x == 0; }));
+
+            SECTION("and then another write to the buffer (static endianness)") {
+              REQUIRE(sizeof(uint32_t) == buffer.write(io::big_endian{0x01234567}));
+              REQUIRE(8 == buffer.write_position());
+
+              REQUIRE(0x01 == array_buffer[4]);
+              REQUIRE(0x23 == array_buffer[5]);
+              REQUIRE(0x45 == array_buffer[6]);
+              REQUIRE(0x67 == array_buffer[7]);
+
+              REQUIRE(
+                  std::all_of(std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == 0; }));
+
+              SECTION("and then another write throws std::out_of_range") {
+                REQUIRE_THROWS_AS(buffer.write_with_endian(0x01234567, io::endian::big), std::out_of_range);
+
+                SECTION("and the buffer is not written to") {
+                  REQUIRE(8 == buffer.write_position());
+                  REQUIRE(std::all_of(
+                      std::next(array_buffer.begin(), 8), array_buffer.end(), [](auto&& x) { return x == 0; }));
+                }
+              }
+            }
+          }
+        }
+
+        SECTION("Endian adapter interface") {
+          auto raw_buffer   = std::vector<uint8_t>(10, 0);
+          auto write_buffer = io::byte_write_buffer_view{raw_buffer};
+
+          const auto val_1 = uint32_t{0x01234567};
+          REQUIRE(sizeof(uint32_t) == write_buffer.write(io::little_endian{val_1}));
+
+          const auto val_2 = uint32_t{0x89ABCDEF};
+          REQUIRE(sizeof(uint32_t) == write_buffer.write(io::big_endian{val_2}));
+
+          const auto val_3 = int16_t{0x7D04};
+          REQUIRE(sizeof(uint16_t) == write_buffer.write(val_3));
+
+          REQUIRE(
+              std::ranges::equal(std::vector<uint8_t>{0x67, 0x45, 0x23, 0x01, 0x89, 0xAB, 0xCD, 0xEF, 0x04, 0x7D}, raw_buffer));
+        }
+      }
+
+      SECTION("range value") {
+        auto data = std::array<uint8_t, 12>{};
+
+        SECTION("returns the number of bytes written on success") {
+          const auto v = std::vector<uint16_t>{0x0123, 0x4567, 0x89AB, 0xCDEF};
+          REQUIRE(8 == io::byte_write_buffer_view{data}.write(v));
+
+          REQUIRE(0x23 == data[0]);
+          REQUIRE(0x01 == data[1]);
+          REQUIRE(0x67 == data[2]);
+          REQUIRE(0x45 == data[3]);
+          REQUIRE(0xAB == data[4]);
+          REQUIRE(0x89 == data[5]);
+          REQUIRE(0xEF == data[6]);
+          REQUIRE(0xCD == data[7]);
+        }
+      }
+    }
+
+    SECTION("multiple values") {
+      const auto a = uint32_t{0x12345678};
+      const auto b = uint16_t{0xABCD};
+      const auto c = true;
+      const auto d = uint32_t{0xFEDCBA98};
+
+      constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d);
+
+      auto buffer     = std::array<unsigned char, data_size>{};
+      auto write_view = io::byte_write_buffer_view{buffer};
+
+      SECTION("returns number of bytes written on success") {
+        REQUIRE(data_size == write_view.write(a, io::big_endian{b}, c, d));
+        REQUIRE(data_size == write_view.write_position());
+
+        SECTION("and writes the correct values to the buffer") {
+          REQUIRE(uint32_t{0x78} == buffer[0]);
+          REQUIRE(uint32_t{0x56} == buffer[1]);
+          REQUIRE(uint32_t{0x34} == buffer[2]);
+          REQUIRE(uint32_t{0x12} == buffer[3]);
+
+          REQUIRE(uint32_t{0xAB} == buffer[4]);
+          REQUIRE(uint32_t{0xCD} == buffer[5]);
+
+          REQUIRE(uint32_t{true} == buffer[6]);
+
+          REQUIRE(uint32_t{0x98} == buffer[7]);
+          REQUIRE(uint32_t{0xBA} == buffer[8]);
+          REQUIRE(uint32_t{0xDC} == buffer[9]);
+          REQUIRE(uint32_t{0xFE} == buffer[10]);
+        }
+      }
+
+      SECTION("throws out_of_range if the buffer is too small") {
+        const auto initial_buffer_position = write_view.write_position();
+        const auto write_to_buffer         = [&]() { write_view.write(a, io::big_endian{b}, c, d, a); };
+        REQUIRE_THROWS_AS(write_to_buffer(), std::out_of_range);
+
+        // On error, the write position should remain in the position is was in before the function call that caused the error.
+        REQUIRE(initial_buffer_position == write_view.write_position());
+      }
+    }
+  }
+
+  SECTION("try_write") {
+    SECTION("single value") {
+      SECTION("returns number of bytes written on good write") {
+        auto data   = std::vector<uint8_t>(4, 0);
+        auto buffer = io::byte_write_buffer_view{data};
+
+        SECTION("with default endianness") {
+          const auto val    = uint32_t{0xFE01CD23};
+          const auto result = buffer.try_write(val);
+
+          REQUIRE(result.ok());
+          REQUIRE(sizeof(val) == result.value());
+          REQUIRE(4 == buffer.write_position());
+          REQUIRE(std::ranges::equal(std::vector<uint8_t>{0x23, 0xCD, 0x01, 0xFE}, data));
+        }
+
+        SECTION("with specified endianness adapter") {
+          const auto val    = uint32_t{0x23CD01FE};
+          const auto result = buffer.try_write(io::big_endian{val});
+
+          REQUIRE(result.ok());
+          REQUIRE(sizeof(val) == result.value());
+          REQUIRE(4 == buffer.write_position());
+          REQUIRE(std::ranges::equal(std::vector<uint8_t>{0x23, 0xCD, 0x01, 0xFE}, data));
+        }
+      }
+
+      SECTION("returns error on bad write") {
+        auto data   = std::array<unsigned char, 3>{};
+        auto buffer = io::byte_write_buffer_view{data};
+
+        const auto result = buffer.try_write(uint32_t{0xCDCDCDCD});
+        REQUIRE(result.is_error());
+        REQUIRE(io::write_error::insufficient_buffer == result.error());
+      }
+    }
+
+    SECTION("multiple values") {
+      const auto a = uint32_t{0x12345678};
+      const auto b = uint16_t{0xABCD};
+      const auto c = true;
+      const auto d = uint32_t{0xFEDCBA98};
+
+      constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d);
+
+      auto buffer     = std::array<uint8_t, data_size>{};
+      auto write_view = io::byte_write_buffer_view{buffer};
+
+      SECTION("returns the number of bytes written on success") {
+        const auto result = write_view.try_write(a, io::big_endian{b}, c, d);
+        REQUIRE(result.ok());
+        REQUIRE(data_size == result.value());
+        REQUIRE(data_size == write_view.write_position());
+
+        SECTION("and writes the bytes correctly") {
+          REQUIRE(uint32_t{0x78} == buffer[0]);
+          REQUIRE(uint32_t{0x56} == buffer[1]);
+          REQUIRE(uint32_t{0x34} == buffer[2]);
+          REQUIRE(uint32_t{0x12} == buffer[3]);
+
+          REQUIRE(uint32_t{0xAB} == buffer[4]);
+          REQUIRE(uint32_t{0xCD} == buffer[5]);
+
+          REQUIRE(uint32_t{true} == buffer[6]);
+
+          REQUIRE(uint32_t{0x98} == buffer[7]);
+          REQUIRE(uint32_t{0xBA} == buffer[8]);
+          REQUIRE(uint32_t{0xDC} == buffer[9]);
+          REQUIRE(uint32_t{0xFE} == buffer[10]);
+        }
+      }
+
+      SECTION("returns error if the buffer is too small") {
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow="
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
+        const auto result = write_view.try_write(a, io::big_endian{b}, c, d, int{});
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic pop
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
+
+        REQUIRE(result.is_error());
+        REQUIRE(io::write_error::insufficient_buffer == result.error());
+        REQUIRE(0 == write_view.write_position());
+      }
+    }
+  }
 }
