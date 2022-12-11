@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <optional>
 #include <stdexcept>
+#include <tuple>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +51,7 @@ _WITE_NODISCARD inline FILE* get_write_file_pointer(const std::filesystem::path&
 
 template<common::contiguous_range_like Range_T>
  inline void unsafe_read(FILE* file_pointer, Range_T& out) noexcept {
-  std::fread(out.data(), 1, out.size(), file_pointer);
+  std::ignore = std::fread(out.data(), 1, out.size(), file_pointer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
