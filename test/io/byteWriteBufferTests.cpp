@@ -1109,190 +1109,190 @@ TEST_CASE("Write values to non-byte arrays", "[buffer_io]") {
       }
     }
   }
-  // 
-  // SECTION("try_write") {
-  //   SECTION("single value") {
-  //     SECTION("returns number of bytes written on good write") {
-  //       auto data = io::static_byte_buffer<20>{};
-  // 
-  //       SECTION("with default endianness") {
-  //         const auto val    = uint32_t{0xFE01CD23};
-  //         const auto result = io::try_write(data, val);
-  // 
-  //         REQUIRE(result.ok());
-  //         REQUIRE(sizeof(val) == result.value());
-  // 
-  //         REQUIRE(uint32_t{0x23} == io::to_integer<uint32_t>(data[0]));
-  //         REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(data[1]));
-  //         REQUIRE(uint32_t{0x01} == io::to_integer<uint32_t>(data[2]));
-  //         REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(data[3]));
-  //       }
-  // 
-  //       SECTION("with specified endianness") {
-  //         const auto val    = uint32_t{0x23CD01FE};
-  //         const auto result = io::try_write(data, io::big_endian{val});
-  // 
-  //         REQUIRE(result.ok());
-  //         REQUIRE(sizeof(val) == result.value());
-  // 
-  //         REQUIRE(uint32_t{0x23} == io::to_integer<uint32_t>(data[0]));
-  //         REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(data[1]));
-  //         REQUIRE(uint32_t{0x01} == io::to_integer<uint32_t>(data[2]));
-  //         REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(data[3]));
-  //       }
-  // 
-  //       SECTION("range values") {
-  //         SECTION("static ranges") {
-  //           const auto values = std::array{1.123f, 2.456f, 3.789f};
-  //           const auto result = io::try_write(data, values);
-  // 
-  //           REQUIRE(result.ok());
-  //           REQUIRE(sizeof(float) * values.size() == result.value());
-  // 
-  //           REQUIRE(extract_byte(values[0], 0) == io::to_integer<uint32_t>(data[0]));
-  //           REQUIRE(extract_byte(values[0], 1) == io::to_integer<uint32_t>(data[1]));
-  //           REQUIRE(extract_byte(values[0], 2) == io::to_integer<uint32_t>(data[2]));
-  //           REQUIRE(extract_byte(values[0], 3) == io::to_integer<uint32_t>(data[3]));
-  // 
-  //           REQUIRE(extract_byte(values[1], 0) == io::to_integer<uint32_t>(data[4]));
-  //           REQUIRE(extract_byte(values[1], 1) == io::to_integer<uint32_t>(data[5]));
-  //           REQUIRE(extract_byte(values[1], 2) == io::to_integer<uint32_t>(data[6]));
-  //           REQUIRE(extract_byte(values[1], 3) == io::to_integer<uint32_t>(data[7]));
-  // 
-  //           REQUIRE(extract_byte(values[2], 0) == io::to_integer<uint32_t>(data[8]));
-  //           REQUIRE(extract_byte(values[2], 1) == io::to_integer<uint32_t>(data[9]));
-  //           REQUIRE(extract_byte(values[2], 2) == io::to_integer<uint32_t>(data[10]));
-  //           REQUIRE(extract_byte(values[2], 3) == io::to_integer<uint32_t>(data[11]));
-  //         }
-  // 
-  //         SECTION("dynamoc ranges") {
-  //           const auto values = std::vector{1.123f, 2.456f, 3.789f};
-  //           const auto result = io::try_write(data, values);
-  // 
-  //           REQUIRE(result.ok());
-  //           REQUIRE(sizeof(float) * values.size() == result.value());
-  // 
-  //           REQUIRE(extract_byte(values[0], 0) == io::to_integer<uint32_t>(data[0]));
-  //           REQUIRE(extract_byte(values[0], 1) == io::to_integer<uint32_t>(data[1]));
-  //           REQUIRE(extract_byte(values[0], 2) == io::to_integer<uint32_t>(data[2]));
-  //           REQUIRE(extract_byte(values[0], 3) == io::to_integer<uint32_t>(data[3]));
-  // 
-  //           REQUIRE(extract_byte(values[1], 0) == io::to_integer<uint32_t>(data[4]));
-  //           REQUIRE(extract_byte(values[1], 1) == io::to_integer<uint32_t>(data[5]));
-  //           REQUIRE(extract_byte(values[1], 2) == io::to_integer<uint32_t>(data[6]));
-  //           REQUIRE(extract_byte(values[1], 3) == io::to_integer<uint32_t>(data[7]));
-  // 
-  //           REQUIRE(extract_byte(values[2], 0) == io::to_integer<uint32_t>(data[8]));
-  //           REQUIRE(extract_byte(values[2], 1) == io::to_integer<uint32_t>(data[9]));
-  //           REQUIRE(extract_byte(values[2], 2) == io::to_integer<uint32_t>(data[10]));
-  //           REQUIRE(extract_byte(values[2], 3) == io::to_integer<uint32_t>(data[11]));
-  //         }
-  // 
-  //         SECTION("R-value ranges") {
-  //           const auto result = io::try_write(data, std::vector{1.123f, 2.456f, 3.789f});
-  // 
-  //           REQUIRE(result.ok());
-  // 
-  //           const auto values = std::vector{1.123f, 2.456f, 3.789f};
-  //           REQUIRE(sizeof(float) * values.size() == result.value());
-  // 
-  //           REQUIRE(extract_byte(values[0], 0) == io::to_integer<uint32_t>(data[0]));
-  //           REQUIRE(extract_byte(values[0], 1) == io::to_integer<uint32_t>(data[1]));
-  //           REQUIRE(extract_byte(values[0], 2) == io::to_integer<uint32_t>(data[2]));
-  //           REQUIRE(extract_byte(values[0], 3) == io::to_integer<uint32_t>(data[3]));
-  // 
-  //           REQUIRE(extract_byte(values[1], 0) == io::to_integer<uint32_t>(data[4]));
-  //           REQUIRE(extract_byte(values[1], 1) == io::to_integer<uint32_t>(data[5]));
-  //           REQUIRE(extract_byte(values[1], 2) == io::to_integer<uint32_t>(data[6]));
-  //           REQUIRE(extract_byte(values[1], 3) == io::to_integer<uint32_t>(data[7]));
-  // 
-  //           REQUIRE(extract_byte(values[2], 0) == io::to_integer<uint32_t>(data[8]));
-  //           REQUIRE(extract_byte(values[2], 1) == io::to_integer<uint32_t>(data[9]));
-  //           REQUIRE(extract_byte(values[2], 2) == io::to_integer<uint32_t>(data[10]));
-  //           REQUIRE(extract_byte(values[2], 3) == io::to_integer<uint32_t>(data[11]));
-  //         }
-  //       }
-  //     }
-  // 
-  //     SECTION("returns error on bad write") {
-  //       auto data = io::static_byte_buffer<3>{};
-  // 
-  //       const auto result = io::try_write(data, uint32_t{0xCDCDCDCD});
-  //       REQUIRE(result.is_error());
-  //       REQUIRE(io::write_error::insufficient_buffer == result.error());
-  //     }
-  //   }
-  // 
-  //   SECTION("multiple values") {
-  //     const auto a = uint32_t{0x12345678};
-  //     const auto b = uint16_t{0xABCD};
-  //     const auto c = true;
-  //     const auto d = uint32_t{0xFEDCBA98};
-  //     const auto e = std::vector{uint32_t{1}, uint32_t{2}, uint32_t{3}, uint32_t{4}};
-  // 
-  //     constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d) + sizeof(uint32_t) * 4;
-  // 
-  //     auto buffer = io::static_byte_buffer<data_size>{};
-  // 
-  //     SECTION("returns the number of bytes written") {
-  //       const auto result = io::try_write(buffer, a, io::big_endian{b}, c, d, e);
-  //       REQUIRE(result.ok());
-  //       REQUIRE(data_size == result.value());
-  // 
-  //       SECTION("and writes the bytes correctly") {
-  //         // a
-  //         REQUIRE(uint32_t{0x78} == io::to_integer<uint32_t>(buffer[0]));
-  //         REQUIRE(uint32_t{0x56} == io::to_integer<uint32_t>(buffer[1]));
-  //         REQUIRE(uint32_t{0x34} == io::to_integer<uint32_t>(buffer[2]));
-  //         REQUIRE(uint32_t{0x12} == io::to_integer<uint32_t>(buffer[3]));
-  // 
-  //         // b
-  //         REQUIRE(uint32_t{0xAB} == io::to_integer<uint32_t>(buffer[4]));
-  //         REQUIRE(uint32_t{0xCD} == io::to_integer<uint32_t>(buffer[5]));
-  // 
-  //         // c
-  //         REQUIRE(uint32_t{true} == io::to_integer<uint32_t>(buffer[6]));
-  // 
-  //         // d
-  //         REQUIRE(uint32_t{0x98} == io::to_integer<uint32_t>(buffer[7]));
-  //         REQUIRE(uint32_t{0xBA} == io::to_integer<uint32_t>(buffer[8]));
-  //         REQUIRE(uint32_t{0xDC} == io::to_integer<uint32_t>(buffer[9]));
-  //         REQUIRE(uint32_t{0xFE} == io::to_integer<uint32_t>(buffer[10]));
-  // 
-  //         // e.0
-  //         REQUIRE(uint32_t{0x01} == io::to_integer<uint32_t>(buffer[11]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[12]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[13]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[14]));
-  // 
-  //         // e.1
-  //         REQUIRE(uint32_t{0x02} == io::to_integer<uint32_t>(buffer[15]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[16]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[17]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[18]));
-  // 
-  //         // e.2
-  //         REQUIRE(uint32_t{0x03} == io::to_integer<uint32_t>(buffer[19]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[20]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[21]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[22]));
-  // 
-  //         // e.3
-  //         REQUIRE(uint32_t{0x04} == io::to_integer<uint32_t>(buffer[23]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[24]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[25]));
-  //         REQUIRE(uint32_t{0x00} == io::to_integer<uint32_t>(buffer[26]));
-  //       }
-  //     }
-  // 
-  //     SECTION("returns error if the buffer is too small") {
-  //       const auto result = io::try_write(buffer, a, io::big_endian{b}, c, d, e, int{});
-  // 
-  //       REQUIRE(result.is_error());
-  //       REQUIRE(io::write_error::insufficient_buffer == result.error());
-  //     }
-  //   }
-  // }
+  
+  SECTION("try_write") {
+    SECTION("single value") {
+      SECTION("returns number of bytes written on good write") {
+        auto data = std::array<uint8_t, 20>{};
+  
+        SECTION("with default endianness") {
+          const auto val    = uint32_t{0xFE01CD23};
+          const auto result = io::try_write(data, val);
+  
+          REQUIRE(result.ok());
+          REQUIRE(sizeof(val) == result.value());
+  
+          REQUIRE(uint32_t{0x23} == data[0]);
+          REQUIRE(uint32_t{0xCD} == data[1]);
+          REQUIRE(uint32_t{0x01} == data[2]);
+          REQUIRE(uint32_t{0xFE} == data[3]);
+        }
+  
+        SECTION("with specified endianness") {
+          const auto val    = uint32_t{0x23CD01FE};
+          const auto result = io::try_write(data, io::big_endian{val});
+  
+          REQUIRE(result.ok());
+          REQUIRE(sizeof(val) == result.value());
+  
+          REQUIRE(uint32_t{0x23} == data[0]);
+          REQUIRE(uint32_t{0xCD} == data[1]);
+          REQUIRE(uint32_t{0x01} == data[2]);
+          REQUIRE(uint32_t{0xFE} == data[3]);
+        }
+  
+        SECTION("range values") {
+          SECTION("static ranges") {
+            const auto values = std::array{1.123f, 2.456f, 3.789f};
+            const auto result = io::try_write(data, values);
+  
+            REQUIRE(result.ok());
+            REQUIRE(sizeof(float) * values.size() == result.value());
+  
+            REQUIRE(extract_byte(values[0], 0) == data[0]);
+            REQUIRE(extract_byte(values[0], 1) == data[1]);
+            REQUIRE(extract_byte(values[0], 2) == data[2]);
+            REQUIRE(extract_byte(values[0], 3) == data[3]);
+  
+            REQUIRE(extract_byte(values[1], 0) == data[4]);
+            REQUIRE(extract_byte(values[1], 1) == data[5]);
+            REQUIRE(extract_byte(values[1], 2) == data[6]);
+            REQUIRE(extract_byte(values[1], 3) == data[7]);
+  
+            REQUIRE(extract_byte(values[2], 0) == data[8]);
+            REQUIRE(extract_byte(values[2], 1) == data[9]);
+            REQUIRE(extract_byte(values[2], 2) == data[10]);
+            REQUIRE(extract_byte(values[2], 3) == data[11]);
+          }
+  
+          SECTION("dynamoc ranges") {
+            const auto values = std::vector{1.123f, 2.456f, 3.789f};
+            const auto result = io::try_write(data, values);
+  
+            REQUIRE(result.ok());
+            REQUIRE(sizeof(float) * values.size() == result.value());
+  
+            REQUIRE(extract_byte(values[0], 0) == data[0]);
+            REQUIRE(extract_byte(values[0], 1) == data[1]);
+            REQUIRE(extract_byte(values[0], 2) == data[2]);
+            REQUIRE(extract_byte(values[0], 3) == data[3]);
+  
+            REQUIRE(extract_byte(values[1], 0) == data[4]);
+            REQUIRE(extract_byte(values[1], 1) == data[5]);
+            REQUIRE(extract_byte(values[1], 2) == data[6]);
+            REQUIRE(extract_byte(values[1], 3) == data[7]);
+  
+            REQUIRE(extract_byte(values[2], 0) == data[8]);
+            REQUIRE(extract_byte(values[2], 1) == data[9]);
+            REQUIRE(extract_byte(values[2], 2) == data[10]);
+            REQUIRE(extract_byte(values[2], 3) == data[11]);
+          }
+  
+          SECTION("R-value ranges") {
+            const auto result = io::try_write(data, std::vector{1.123f, 2.456f, 3.789f});
+  
+            REQUIRE(result.ok());
+  
+            const auto values = std::vector{1.123f, 2.456f, 3.789f};
+            REQUIRE(sizeof(float) * values.size() == result.value());
+  
+            REQUIRE(extract_byte(values[0], 0) == data[0]);
+            REQUIRE(extract_byte(values[0], 1) == data[1]);
+            REQUIRE(extract_byte(values[0], 2) == data[2]);
+            REQUIRE(extract_byte(values[0], 3) == data[3]);
+  
+            REQUIRE(extract_byte(values[1], 0) == data[4]);
+            REQUIRE(extract_byte(values[1], 1) == data[5]);
+            REQUIRE(extract_byte(values[1], 2) == data[6]);
+            REQUIRE(extract_byte(values[1], 3) == data[7]);
+  
+            REQUIRE(extract_byte(values[2], 0) == data[8]);
+            REQUIRE(extract_byte(values[2], 1) == data[9]);
+            REQUIRE(extract_byte(values[2], 2) == data[10]);
+            REQUIRE(extract_byte(values[2], 3) == data[11]);
+          }
+        }
+      }
+  
+      SECTION("returns error on bad write") {
+        auto data = io::static_byte_buffer<3>{};
+  
+        const auto result = io::try_write(data, uint32_t{0xCDCDCDCD});
+        REQUIRE(result.is_error());
+        REQUIRE(io::write_error::insufficient_buffer == result.error());
+      }
+    }
+  
+    SECTION("multiple values") {
+      const auto a = uint32_t{0x12345678};
+      const auto b = uint16_t{0xABCD};
+      const auto c = true;
+      const auto d = uint32_t{0xFEDCBA98};
+      const auto e = std::vector{uint32_t{1}, uint32_t{2}, uint32_t{3}, uint32_t{4}};
+  
+      constexpr auto data_size = sizeof(a) + sizeof(b) + sizeof(c) + sizeof(d) + sizeof(uint32_t) * 4;
+  
+      auto buffer = std::vector<unsigned char>(data_size, 0);
+  
+      SECTION("returns the number of bytes written") {
+        const auto result = io::try_write(buffer, a, io::big_endian{b}, c, d, e);
+        REQUIRE(result.ok());
+        REQUIRE(data_size == result.value());
+  
+        SECTION("and writes the bytes correctly") {
+          // a
+          REQUIRE(uint32_t{0x78} == buffer[0]);
+          REQUIRE(uint32_t{0x56} == buffer[1]);
+          REQUIRE(uint32_t{0x34} == buffer[2]);
+          REQUIRE(uint32_t{0x12} == buffer[3]);
+  
+          // b
+          REQUIRE(uint32_t{0xAB} == buffer[4]);
+          REQUIRE(uint32_t{0xCD} == buffer[5]);
+  
+          // c
+          REQUIRE(uint32_t{true} == buffer[6]);
+  
+          // d
+          REQUIRE(uint32_t{0x98} == buffer[7]);
+          REQUIRE(uint32_t{0xBA} == buffer[8]);
+          REQUIRE(uint32_t{0xDC} == buffer[9]);
+          REQUIRE(uint32_t{0xFE} == buffer[10]);
+  
+          // e.0
+          REQUIRE(uint32_t{0x01} == buffer[11]);
+          REQUIRE(uint32_t{0x00} == buffer[12]);
+          REQUIRE(uint32_t{0x00} == buffer[13]);
+          REQUIRE(uint32_t{0x00} == buffer[14]);
+  
+          // e.1
+          REQUIRE(uint32_t{0x02} == buffer[15]);
+          REQUIRE(uint32_t{0x00} == buffer[16]);
+          REQUIRE(uint32_t{0x00} == buffer[17]);
+          REQUIRE(uint32_t{0x00} == buffer[18]);
+  
+          // e.2
+          REQUIRE(uint32_t{0x03} == buffer[19]);
+          REQUIRE(uint32_t{0x00} == buffer[20]);
+          REQUIRE(uint32_t{0x00} == buffer[21]);
+          REQUIRE(uint32_t{0x00} == buffer[22]);
+  
+          // e.3
+          REQUIRE(uint32_t{0x04} == buffer[23]);
+          REQUIRE(uint32_t{0x00} == buffer[24]);
+          REQUIRE(uint32_t{0x00} == buffer[25]);
+          REQUIRE(uint32_t{0x00} == buffer[26]);
+        }
+      }
+  
+      SECTION("returns error if the buffer is too small") {
+        const auto result = io::try_write(buffer, a, io::big_endian{b}, c, d, e, int{});
+  
+        REQUIRE(result.is_error());
+        REQUIRE(io::write_error::insufficient_buffer == result.error());
+      }
+    }
+  }
   // 
   // SECTION("try_write_at") {
   //   SECTION("single value") {

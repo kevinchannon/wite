@@ -122,6 +122,8 @@ size_t write(ByteRange_T&& buffer, Value_Ts&&... values) {
   return detail::buffer::write::_recursive_unsafe_write(buffer, std::forward<Value_Ts>(values)...);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 template <byte_iterator_like ByteIter_T, typename... Value_Ts>
 size_t write(ByteIter_T begin, ByteIter_T end, Value_Ts&&... values) {
   return write(std::span<std::decay_t<decltype(*begin)>>{begin, end}, std::forward<Value_Ts>(values)...);
@@ -133,8 +135,8 @@ size_t write(ByteIter_T begin, ByteIter_T end, Value_Ts&&... values) {
 
 namespace detail::buffer::write {
 
-  template <typename Value_T>
-  write_result_t _try_write_single_value(std::span<io::byte> buffer, Value_T&& to_write) noexcept {
+  template <byte_range_like ByteRange_T, typename Value_T>
+  write_result_t _try_write_single_value(ByteRange_T&& buffer, Value_T&& to_write) noexcept {
     if (buffer.size() < byte_count(to_write)) {
       return write_error::insufficient_buffer;
     }
@@ -142,8 +144,10 @@ namespace detail::buffer::write {
     return unchecked_write(buffer.begin(), std::forward<Value_T>(to_write));
   }
 
-  template <typename Range_T>
-  write_result_t _try_write_range_value(std::span<io::byte> buffer, Range_T&& to_write) noexcept {
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <byte_range_like ByteRange_T, typename Range_T>
+  write_result_t _try_write_range_value(ByteRange_T&& buffer, Range_T&& to_write) noexcept {
     if (buffer.size() < byte_count(to_write)) {
       return write_error::insufficient_buffer;
     }
@@ -155,12 +159,25 @@ namespace detail::buffer::write {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
-write_result_t try_write(std::span<io::byte> buffer, Value_T&& to_write) noexcept {
+template <byte_range_like ByteRange_T, typename Value_T>
+write_result_t try_write(ByteRange_T&& buffer, Value_T&& to_write) noexcept {
   if constexpr (common::is_sized_range_v<std::decay_t<Value_T>>) {
-    return detail::buffer::write::_try_write_range_value(buffer, std::forward<Value_T>(to_write));
+    return detail::buffer::write::_try_write_range_value(std::forward<ByteRange_T>(buffer), std::forward<Value_T>(to_write));
   } else {
-    return detail::buffer::write::_try_write_single_value(buffer, std::forward<Value_T>(to_write));
+    return detail::buffer::write::_try_write_single_value(std::forward<ByteRange_T>(buffer), std::forward<Value_T>(to_write));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <byte_iterator_like ByteIter_T, typename Value_T>
+write_result_t try_write(ByteIter_T begin, ByteIter_T end, Value_T&& to_write) noexcept {
+  if constexpr (common::is_sized_range_v<std::decay_t<Value_T>>) {
+    return detail::buffer::write::_try_write_range_value(std::span<std::decay_t<decltype(*begin)>>{begin, end},
+                                                         std::forward<Value_T>(to_write));
+  } else {
+    return detail::buffer::write::_try_write_single_value(std::span<std::decay_t<decltype(*begin)>>{begin, end},
+                                                          std::forward<Value_T>(to_write));
   }
 }
 
@@ -177,7 +194,7 @@ write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T
     return write_error::insufficient_buffer;
   }
 
-  const auto result = try_write({std::next(buffer.begin(), position), buffer.end()}, value);
+  const auto result = try_write(std::next(buffer.begin(), position), buffer.end(), value);
   if (result.is_error()) {
     return result;
   }
@@ -189,15 +206,16 @@ write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T
 
 namespace detail::buffer::write {
 
-  template <typename Value_T, typename... Value_Ts>
-  write_result_t _recursive_try_write(std::span<io::byte> buffer, Value_T first_value, Value_Ts... other_values) {
-    const auto first_result = try_write(buffer, first_value);
+  template <byte_iterator_like ByteIter_T, typename Value_T, typename... Value_Ts>
+  write_result_t _recursive_try_write(ByteIter_T begin, ByteIter_T end, Value_T first_value, Value_Ts... other_values) {
+    const auto first_result = try_write(begin, end, first_value);
     if (first_result.is_error()) {
       return first_result;
     }
 
     if constexpr (sizeof...(other_values) > 0) {
-      const auto result = _recursive_try_write({std::next(buffer.begin(), byte_count(first_value)), buffer.end()}, other_values...);
+      const auto result =
+          _recursive_try_write(std::next(begin, byte_count(first_value)), end, other_values...);
       if (result.is_error()) {
         return result;
       }
@@ -207,6 +225,29 @@ namespace detail::buffer::write {
       return first_result;
     }
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <byte_range_like ByteRange_T, typename Value_T, typename... Value_Ts>
+  write_result_t _recursive_try_write(ByteRange_T&& buffer, Value_T first_value, Value_Ts... other_values) {
+    const auto first_result = try_write(buffer, first_value);
+    if (first_result.is_error()) {
+      return first_result;
+    }
+
+    if constexpr (sizeof...(other_values) > 0) {
+      const auto result = _recursive_try_write(std::next(buffer.begin(), byte_count(first_value)), buffer.end(), other_values...);
+      if (result.is_error()) {
+        return result;
+      }
+
+      return first_result.value() + result.value();
+    } else {
+      return first_result;
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   template <typename Value_T, typename... Value_Ts>
   write_result_t _recursive_try_write_at(size_t position,
@@ -249,10 +290,18 @@ size_t write_at(size_t position, ByteRange_T&& buffer, Value_Ts&&... values) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename... Value_Ts>
+template <byte_range_like ByteRange_T, typename... Value_Ts>
   requires(sizeof...(Value_Ts) > 1)
-write_result_t try_write(std::span<io::byte> buffer, Value_Ts&&... values) noexcept {
-  return detail::buffer::write::_recursive_try_write(buffer, std::forward<Value_Ts>(values)...);
+write_result_t try_write(ByteRange_T&& buffer, Value_Ts&&... values) noexcept {
+  return detail::buffer::write::_recursive_try_write(std::forward<ByteRange_T>(buffer), std::forward<Value_Ts>(values)...);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <byte_iterator_like ByteIter_T, typename... Value_Ts>
+  requires(sizeof...(Value_Ts) > 1)
+write_result_t try_write(ByteIter_T begin, ByteIter_T end, Value_Ts&&... values) noexcept {
+  return detail::buffer::write::_recursive_try_write(begin, end, std::forward<Value_Ts>(values)...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
