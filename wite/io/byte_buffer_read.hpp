@@ -32,8 +32,9 @@ template <typename Value_T, byte_iterator_like ByteIter_T>
 auto unchecked_read(ByteIter_T buffer_iterator) noexcept
 {
   if constexpr (io::is_encoded<Value_T>) {
+    using Byte_t = std::remove_const_t<std::decay_t<decltype(*buffer_iterator)>>;
     auto out = Value_T{};
-    std::copy_n(buffer_iterator, out.byte_count(), out.byte_begin());
+    std::copy_n(buffer_iterator, out.byte_count(), out.template byte_begin<Byte_t>());
     return std::pair<typename Value_T::value_type, decltype(buffer_iterator)>{out.value, std::next(buffer_iterator, out.byte_count())};
 
   } else {

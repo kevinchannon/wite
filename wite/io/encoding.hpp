@@ -71,13 +71,14 @@ struct little_endian : public endianness<Value_T, endian::little> {
     }
   }
 
+  template <byte_like Byte_T>
   _WITE_NODISCARD auto byte_begin() noexcept {
     static_assert(endian::big == system_native_endianness or endian::little == system_native_endianness,
                   "Endianness should be either big or little");
     if constexpr (endian::little == system_native_endianness) {
-      return reinterpret_cast<io::byte*>(&(this->value));
+      return reinterpret_cast<Byte_T*>(&(this->value));
     } else {
-      return std::make_reverse_iterator(std::next(reinterpret_cast<io::byte*>(&(this->value)), sizeof(value_type)));
+      return std::make_reverse_iterator(std::next(reinterpret_cast<Byte_T*>(&(this->value)), sizeof(value_type)));
     }
   }
 
@@ -106,13 +107,15 @@ struct big_endian : public endianness<Value_T, endian::big> {
     }
   }
 
+  
+  template <byte_like Byte_T>
   _WITE_NODISCARD auto byte_begin() noexcept {
     static_assert(endian::big == system_native_endianness or endian::little == system_native_endianness,
                   "Endianness should be either big or little");
     if constexpr (endian::little == system_native_endianness) {
-      return std::make_reverse_iterator(std::next(reinterpret_cast<io::byte*>(&(this->value)), sizeof(value_type)));
+      return std::make_reverse_iterator(std::next(reinterpret_cast<Byte_T*>(&(this->value)), sizeof(value_type)));
     } else {
-      return reinterpret_cast<io::byte*>(&(this->value));
+      return reinterpret_cast<Byte_T*>(&(this->value));
     }
   }
 

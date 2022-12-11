@@ -454,11 +454,26 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
       const auto data = std::array<uint8_t, 8>{0x67, 0x45, 0x23, 0x01, 0xEF, 0xCD, 0xAB, 0x89};
 
       const uint8_t* buf = data.data();
+      SECTION("native endianness") {
+        const auto [value, next] = io::unchecked_read<uint32_t>(buf);
 
-      const auto [value, next] = io::unchecked_read<uint32_t>(buf);
+        REQUIRE(uint32_t{0x01234567} == value);
+        REQUIRE(buf + 4 == next);
+      }
 
-      REQUIRE(uint32_t{0x01234567} == value);
-      REQUIRE(buf + 4 == next);
+      SECTION("big-endian") {
+        const auto [value, next] = io::unchecked_read<io::big_endian<uint32_t>>(buf);
+
+        REQUIRE(uint32_t{0x67452301} == value);
+        REQUIRE(buf + 4 == next);
+      }
+
+      SECTION("little-endian") {
+        const auto [value, next] = io::unchecked_read<io::little_endian<uint32_t>>(buf);
+
+        REQUIRE(uint32_t{0x01234567} == value);
+        REQUIRE(buf + 4 == next);
+      }
     }
   }
 

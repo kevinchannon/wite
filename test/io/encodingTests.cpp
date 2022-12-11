@@ -14,7 +14,7 @@ TEST_CASE("little_endian tests", "[buffer_io]") {
     const auto val = *reinterpret_cast<const uint32_t*>(bytes.data());
     REQUIRE((io::system_native_endianness == io::endian::little ? 0x3FBD4032 : 0x3240BD3F) == val);
     REQUIRE((io::system_native_endianness == io::endian::little ? uint32_t{0x32} : uint32_t{0x3F}) ==
-            io::to_integer<uint32_t>(*io::little_endian{val}.byte_begin()));
+            io::to_integer<uint32_t>(*io::little_endian{val}.byte_begin<io::byte>()));
   }
 
   SECTION("byte_count returns the size of the encoded value") {
@@ -30,7 +30,7 @@ TEST_CASE("bg_endian tests", "[buffer_io]") {
 
     const auto val = *reinterpret_cast<const uint32_t*>(bytes.data());
     REQUIRE((io::system_native_endianness == io::endian::little ? 0x3FBD4032 : 0x3240BD3F) == val);
-    REQUIRE((io::system_native_endianness == io::endian::little ? uint32_t{0x3F} : uint32_t{0x32}) == io::to_integer<uint32_t>(*io::big_endian{val}.byte_begin()));
+    REQUIRE((io::system_native_endianness == io::endian::little ? uint32_t{0x3F} : uint32_t{0x32}) == io::to_integer<uint32_t>(*io::big_endian{val}.byte_begin<io::byte>()));
   }
 
   SECTION("byte_count returns the size of the encoded value") {
