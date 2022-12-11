@@ -183,9 +183,9 @@ write_result_t try_write(ByteIter_T begin, ByteIter_T end, Value_T&& to_write) n
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
+template <byte_range_like ByteRange_T, typename Value_T >
   requires is_buffer_writeable<Value_T>
-write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_T value) noexcept {
+write_result_t try_write_at(size_t position, ByteRange_T&& buffer, Value_T value) noexcept {
   if (position + byte_count(value) < position) {
     return write_error::invalid_position_offset;
   }
@@ -249,9 +249,9 @@ namespace detail::buffer::write {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  template <typename Value_T, typename... Value_Ts>
+  template <byte_range_like ByteRange_T, typename Value_T, typename... Value_Ts>
   write_result_t _recursive_try_write_at(size_t position,
-                                         std::span<io::byte> buffer,
+                                         ByteRange_T&& buffer,
                                          Value_T first_value,
                                          Value_Ts... other_values) {
     const auto first_result = try_write_at(position, buffer, first_value);
@@ -306,10 +306,10 @@ write_result_t try_write(ByteIter_T begin, ByteIter_T end, Value_Ts&&... values)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename... Value_Ts>
+template <byte_range_like ByteRange_T, typename... Value_Ts>
   requires(sizeof...(Value_Ts) > 1)
-write_result_t try_write_at(size_t position, std::span<io::byte> buffer, Value_Ts&&... values) noexcept {
-  return detail::buffer::write::_recursive_try_write_at(position, buffer, std::forward<Value_Ts>(values)...);
+write_result_t try_write_at(size_t position, ByteRange_T&& buffer, Value_Ts&&... values) noexcept {
+  return detail::buffer::write::_recursive_try_write_at(position, std::forward<ByteRange_T>(buffer), std::forward<Value_Ts>(values)...);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
