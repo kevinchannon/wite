@@ -20,14 +20,14 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Configure CMake
-        run: cmake -B build
+        run: cmake -B build/package
 
       - name: Package source code
-        run: cmake --build build --target wite_package
+        run: cmake --build build/package --target wite_package
 
       - name: Add packaged source code to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/wite-src.zip
+          file: build/package/wite-src.zip
           tag: ${{ github.event.inputs.version }}
