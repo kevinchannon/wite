@@ -124,6 +124,14 @@ _WITE_NODISCARD constexpr Value_T interpolate(double fraction, Value_T min, Valu
 
 template <typename Value_T>
 _WITE_NODISCARD constexpr double fraction(Value_T value, Value_T min, Value_T max) noexcept {
+  if (max == min) {
+#ifdef _WITE_CONFIG_DEBUG
+    return std::numeric_limits<Value_T>::signaling_NaN();
+#else
+    return std::numeric_limits<Value_T>::quiet_NaN();
+#endif
+  }
+
   return static_cast<double>(value - min) / (max - min);
 }
 

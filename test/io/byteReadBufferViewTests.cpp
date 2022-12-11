@@ -174,7 +174,19 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
         }
 
         SECTION("throws std::out_of_range if reading past the end of the buffer") {
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overread"
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
           REQUIRE_THROWS_AS(read_buf.read_range(std::vector<uint16_t>(8, 0)), std::out_of_range);
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic pop
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
         }
       }
     }
@@ -260,7 +272,20 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
           }
 
           SECTION("returns error if the read goes past the end of the buffer") {
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overread"
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
             const auto val = buffer.try_read_range(std::vector<uint8_t>(5, 0));
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic pop
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
+
             REQUIRE(val.is_error());
             REQUIRE(io::read_error::insufficient_buffer == val.error());
             REQUIRE(4 == buffer.read_position());

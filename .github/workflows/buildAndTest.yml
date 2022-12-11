@@ -27,17 +27,30 @@ jobs:
             sudo apt install gcc-12 g++-12
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 120 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12
 
-    - name: Configure CMake
+    - name: Configure GCC-x64-debug
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build/gcc/x64/debug -DCMAKE_BUILD_TYPE=Debug
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - name: Build GCC-x64-debug
+      run: cmake --build ${{github.workspace}}/build/gcc/x64/debug --config Debug
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build/test
+    - name: Test GCC-x64-debug
+      working-directory: ${{github.workspace}}/build//gcc/x64/debug/test
+      # Execute tests defined by the CMake configuration.  
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ./wite_test
+
+    - name: Configure GCC-x64-release
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build/gcc/x64/release -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build GCC-x64-release
+      run: cmake --build ${{github.workspace}}/build/gcc/x64/release --config Release
+
+    - name: Test GCC-x64-release
+      working-directory: ${{github.workspace}}/build//gcc/x64/release/test
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ./wite_test

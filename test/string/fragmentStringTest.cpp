@@ -461,7 +461,7 @@ TEST_CASE("fragment_string iterator", "[string]") {
   const char* s2 = "second fragment";
 
   const auto fs = fragment_string{s1} + " " + s2;
-  const auto fs2 = fragment_string{"A second string"} + "parts to get" + "correct fragment count";
+  [[maybe_unused]] const auto fs2 = fragment_string{"A second string"} + "parts to get" + "correct fragment count";
 
   SECTION("dereference") {
     SECTION("get begin") {

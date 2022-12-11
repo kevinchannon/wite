@@ -333,8 +333,20 @@ TEST_CASE("byte_write_buffer_view tests", "[bufer_io]") {
         }
       }
 
+
       SECTION("returns error if the buffer is too small") {
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow="
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
         const auto result = write_view.try_write(a, io::big_endian{b}, c, d, int{});
+#ifndef _WITE_CONFIG_DEBUG
+#ifdef _WITE_COMPILER_GCC
+#pragma GCC diagnostic pop
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_CONFIG_DEBUG
 
         REQUIRE(result.is_error());
         REQUIRE(io::write_error::insufficient_buffer == result.error());
