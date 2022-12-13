@@ -48,12 +48,13 @@ auto unchecked_read(ByteIter_T buffer_iterator) noexcept
 
 namespace detail::buffer::read {
 
-  template <typename FirstValue_T, typename... OtherValue_Ts>
-  auto _recursive_read(const std::span<const io::byte>& buffer) noexcept {
+  template <byte_range_like ByteRange_T, typename FirstValue_T, typename... OtherValue_Ts>
+  auto _recursive_read(ByteRange_T&& buffer) noexcept {
     auto [first_value, next_pos] = io::unchecked_read<FirstValue_T>(buffer.begin());
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
-      auto other_values = _recursive_read<OtherValue_Ts...>(std::span<const io::byte>{next_pos, buffer.end()});
+      auto other_values = _recursive_read<std::remove_reference_t<ByteRange_T>, OtherValue_Ts...>(
+          std::span<const std::decay_t<decltype(*buffer.begin())>>{next_pos, buffer.end()});
 
       return std::tuple_cat(std::tuple{first_value}, std::tuple{other_values});
     } else {
@@ -72,7 +73,7 @@ auto read(const std::span<const io::byte>& buffer) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
-  return detail::buffer::read::_recursive_read<Value_Ts...>(buffer);
+  return detail::buffer::read::_recursive_read<const std::span<const io::byte>&, Value_Ts...>(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
