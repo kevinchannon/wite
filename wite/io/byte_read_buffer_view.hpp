@@ -68,7 +68,7 @@ class byte_read_buffer_view {
 
   template <typename... Value_Ts>
   auto read() {
-    auto out = io::read<Value_Ts...>({_get_pos, _data.end()});
+    auto out = io::read<Value_Ts...>(buffer_type{_get_pos, _data.end()});
     std::advance(_get_pos, byte_count<Value_Ts...>());
 
     return out;
@@ -84,7 +84,7 @@ class byte_read_buffer_view {
 
   template <typename Value_T>
   auto read(std::endian endianness) {
-    const auto out = io::read<Value_T>({_get_pos, _data.end()}, endianness);
+    const auto out = io::read_with_endian<Value_T>(buffer_type{_get_pos, _data.end()}, endianness);
     std::advance(_get_pos, value_size<Value_T>());
 
     return out;

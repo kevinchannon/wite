@@ -289,7 +289,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
 
         REQUIRE(pos + sizeof(val) == io::write_at(pos, data, val));
 
-        REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
+        REQUIRE(val == io::read<double>(std::span{std::next(data.begin(), pos), data.end()}));
 
         REQUIRE(0x00 == io::to_integer<uint8_t>(data[0]));
         REQUIRE(0x00 == io::to_integer<uint8_t>(data[1]));
@@ -631,7 +631,7 @@ TEST_CASE("Write values to byte arrays", "[buffer_io]") {
         REQUIRE(result.ok());
         REQUIRE(pos + sizeof(val) == result.value());
 
-        REQUIRE(val == io::read<double>({std::next(data.begin(), pos), data.end()}));
+        REQUIRE(val == io::read<double>(std::span{std::next(data.begin(), pos), data.end()}));
 
         REQUIRE(0x00 == io::to_integer<uint8_t>(data[0]));
         REQUIRE(0x00 == io::to_integer<uint8_t>(data[1]));

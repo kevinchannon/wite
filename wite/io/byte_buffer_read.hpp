@@ -53,8 +53,8 @@ namespace detail::buffer::read {
     auto [first_value, next_pos] = io::unchecked_read<FirstValue_T>(buffer.begin());
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
-      auto other_values = _recursive_read<std::remove_reference_t<ByteRange_T>, OtherValue_Ts...>(
-          std::span<const std::decay_t<decltype(*buffer.begin())>>{next_pos, buffer.end()});
+      auto other_values =
+          _recursive_read<std::span<std::remove_reference_t<decltype(*buffer.begin())>>, OtherValue_Ts...>(std::span{next_pos, buffer.end()});
 
       return std::tuple_cat(std::tuple{first_value}, std::tuple{other_values});
     } else {
@@ -67,13 +67,13 @@ namespace detail::buffer::read {
 
 #ifndef WITE_NO_EXCEPTIONS
 
-template <typename... Value_Ts>
-auto read(const std::span<const io::byte>& buffer) {
+template <typename... Value_Ts, byte_range_like ByteRange_T>
+auto read(ByteRange_T&& buffer) {
   if (byte_count<Value_Ts...>() > buffer.size()) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
-  return detail::buffer::read::_recursive_read<const std::span<const io::byte>&, Value_Ts...>(buffer);
+  return detail::buffer::read::_recursive_read<ByteRange_T, Value_Ts...>(std::forward<ByteRange_T>(buffer));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ auto read_at(size_t position, const std::span<const io::byte>& buffer) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
-  return read<Value_Ts...>({std::next(buffer.begin(), position), buffer.end()});
+  return read<Value_Ts...>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -284,7 +284,7 @@ auto try_read_at(size_t position, const std::span<const io::byte>& buffer) noexc
 
 template <typename Value_T>
 requires is_buffer_readable<Value_T>
-Value_T read(const std::span<const io::byte>& buffer, endian endianness) {
+Value_T read_with_endian(const std::span<const io::byte>& buffer, endian endianness) {
   if (endian::little == endianness) {
     return read<io::little_endian<Value_T>>(buffer);
   } else {
