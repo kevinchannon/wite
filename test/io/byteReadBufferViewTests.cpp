@@ -7,6 +7,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
 #include <array>
 #include <cstddef>
@@ -24,23 +25,23 @@ initializer_list(const std::initializer_list<T>&) -> initializer_list<T>;
 }
 #endif
 
-TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
+TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8_t, unsigned char) {
   SECTION("construction"){
-    const auto data = io::static_byte_buffer<12>{io::byte(0xCD),
-                                                 io::byte(0x53),
-                                                 io::byte(0x72),
-                                                 io::byte(0xF3),
-                                                 io::byte(0x0E),
-                                                 io::byte(0x52),
-                                                 io::byte(0x06),
-                                                 io::byte(0xB3),
-                                                 io::byte(0x6A),
-                                                 io::byte(0xEE),
-                                                 io::byte(0x27),
-                                                 io::byte(0xFF)};
+    const auto data = std::array<TestType, 12>{TestType(0xCD),
+                                                 TestType(0x53),
+                                                 TestType(0x72),
+                                                 TestType(0xF3),
+                                                 TestType(0x0E),
+                                                 TestType(0x52),
+                                                 TestType(0x06),
+                                                 TestType(0xB3),
+                                                 TestType(0x6A),
+                                                 TestType(0xEE),
+                                                 TestType(0x27),
+                                                 TestType(0xFF)};
 
     SECTION("initialises to the start of the buffer") {
-      REQUIRE(0 == io::byte_read_buffer_view(data).read_position());
+      REQUIRE(0 == io::byte_read_buffer_view{data}.read_position());
     }
 
     SECTION("has the correct read position when offset is specified") {
@@ -59,7 +60,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   }
 
   SECTION("byte_read_buffer_view::seek") {
-    const auto data = io::static_byte_buffer<10>{};
+    const auto data = std::array<TestType, 10>{};
     auto view       = io::byte_read_buffer_view{data};
 
     SECTION("moves the view to the correct position") {
@@ -73,7 +74,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   }
 
   SECTION("byte_read_buffer_view::try_seek") {
-    const auto data = io::static_byte_buffer<10>{};
+    const auto data = std::array<TestType, 10>{};
     auto view       = io::byte_read_buffer_view{data};
 
     SECTION("moves the view to the correct position") {
@@ -89,14 +90,14 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
 
   SECTION("read") {
     SECTION("single value") {
-      const auto array_buffer = std::array{io::byte(0x67),
-                                           io::byte(0x45),
-                                           io::byte(0x23),
-                                           io::byte(0x01),
-                                           io::byte(0xEF),
-                                           io::byte(0xCD),
-                                           io::byte(0xAB),
-                                           io::byte(0x89)};
+      const auto array_buffer = std::array{TestType(0x67),
+                                           TestType(0x45),
+                                           TestType(0x23),
+                                           TestType(0x01),
+                                           TestType(0xEF),
+                                           TestType(0xCD),
+                                           TestType(0xAB),
+                                           TestType(0x89)};
 
       SECTION("scalar value") {
         SECTION("Little-endian") {
@@ -193,11 +194,11 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
 
     SECTION("multiple values") {
       // clang-format off
-      const auto data = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-        io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
-        io::byte(0xAB), io::byte(0xCD),
-        io::byte{true},
-        io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
+      const auto data = std::array<TestType, sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+        TestType(0x78), TestType(0x56), TestType(0x34), TestType(0x12),
+        TestType(0xAB), TestType(0xCD),
+        TestType{true},
+        TestType(0x98), TestType(0xBA), TestType(0xDC), TestType(0xFE)
       };
       // clang-format on
 
@@ -224,7 +225,7 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
   SECTION("try_read") {
     SECTION("single value") {
       SECTION("returns value on good read") {
-        const auto data = io::static_byte_buffer<4>{io::byte(0x67), io::byte(0x45), io::byte(0xAB), io::byte(0xFF)};
+        const auto data = std::array<TestType, 4>{TestType(0x67), TestType(0x45), TestType(0xAB), TestType(0xFF)};
         auto buffer     = io::byte_read_buffer_view{data};
 
         SECTION("scalar value") {
@@ -297,11 +298,11 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
     SECTION("multiple values") {
       SECTION("read from bufffer succeeds") {
         // clang-format off
-        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-          io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
-          io::byte(0xAB), io::byte(0xCD),
-          io::byte{true},
-          io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
+        const auto buffer = std::array<TestType, sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+          TestType(0x78), TestType(0x56), TestType(0x34), TestType(0x12),
+          TestType(0xAB), TestType(0xCD),
+          TestType{true},
+          TestType(0x98), TestType(0xBA), TestType(0xDC), TestType(0xFE)
         };
         // clang-format on
 
@@ -324,9 +325,9 @@ TEST_CASE("byte_read_buffer_view tests", "[buffer_io]") {
 
       SECTION("inserts errors if the buffer is too small") {
         // clang-format off
-        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t)>{
-          io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
-          io::byte(0xAB), io::byte(0xCD)
+        const auto buffer = std::array<TestType, sizeof(uint32_t) + sizeof(uint16_t)>{
+          TestType(0x78), TestType(0x56), TestType(0x34), TestType(0x12),
+          TestType(0xAB), TestType(0xCD)
         };
         // clang-format on
 

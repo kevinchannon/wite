@@ -24,17 +24,18 @@ namespace wite::io {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<byte_range_like ByteRange_T>
 class byte_read_buffer_view {
  public:
-  using buffer_type = std::span<const io::byte>;
-  using size_type = typename std::span<const io::byte>::size_type;
+  using buffer_type = std::decay_t<ByteRange_T>;
+  using size_type   = buffer_type::size_type;
 
-  explicit byte_read_buffer_view(buffer_type buf) : _data{std::move(buf)}, _get_pos{_data.begin()} {}
+  explicit byte_read_buffer_view(const buffer_type& buf) : _data{buf}, _get_pos{_data.begin()} {}
 
   #ifndef WITE_NO_EXCEPTIONS
 
-  byte_read_buffer_view(buffer_type buf, size_type offset)
-      : byte_read_buffer_view{std::move(buf)} {
+  byte_read_buffer_view(const buffer_type& buf, size_type offset)
+      : byte_read_buffer_view{buf} {
     seek(offset);
   }
 
@@ -68,7 +69,7 @@ class byte_read_buffer_view {
 
   template <typename... Value_Ts>
   auto read() {
-    auto out = io::read<Value_Ts...>(buffer_type{_get_pos, _data.end()});
+    auto out = io::read<Value_Ts...>(std::span{_get_pos, _data.end()});
     std::advance(_get_pos, byte_count<Value_Ts...>());
 
     return out;
@@ -76,7 +77,7 @@ class byte_read_buffer_view {
 
   template<typename Range_T>
   auto read_range(Range_T&& range) {
-    auto out = io::read_range(buffer_type{_get_pos, _data.end()}, std::forward<Range_T>(range));
+    auto out = io::read_range(std::span{_get_pos, _data.end()}, std::forward<Range_T>(range));
     std::advance(_get_pos, byte_count(out));
 
     return out;
@@ -84,7 +85,7 @@ class byte_read_buffer_view {
 
   template <typename Value_T>
   auto read(std::endian endianness) {
-    const auto out = io::read_with_endian<Value_T>(buffer_type{_get_pos, _data.end()}, endianness);
+    const auto out = io::read_with_endian<Value_T>(std::span{_get_pos, _data.end()}, endianness);
     std::advance(_get_pos, value_size<Value_T>());
 
     return out;
@@ -116,15 +117,24 @@ class byte_read_buffer_view {
 
 private:
 
-  buffer_type _data;
-  buffer_type::iterator _get_pos;
+  const buffer_type& _data;
+  buffer_type::const_iterator _get_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline result<byte_read_buffer_view, read_error> try_make_byte_read_buffer_view(
-    byte_read_buffer_view::buffer_type buffer,
-    byte_read_buffer_view::size_type offset) noexcept {
+template<byte_range_like R>
+byte_read_buffer_view(const R& r)->byte_read_buffer_view<R>;
+
+template <byte_range_like R>
+byte_read_buffer_view(const R& r, size_t) -> byte_read_buffer_view<R>;
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<byte_range_like ByteRange_T>
+result<byte_read_buffer_view<ByteRange_T>, read_error> try_make_byte_read_buffer_view(
+    const ByteRange_T& buffer,
+    size_t offset) noexcept {
   auto out = byte_read_buffer_view {std::move(buffer)};
   if (auto result = out.try_seek(offset); result.is_error()) {
     return result.error();
