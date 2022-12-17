@@ -310,8 +310,8 @@ auto from_bytes(ByteRange_T&& buffer) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, byte_range_like ByteRange_T>
-  requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-read_result_t<Value_T> try_from_bytes(ByteRange_T&& buffer) noexcept {
+  requires is_buffer_readable<Value_T>
+auto try_from_bytes(ByteRange_T&& buffer) noexcept {
   return try_read<Value_T>(std::forward<ByteRange_T>(buffer));
 }
 
