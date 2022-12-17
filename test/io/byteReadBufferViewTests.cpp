@@ -1,5 +1,5 @@
 #include <wite/io/byte_buffer.hpp>
-#include <wite/io/byte_stream.hpp>  // This is here to make sure that things build in eachothers presence.
+#include <wite/io/byte_stream.hpp>  // This is here to make sure that things build in the presence of each other.
 #include <wite/io/encoding.hpp>
 #include <wite/io/types.hpp>
 
@@ -12,8 +12,6 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
-#include <sstream>
 #include <vector>
 
 using namespace wite;
@@ -105,21 +103,21 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
             auto read_buf = io::byte_read_buffer_view(array_buffer);
 
             SECTION("Dynamic endianness") {
-              REQUIRE(uint32_t(0x01234567) == read_buf.read<uint32_t>(io::endian::little));
+              REQUIRE(uint32_t(0x01234567) == read_buf.template read<uint32_t>(io::endian::little));
               REQUIRE(4 == read_buf.read_position());
             }
 
             SECTION("Static endianness") {
-              REQUIRE(uint32_t(0x01234567) == read_buf.read<io::little_endian<uint32_t>>());
+              REQUIRE(uint32_t(0x01234567) == read_buf.template read<io::little_endian<uint32_t>>());
               REQUIRE(4 == read_buf.read_position());
 
               read_buf.seek(0);
-              REQUIRE(uint32_t(0x67452301) == read_buf.read<io::big_endian<uint32_t>>());
+              REQUIRE(uint32_t(0x67452301) == read_buf.template read<io::big_endian<uint32_t>>());
               REQUIRE(4 == read_buf.read_position());
             }
 
             SECTION("Default endianness") {
-              REQUIRE(uint32_t(0x01234567) == read_buf.read<uint32_t>());
+              REQUIRE(uint32_t(0x01234567) == read_buf.template read<uint32_t>());
               REQUIRE(4 == read_buf.read_position());
             }
           }
@@ -127,34 +125,34 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
           SECTION("Read 2 shorts") {
             auto read_buf = io::byte_read_buffer_view(array_buffer);
 
-            REQUIRE(uint32_t(0x4567) == read_buf.read<uint16_t>(io::endian::little));
-            REQUIRE(uint32_t(0x0123) == read_buf.read<uint16_t>(io::endian::little));
+            REQUIRE(uint32_t(0x4567) == read_buf.template read<uint16_t>(io::endian::little));
+            REQUIRE(uint32_t(0x0123) == read_buf.template read<uint16_t>(io::endian::little));
           }
 
           SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
             auto read_buf = io::byte_read_buffer_view(array_buffer, 6);
 
-            REQUIRE_THROWS_AS(read_buf.read<io::little_endian<uint32_t>>(), std::out_of_range);
+            REQUIRE_THROWS_AS(read_buf.template read<io::little_endian<uint32_t>>(), std::out_of_range);
           }
         }
 
         SECTION("Big-endian") {
           auto buffer = io::byte_read_buffer_view(array_buffer);
           SECTION("Read int") {
-            SECTION("Dynmic endianness") {
-              REQUIRE(uint32_t(0x67452301) == buffer.read<uint32_t>(io::endian::big));
+            SECTION("Dynamic endianness") {
+              REQUIRE(uint32_t(0x67452301) == buffer.template read<uint32_t>(io::endian::big));
               REQUIRE(4 == buffer.read_position());
             }
 
             SECTION("Static endianness") {
-              REQUIRE(uint32_t(0x67452301) == buffer.read<io::big_endian<uint32_t>>());
+              REQUIRE(uint32_t(0x67452301) == buffer.template read<io::big_endian<uint32_t>>());
               REQUIRE(4 == buffer.read_position());
             }
           }
 
           SECTION("Read 2 shorts") {
-            REQUIRE(uint32_t(0x6745) == buffer.read<io::big_endian<uint16_t>>());
-            REQUIRE(uint32_t(0x2301) == buffer.read<io::big_endian<uint16_t>>());
+            REQUIRE(uint32_t(0x6745) == buffer.template read<io::big_endian<uint16_t>>());
+            REQUIRE(uint32_t(0x2301) == buffer.template read<io::big_endian<uint16_t>>());
 
             REQUIRE(4 == buffer.read_position());
           }
@@ -162,7 +160,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
           SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
             auto read_buf = io::byte_read_buffer_view(array_buffer, 6);
 
-            REQUIRE_THROWS_AS(read_buf.read<io::big_endian<uint32_t>>(), std::out_of_range);
+            REQUIRE_THROWS_AS(read_buf.template read<io::big_endian<uint32_t>>(), std::out_of_range);
           }
         }
       }
@@ -205,7 +203,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
       auto read_view = io::byte_read_buffer_view{data};
 
       SECTION("are correctly read") {
-        const auto [a, b, c, d] = read_view.read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
+        const auto [a, b, c, d] = read_view.template read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
 
         REQUIRE(a == uint32_t{0x12345678});
         REQUIRE(b == uint16_t{0xABCD});
@@ -215,7 +213,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
 
       SECTION("throws out_of_range if the buffer is too small") {
         const auto read_from_buffer = [&]() {
-          read_view.read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t, bool>();
+          read_view.template read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t, bool>();
         };
         REQUIRE_THROWS_AS(read_from_buffer(), std::out_of_range);
       }
@@ -230,26 +228,26 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
 
         SECTION("scalar value") {
           SECTION("with default endianness") {
-            const auto val = buffer.try_read<uint32_t>();
+            const auto val = buffer.template try_read<uint32_t>();
             REQUIRE(val.ok());
             REQUIRE(uint32_t{0xFFAB4567} == val.value());
             REQUIRE(4 == buffer.read_position());
           }
 
           SECTION("with specified endianness adapter") {
-            const auto val = buffer.try_read<io::big_endian<uint32_t>>();
+            const auto val = buffer.template try_read<io::big_endian<uint32_t>>();
             REQUIRE(val.ok());
             REQUIRE(uint32_t{0x6745ABFF} == val.value());
             REQUIRE(4 == buffer.read_position());
           }
 
           SECTION("read 2 shorts") {
-            const auto first_value = buffer.try_read<uint16_t>();
+            const auto first_value = buffer.template try_read<uint16_t>();
             REQUIRE(first_value.ok());
             REQUIRE(uint32_t{0x4567} == first_value.value());
             REQUIRE(2 == buffer.read_position());
 
-            const auto second_value = buffer.try_read<uint16_t>();
+            const auto second_value = buffer.template try_read<uint16_t>();
             REQUIRE(second_value.ok());
             REQUIRE(uint32_t{0xFFAB} == second_value.value());
             REQUIRE(4 == buffer.read_position());
@@ -258,7 +256,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
           SECTION("Read past the end of the buffer returns error value") {
             auto read_buf = io::byte_read_buffer_view(data, 2);
 
-            const auto val = read_buf.try_read<uint32_t>();
+            const auto val = read_buf.template try_read<uint32_t>();
             REQUIRE(val.is_error());
             REQUIRE(io::read_error::insufficient_buffer == val.error());
           }
@@ -296,7 +294,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
     }
 
     SECTION("multiple values") {
-      SECTION("read from bufffer succeeds") {
+      SECTION("read from buffer succeeds") {
         // clang-format off
         const auto buffer = std::array<TestType, sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
           TestType(0x78), TestType(0x56), TestType(0x34), TestType(0x12),
@@ -308,7 +306,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
 
         auto read_view = io::byte_read_buffer_view{buffer};
 
-        const auto [a, b, c, d] = read_view.try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
+        const auto [a, b, c, d] = read_view.template try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
 
         REQUIRE(a.ok());
         REQUIRE(a.value() == uint32_t{0x12345678});
@@ -332,7 +330,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
         // clang-format on
 
         auto read_view          = io::byte_read_buffer_view{buffer};
-        const auto [a, b, c, d] = read_view.try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
+        const auto [a, b, c, d] = read_view.template try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>();
 
         REQUIRE(a.ok());
         REQUIRE(a.value() == uint32_t{0x12345678});
