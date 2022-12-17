@@ -27,21 +27,21 @@ namespace wite::io {
 
 namespace detail::buffer::write {
 
-  template <byte_like Byte_T, typename Encoded_T>
+  template <common::byte_like Byte_T, typename Encoded_T>
     requires is_encoded<std::decay_t<Encoded_T>>
   size_t _write_single_encoded_value(auto buffer, Encoded_T&& value) noexcept {
     std::copy_n(value.template byte_begin<Byte_T>(), value.byte_count(), buffer);
     return value.byte_count();
   }
 
-  template <byte_like Byte_T, typename Value_T>
+  template <common::byte_like Byte_T, typename Value_T>
     requires((not common::is_sized_range_v<std::decay_t<Value_T>>) and (not is_encoded<std::decay_t<Value_T>>))
   size_t _write_single_value(auto buffer, Value_T&& value) noexcept {
     std::copy_n(reinterpret_cast<const Byte_T*>(&value), sizeof(value), buffer);
     return sizeof(std::decay_t<Value_T>);
   }
 
-  template <byte_like Byte_T, typename Range_T>
+  template <common::byte_like Byte_T, typename Range_T>
     requires common::is_sized_range_v<std::decay_t<Range_T>>
   size_t _write_single_range_value(auto buffer, Range_T&& values) noexcept {
     struct _write_info {

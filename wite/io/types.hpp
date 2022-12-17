@@ -2,6 +2,7 @@
 
 #include <wite/core/result.hpp>
 #include <wite/env/environment.hpp>
+#include <wite/common/concepts.hpp>
 
 #include <array>
 #include <cstddef>
@@ -15,20 +16,24 @@ namespace wite::io {
 
 using byte = WITE_BYTE;
 
-template <typename Result_T>
+template <typename Result_T, common::byte_like Value_T>
   requires std::is_unsigned_v<Result_T>
-_WITE_NODISCARD Result_T to_integer(wite::io::byte b) {
+_WITE_NODISCARD Result_T to_integer(Value_T value) {
 #if _WITE_FEATURE_USE_STD_BYTE
-  return std::to_integer<Result_T>(b);
-#else
-  if constexpr (std::is_unsigned_v<wite::io::byte>) {
-    return static_cast<Result_T>(b);
+  if constexpr (std::is_same_v<wite::io::byte, std::decay_t<Value_T>>) {
+    return std::to_integer<Result_T>(value);
   } else {
-    if (b >= 0) {
-      return static_cast<Result_T>(b);
+#endif
+    if constexpr (std::is_unsigned_v<std::decay_t<Value_T>>) {
+      return static_cast<Result_T>(value);
     } else {
-      return static_cast<Result_T>(b) + std::numeric_limits<std::make_unsigned_t<wite::io::byte>>::max() + 1;
+      if (value >= 0) {
+        return static_cast<Result_T>(value);
+      } else {
+        return static_cast<Result_T>(value) + std::numeric_limits<std::make_unsigned_t<std::decay_t<Value_T>>>::max() + 1;
+      }
     }
+#if _WITE_FEATURE_USE_STD_BYTE
   }
 #endif
 }

@@ -12,9 +12,6 @@
 #endif
 
 namespace wite::io {
-
-template <typename T>
-concept byte_like = requires(T& t) { sizeof(t) == 1; };
  
 #if _WITE_HAS_STD_ENDIAN
 using endian = std::endian;
@@ -60,7 +57,7 @@ struct little_endian : public endianness<Value_T, endian::little> {
 
   WITE_DEFAULT_CONSTRUCTORS(little_endian);
 
-  template<byte_like Byte_T>
+  template<common::byte_like Byte_T>
   _WITE_NODISCARD auto byte_begin() const noexcept {
     static_assert(endian::big == system_native_endianness or endian::little == system_native_endianness,
                   "Endianness should be either big or little");
@@ -71,7 +68,7 @@ struct little_endian : public endianness<Value_T, endian::little> {
     }
   }
 
-  template <byte_like Byte_T>
+  template <common::byte_like Byte_T>
   _WITE_NODISCARD auto byte_begin() noexcept {
     static_assert(endian::big == system_native_endianness or endian::little == system_native_endianness,
                   "Endianness should be either big or little");
@@ -96,7 +93,7 @@ struct big_endian : public endianness<Value_T, endian::big> {
 
   WITE_DEFAULT_CONSTRUCTORS(big_endian);
 
-  template <byte_like Byte_T>
+  template <common::byte_like Byte_T>
   _WITE_NODISCARD auto byte_begin() const noexcept {
     static_assert(endian::big == system_native_endianness or endian::little == system_native_endianness,
                   "Endianness should be either big or little");
@@ -108,7 +105,7 @@ struct big_endian : public endianness<Value_T, endian::big> {
   }
 
   
-  template <byte_like Byte_T>
+  template <common::byte_like Byte_T>
   _WITE_NODISCARD auto byte_begin() noexcept {
     static_assert(endian::big == system_native_endianness or endian::little == system_native_endianness,
                   "Endianness should be either big or little");
