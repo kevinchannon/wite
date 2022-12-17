@@ -229,14 +229,16 @@ read_result_t<Range_T> try_read_range_at(size_t position, ByteRange_T&& buffer, 
 
 namespace detail::buffer::read {
 
-  template <typename FirstValue_T, typename... OtherValue_Ts>
-  auto _recursive_try_read(const std::span<const io::byte>& buffer) noexcept {
+  template <byte_range_like ByteRange_T, typename FirstValue_T, typename... OtherValue_Ts>
+  auto _recursive_try_read(ByteRange_T&& buffer) noexcept {
     auto first_value = std::make_tuple(io::try_read<FirstValue_T>(buffer));
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
       constexpr auto increment = value_size<FirstValue_T>();
 
-      auto other_values = _recursive_try_read<OtherValue_Ts...>(std::span<const io::byte>{
+      using Byte_t = std::remove_reference_t<decltype(*buffer.begin())>;
+
+      auto other_values = _recursive_try_read<std::span<Byte_t>, OtherValue_Ts...>(std::span{
           std::get<0>(first_value).ok() ? std::next(buffer.begin(), increment) : buffer.end(), buffer.end()});
 
       return std::tuple_cat(first_value, other_values);
@@ -245,14 +247,15 @@ namespace detail::buffer::read {
     }
   }
 
-  template <typename FirstValue_T, typename... OtherValue_Ts>
-  auto _recursive_try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+  template <byte_range_like ByteRange_T, typename FirstValue_T, typename... OtherValue_Ts>
+  auto _recursive_try_read_at(size_t position, ByteRange_T&& buffer) noexcept {
     auto first_value = std::make_tuple(io::try_read_at<FirstValue_T>(position, buffer));
 
     if constexpr (sizeof...(OtherValue_Ts) > 0) {
       constexpr auto increment = value_size<FirstValue_T>();
 
-      auto other_values = _recursive_try_read_at<OtherValue_Ts...>(position + increment, buffer);
+      auto other_values = _recursive_try_read_at<decltype(std::forward<ByteRange_T>(buffer)), OtherValue_Ts...>(
+          position + increment, std::forward<ByteRange_T>(buffer));
 
       return std::tuple_cat(first_value, other_values);
     } else {
@@ -264,18 +267,20 @@ namespace detail::buffer::read {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename... Value_Ts>
-requires(sizeof...(Value_Ts) > 1)
-auto try_read(const std::span<const io::byte>& buffer) noexcept {
-  return detail::buffer::read::_recursive_try_read<Value_Ts...>(buffer);
+template <typename... Value_Ts, byte_range_like ByteRange_T>
+  requires(sizeof...(Value_Ts) > 1)
+auto try_read(ByteRange_T&& buffer) noexcept {
+  return detail::buffer::read::_recursive_try_read<decltype(std::forward<ByteRange_T>(buffer)), Value_Ts...>(
+      std::forward<ByteRange_T>(buffer));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename... Value_Ts>
+template <typename... Value_Ts, byte_range_like ByteRange_T>
   requires(sizeof...(Value_Ts) > 1)
-auto try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
-  return detail::buffer::read::_recursive_try_read_at<Value_Ts...>(position, buffer);
+auto try_read_at(size_t position, ByteRange_T&& buffer) noexcept {
+  return detail::buffer::read::_recursive_try_read_at<decltype(std::forward<ByteRange_T>(buffer)), Value_Ts...>(
+      position, std::forward<ByteRange_T>(buffer));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

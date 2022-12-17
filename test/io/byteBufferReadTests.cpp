@@ -633,11 +633,11 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
     SECTION("multiple values") {
       SECTION("read from buffer succeeds") {
         // clang-format off
-        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-          io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
-          io::byte(0xAB), io::byte(0xCD),
-          io::byte{true},
-          io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
+        const auto buffer = std::vector<unsigned char>{
+          0x78, 0x56, 0x34, 0x12,
+          0xAB, 0xCD,
+          true,
+          0x98, 0xBA, 0xDC, 0xFE
         };
         // clang-format on
 
@@ -658,9 +658,9 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
 
       SECTION("inserts errors if the buffer is too small") {
         // clang-format off
-        const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t)>{
-          io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
-          io::byte(0xAB), io::byte(0xCD)
+        const auto buffer = std::array<uint8_t, sizeof(uint32_t) + sizeof(uint16_t)>{
+          0x78, 0x56, 0x34, 0x12,
+          0xAB, 0xCD
         };
         // clang-format on
         const auto [a, b, c, d] = io::try_read<uint32_t, io::big_endian<uint16_t>, bool, uint32_t>(buffer);
@@ -819,11 +819,11 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
 
     SECTION("multiple values") {
       // clang-format off
-      const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
-        io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
-        io::byte(0xAB), io::byte(0xCD),
-        io::byte{true},
-        io::byte(0x98), io::byte(0xBA), io::byte(0xDC), io::byte(0xFE)
+      const auto buffer = std::array<uint8_t, sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
+        0x78, 0x56, 0x34, 0x12,
+        0xAB, 0xCD,
+        true,
+        0x98, 0xBA, 0xDC, 0xFE
       };
       // clang-format on
 
