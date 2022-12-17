@@ -95,13 +95,13 @@ auto read_range(ByteRange_T&& buffer, Range_T&& range) {
     return value;
   });
 
-  return std::move(range);
+  return std::forward<Range_T>(range);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename... Value_Ts>
-auto read_at(size_t position, const std::span<const io::byte>& buffer) {
+template <typename... Value_Ts, byte_range_like ByteRange_T>
+auto read_at(size_t position, ByteRange_T&& buffer) {
   if (position + byte_count<Value_Ts...>() < position) {
     throw std::invalid_argument{"Buffer read position exceeds allowed value"};
   }
@@ -110,7 +110,7 @@ auto read_at(size_t position, const std::span<const io::byte>& buffer) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
-  return read<Value_Ts...>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
+  return read<Value_Ts...>(std::span<std::remove_reference_t<decltype(*buffer.begin())>>{std::next(buffer.begin(), position), buffer.end()});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
