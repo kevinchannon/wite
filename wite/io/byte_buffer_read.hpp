@@ -282,13 +282,13 @@ auto try_read_at(size_t position, const std::span<const io::byte>& buffer) noexc
 
 #ifndef WITE_NO_EXCEPTIONS
 
-template <typename Value_T>
+template <typename Value_T, byte_range_like ByteRange_T>
 requires is_buffer_readable<Value_T>
-Value_T read_with_endian(const std::span<const io::byte>& buffer, endian endianness) {
+Value_T read_with_endian(ByteRange_T&& buffer, endian endianness) {
   if (endian::little == endianness) {
-    return read<io::little_endian<Value_T>>(buffer);
+    return read<io::little_endian<Value_T>>(std::forward<ByteRange_T>(buffer));
   } else {
-    return read<io::big_endian<Value_T>>(buffer);
+    return read<io::big_endian<Value_T>>(std::forward<ByteRange_T>(buffer));
   }
 }
 
