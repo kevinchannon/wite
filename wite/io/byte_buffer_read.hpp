@@ -110,14 +110,14 @@ auto read_at(size_t position, ByteRange_T&& buffer) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
 
-  return read<Value_Ts...>(std::span<std::remove_reference_t<decltype(*buffer.begin())>>{std::next(buffer.begin(), position), buffer.end()});
+  return read<Value_Ts...>(std::span{std::next(buffer.begin(), position), buffer.end()});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Range_T>
+template <typename Range_T, byte_range_like ByteRange_T>
   requires common::is_sized_range_v<Range_T>
-auto read_range_at(size_t position, const std::span<const io::byte>& buffer, Range_T&& range) {
+auto read_range_at(size_t position, ByteRange_T&& buffer, Range_T&& range) {
   if (position + byte_count(range) < position) {
     throw std::invalid_argument{"Buffer read position exceeds allowed value"};
   }
@@ -125,8 +125,8 @@ auto read_range_at(size_t position, const std::span<const io::byte>& buffer, Ran
   if (position > buffer.size()) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
-  
-  return read_range(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
+
+  return read_range(std::span{std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
 }
 
 #endif

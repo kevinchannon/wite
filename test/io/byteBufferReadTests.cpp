@@ -702,7 +702,7 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
                             std::invalid_argument);
         }
       }
-/*
+
       SECTION("range value") {
         SECTION("reads at the correct offset") {
           REQUIRE(std::vector<uint16_t>{0xEF01, 0xABCD} == io::read_range_at(3, data, std::vector<uint16_t>(2, 0)));
@@ -722,8 +722,6 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
               std::invalid_argument);
         }
       }
-
-      */
     }
 
     SECTION("multiple values") {
