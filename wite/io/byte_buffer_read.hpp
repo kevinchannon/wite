@@ -133,9 +133,9 @@ auto read_range_at(size_t position, ByteRange_T&& buffer, Range_T&& range) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Value_T>
+template<typename Value_T, byte_range_like ByteRange_T>
 requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-read_result_t<Value_T> try_read(const std::span<const io::byte>& buffer) noexcept {
+read_result_t<Value_T> try_read(ByteRange_T&& buffer) noexcept {
   if (buffer.size() < value_size<Value_T>()) {
     return read_error::insufficient_buffer;
   }
@@ -145,9 +145,9 @@ read_result_t<Value_T> try_read(const std::span<const io::byte>& buffer) noexcep
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Range_T>
+template <typename Range_T, byte_range_like ByteRange_T>
   requires common::is_sized_range_v<Range_T>
-read_result_t<std::decay_t<Range_T>> try_read_range(const std::span<const io::byte>& buffer, Range_T&& range) noexcept {
+read_result_t<std::decay_t<Range_T>> try_read_range(ByteRange_T&& buffer, Range_T&& range) noexcept {
   if (buffer.size() < range.size() * byte_count<typename Range_T::value_type>()) {
     return read_error::insufficient_buffer;
   }
@@ -162,14 +162,14 @@ read_result_t<std::decay_t<Range_T>> try_read_range(const std::span<const io::by
     return value;
   });
 
-  return {std::move(range)};
+  return {range};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
+template <typename Value_T, byte_range_like ByteRange_T>
   requires is_buffer_readable<Value_T> and is_encoded<Value_T>
-read_result_t<typename Value_T::value_type> try_read(const std::span<const io::byte>& buffer) noexcept {
+read_result_t<typename Value_T::value_type> try_read(ByteRange_T&& buffer) noexcept {
   if (buffer.size() < value_size<Value_T>()) {
     return read_error::insufficient_buffer;
   }
@@ -179,9 +179,9 @@ read_result_t<typename Value_T::value_type> try_read(const std::span<const io::b
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
+template <typename Value_T, byte_range_like ByteRange_T>
   requires is_buffer_readable<Value_T> and is_encoded<Value_T>
-read_result_t<typename Value_T::value_type> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+read_result_t<typename Value_T::value_type> try_read_at(size_t position, ByteRange_T&& buffer) noexcept {
   if (position + value_size<Value_T>() < position) {
     return read_error::invalid_position_offset;
   }
@@ -190,14 +190,14 @@ read_result_t<typename Value_T::value_type> try_read_at(size_t position, const s
     return read_error::insufficient_buffer;
   }
 
-  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
+  return try_read<Value_T>(std::span{std::next(buffer.begin(), position), buffer.end()});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Value_T>
+template <typename Value_T, byte_range_like ByteRange_T>
   requires is_buffer_readable<Value_T> and (not is_encoded<Value_T>)
-read_result_t<Value_T> try_read_at(size_t position, const std::span<const io::byte>& buffer) noexcept {
+read_result_t<Value_T> try_read_at(size_t position, ByteRange_T&& buffer) noexcept {
   if (position + value_size<Value_T>() < position) {
     return read_error::invalid_position_offset;
   }
@@ -206,14 +206,14 @@ read_result_t<Value_T> try_read_at(size_t position, const std::span<const io::by
     return read_error::insufficient_buffer;
   }
 
-  return try_read<Value_T>(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()});
+  return try_read<Value_T>(std::span{std::next(buffer.begin(), position), buffer.end()});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Range_T>
+template <typename Range_T, byte_range_like ByteRange_T>
   requires common::is_sized_range_v<Range_T>
-read_result_t<Range_T> try_read_range_at(size_t position, const std::span<const io::byte>& buffer, Range_T&& range) noexcept {
+read_result_t<Range_T> try_read_range_at(size_t position, ByteRange_T&& buffer, Range_T&& range) noexcept {
   if (position + byte_count(range) < position) {
     return read_error::invalid_position_offset;
   }
@@ -222,7 +222,7 @@ read_result_t<Range_T> try_read_range_at(size_t position, const std::span<const 
     return read_error::insufficient_buffer;
   }
 
-  return try_read_range({std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
+  return try_read_range(std::span{std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

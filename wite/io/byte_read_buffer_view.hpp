@@ -94,7 +94,7 @@ class byte_read_buffer_view {
 
   template <typename... Value_Ts>
   auto try_read() noexcept {
-    auto out = io::try_read<Value_Ts...>({_get_pos, _data.end()});
+    auto out = io::try_read<Value_Ts...>(std::span{_get_pos, _data.end()});
     std::advance(_get_pos ,
                  std::min<ptrdiff_t>(byte_count<Value_Ts...>(),
                                      std::distance(_get_pos , _data.end())));
@@ -104,7 +104,7 @@ class byte_read_buffer_view {
 
   template <typename Range_T>
   auto try_read_range(Range_T&& range) noexcept {
-    auto out = io::try_read_range({_get_pos, _data.end()}, std::forward<Range_T>(range));
+    auto out = io::try_read_range(std::span{_get_pos, _data.end()}, std::forward<Range_T>(range));
     if (out.ok()) {
       std::advance(_get_pos, byte_count(out.value()));
     } else {

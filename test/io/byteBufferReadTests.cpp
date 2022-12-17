@@ -588,7 +588,7 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
       }
     }
   }
-/*
+
   SECTION("try_read") {
     SECTION("single value") {
       SECTION("returns value on good read") {
@@ -614,7 +614,7 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
       }
 
       SECTION("returns error on bad read") {
-        const auto data = io::static_byte_buffer<3>{io::byte(0x67), io::byte(0x45), io::byte(0xAB)};
+        const auto data = std::array<uint8_t, 3>{0x67, 0x45, 0xAB};
 
         SECTION("for scalar values") {
           const auto val = io::try_read<uint32_t>(data);
@@ -631,7 +631,7 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
     }
 
     SECTION("multiple values") {
-      SECTION("read from bufffer succeeds") {
+      SECTION("read from buffer succeeds") {
         // clang-format off
         const auto buffer = io::static_byte_buffer<sizeof(uint32_t) + sizeof(uint16_t) + sizeof(bool) + sizeof(uint32_t)>{
           io::byte(0x78), io::byte(0x56), io::byte(0x34), io::byte(0x12),
@@ -679,7 +679,7 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
       }
     }
   }
-*/
+
   SECTION("read_at") {
     SECTION("single value") {
       const auto data = std::vector<uint8_t>{0x67, 0x45, 0x23, 0x01, 0xEF, 0xCD, 0xAB, 0x89};
@@ -750,17 +750,10 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
       }
     }
   }
-/*
+
   SECTION("try_read_at") {
     SECTION("single value") {
-      const auto data = io::static_byte_buffer<8>{io::byte(0x67),
-                                                  io::byte(0x45),
-                                                  io::byte(0xAB),
-                                                  io::byte(0xFF),
-                                                  io::byte(0x01),
-                                                  io::byte(0x23),
-                                                  io::byte(0x45),
-                                                  io::byte(0x67)};
+      const auto data = std::array<unsigned char, 8>{0x67, 0x45, 0xAB, 0xFF, 0x01, 0x23, 0x45, 0x67};
 
       SECTION("scalar value") {
         SECTION("returns value on good read") {
@@ -855,6 +848,4 @@ TEST_CASE("read from raw byte array tests - non-io::byte buffers", "[buffer_io]"
       }
     }
   }
-
-  */
 }
