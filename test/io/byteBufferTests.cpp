@@ -10,7 +10,6 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <array>
-#include <cstddef>
 #include <cstdint>
 
 using namespace wite;
