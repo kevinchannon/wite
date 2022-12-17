@@ -76,7 +76,7 @@ class byte_read_buffer_view {
 
   template<typename Range_T>
   auto read_range(Range_T&& range) {
-    auto out = io::read_range({_get_pos, _data.end()}, std::forward<Range_T>(range));
+    auto out = io::read_range(buffer_type{_get_pos, _data.end()}, std::forward<Range_T>(range));
     std::advance(_get_pos, byte_count(out));
 
     return out;

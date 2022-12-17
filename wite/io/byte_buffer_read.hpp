@@ -78,9 +78,9 @@ auto read(ByteRange_T&& buffer) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Range_T>
+template <typename Range_T, byte_range_like ByteRange_T>
   requires common::is_sized_range_v<Range_T>
-auto read_range(const std::span<const io::byte>& buffer, Range_T&& range) {
+auto read_range(ByteRange_T&& buffer, Range_T&& range) {
   if (byte_count(range) > buffer.size()) {
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
@@ -126,7 +126,7 @@ auto read_range_at(size_t position, const std::span<const io::byte>& buffer, Ran
     throw std::out_of_range{"Insufficient buffer space for read"};
   }
   
-  return read_range({std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
+  return read_range(std::span<const io::byte>{std::next(buffer.begin(), position), buffer.end()}, std::forward<Range_T>(range));
 }
 
 #endif
