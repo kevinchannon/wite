@@ -28,7 +28,7 @@ template<byte_range_like ByteRange_T>
 class byte_read_buffer_view {
  public:
   using buffer_type = std::decay_t<ByteRange_T>;
-  using size_type   = buffer_type::size_type;
+  using size_type   = typename buffer_type::size_type;
 
   explicit byte_read_buffer_view(const buffer_type& buf) : _data{buf}, _get_pos{_data.begin()} {}
 
@@ -118,7 +118,7 @@ class byte_read_buffer_view {
 private:
 
   const buffer_type& _data;
-  buffer_type::const_iterator _get_pos;
+  typename buffer_type::const_iterator _get_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

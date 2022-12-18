@@ -8,6 +8,7 @@
       <configuration PROFILE_NAME="Release | MSVC | x64" ENABLED="true" GENERATION_DIR="out/build/msvc-x64-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Visual Studio x64" />
       <configuration PROFILE_NAME="Debug | MSVC | Win32" ENABLED="true" GENERATION_DIR="out/build/msvc-win32-debug" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Visual Studio Win32" />
       <configuration PROFILE_NAME="Release | MSVC | Win32" ENABLED="true" GENERATION_DIR="out/build/msvc-win32-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Visual Studio Win32" />
+      <configuration PROFILE_NAME="Debug | Clang | x64" ENABLED="true" GENERATION_DIR="out/build/clang-x64-debug" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Clang" />
     </configurations>
   </component>
 </project>

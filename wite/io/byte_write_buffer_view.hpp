@@ -27,7 +27,7 @@ template<byte_range_like ByteRange_T>
 class byte_write_buffer_view {
  public:
   using buffer_type = std::decay_t<ByteRange_T>;
-  using size_type   = buffer_type::size_type;
+  using size_type   = typename buffer_type::size_type;
 
   explicit byte_write_buffer_view(buffer_type& buf) : _data{buf}, _put_pos{_data.begin()} {}
 
@@ -94,7 +94,7 @@ class byte_write_buffer_view {
 
 private:
   buffer_type& _data;
-  buffer_type::iterator _put_pos;
+  typename buffer_type::iterator _put_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
