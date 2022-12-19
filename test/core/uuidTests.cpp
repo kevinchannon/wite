@@ -14,12 +14,6 @@ using namespace wite;
 using namespace std::chrono_literals;
 
 namespace {
-struct FakeEngine {
-  using result_type = uint64_t;
-  constexpr static uint64_t min() { return 0; }
-  constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
-  uint64_t operator()() { return 0x0123456789ABCDEF; }
-};
 
 struct GUID {
   uint32_t Data1;
@@ -49,6 +43,13 @@ TEST_CASE("Uuid tests", "[core]") {
     }
 
     SECTION("using a random number generator") {
+      struct FakeEngine {
+        using result_type = uint64_t;
+        constexpr static uint64_t min() { return 0; }
+        constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
+        uint64_t operator()() { return 0x0123456789ABCDEF; }
+      };
+
       const auto id = uuid{FakeEngine{}};
 
       REQUIRE(uuid{0x89ABCDEF, 0x4567, 0x01A3, {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);

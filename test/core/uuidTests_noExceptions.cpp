@@ -1,26 +1,18 @@
 #define WITE_NO_EXCEPTIONS
 
+#include <test/utils.hpp>
 #include <wite/core/io.hpp>
 #include <wite/core/uuid.hpp>
 #include <wite/env/environment.hpp>
-#include <test/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <chrono>
-#include <iostream>
-#include <sstream>
 
 using namespace wite;
 using namespace std::chrono_literals;
 
 namespace {
-struct FakeEngine {
-  using result_type = uint64_t;
-  constexpr static uint64_t min() { return 0; }
-  constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
-  uint64_t operator()() { return 0x0123456789ABCDEF; }
-};
 
 struct GUID {
   uint32_t Data1;
@@ -33,16 +25,15 @@ struct GUID {
 
 TEST_CASE("Uuid tests (no except)", "[core]") {
   SECTION("NULL UUID is all zero") {
-    REQUIRE(uuid{0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}} == nulluuid);
+    REQUIRE(uuid{{}} == nulluuid);
   }
 
   SECTION("default constructed uuid is all zeros") {
-    REQUIRE(uuid{0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}} == uuid{});
+    REQUIRE(uuid{{}} == uuid{});
   }
 
   SECTION("construction") {
-    SECTION("default construct is NULL") {
-    }
+    SECTION("default construct is NULL") {}
 
     SECTION("create random UUID") {
       const auto id_1 = make_uuid();
@@ -51,9 +42,18 @@ TEST_CASE("Uuid tests (no except)", "[core]") {
     }
 
     SECTION("using a random number generator") {
-      const auto id = uuid{FakeEngine{}};
+      struct FakeEngine {
+        using result_type = uint64_t;
+        constexpr static uint64_t min() { return 0; }
+        constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
+        uint64_t operator()() { return 0x0123456789ABCDEF; }
+      };
 
-      REQUIRE(uuid{0x89ABCDEF, 0x4567, 0x01A3, {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);
+      const auto id = uuid{FakeEngine{}};
+      auto uuid_data =
+          uuid::Storage_t{0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0xA3, 0x01, 0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
+
+      REQUIRE(uuid{uuid_data} == id);
     }
 
     SECTION("Making a UUID doesn't take too long") {
@@ -88,7 +88,9 @@ TEST_CASE("Uuid tests (no except)", "[core]") {
     }
   }
 
-  const auto id = uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+  auto uuid_data =
+      uuid::Storage_t{0x67, 0x45, 0x23, 0x01, 0xab, 0x89, 0xef, 0xcd, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
+  const auto id = uuid{uuid_data};
 
   SECTION("Write uuid into a C-string") {
     SECTION("narrow chars") {
@@ -152,7 +154,9 @@ TEST_CASE("Uuid tests (no except)", "[core]") {
 }
 
 TEST_CASE("Uuid IO tests  (no except)", "[core]") {
-  const auto id = uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+  auto uuid_data =
+      uuid::Storage_t{0x67, 0x45, 0x23, 0x01, 0xab, 0x89, 0xef, 0xcd, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
+  const auto id = uuid{uuid_data};
 
   std::stringstream ss;
   ss << id;

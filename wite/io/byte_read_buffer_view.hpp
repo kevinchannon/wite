@@ -30,7 +30,7 @@ class byte_read_buffer_view {
   using buffer_type = std::decay_t<ByteRange_T>;
   using size_type   = typename buffer_type::size_type;
 
-  explicit byte_read_buffer_view(const buffer_type& buf) : _data{buf}, _get_pos{_data.begin()} {}
+  explicit byte_read_buffer_view(const buffer_type& buf) : _data{buf}, _get_pos{std::cbegin(_data)} {}
 
   #ifndef WITE_NO_EXCEPTIONS
 
@@ -60,10 +60,10 @@ class byte_read_buffer_view {
   }
 
   void unchecked_seek(size_t position) noexcept {
-    _get_pos = std::next(_data.begin(), position);
+    _get_pos = std::next(std::cbegin(_data), position);
   }
 
-  _WITE_NODISCARD size_type read_position() const noexcept { return std::distance(_data.begin(), _get_pos); }
+  _WITE_NODISCARD size_type read_position() const noexcept { return std::distance(std::cbegin(_data), _get_pos); }
   
   #ifndef WITE_NO_EXCEPTIONS
 
@@ -84,7 +84,7 @@ class byte_read_buffer_view {
   }
 
   template <typename Value_T>
-  auto read(std::endian endianness) {
+  auto read_with_endianness(std::endian endianness) {
     const auto out = io::read_with_endian<Value_T>(std::span{_get_pos, _data.end()}, endianness);
     std::advance(_get_pos, value_size<Value_T>());
 

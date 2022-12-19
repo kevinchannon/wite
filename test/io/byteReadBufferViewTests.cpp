@@ -100,10 +100,10 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
       SECTION("scalar value") {
         SECTION("Little-endian") {
           SECTION("Read int") {
-            auto read_buf = io::byte_read_buffer_view(array_buffer);
+            auto read_buf = io::byte_read_buffer_view{array_buffer};
 
             SECTION("Dynamic endianness") {
-              REQUIRE(uint32_t(0x01234567) == read_buf.template read<uint32_t>(io::endian::little));
+              REQUIRE(uint32_t(0x01234567) == read_buf.template read_with_endianness<uint32_t>(io::endian::little));
               REQUIRE(4 == read_buf.read_position());
             }
 
@@ -125,8 +125,8 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
           SECTION("Read 2 shorts") {
             auto read_buf = io::byte_read_buffer_view(array_buffer);
 
-            REQUIRE(uint32_t(0x4567) == read_buf.template read<uint16_t>(io::endian::little));
-            REQUIRE(uint32_t(0x0123) == read_buf.template read<uint16_t>(io::endian::little));
+            REQUIRE(uint32_t(0x4567) == read_buf.template read_with_endianness<uint16_t>(io::endian::little));
+            REQUIRE(uint32_t(0x0123) == read_buf.template read_with_endianness<uint16_t>(io::endian::little));
           }
 
           SECTION("Read past the end of the buffer fails with std::out_of_range exception") {
@@ -140,7 +140,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
           auto buffer = io::byte_read_buffer_view(array_buffer);
           SECTION("Read int") {
             SECTION("Dynamic endianness") {
-              REQUIRE(uint32_t(0x67452301) == buffer.template read<uint32_t>(io::endian::big));
+              REQUIRE(uint32_t(0x67452301) == buffer.template read_with_endianness<uint32_t>(io::endian::big));
               REQUIRE(4 == buffer.read_position());
             }
 
@@ -228,7 +228,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
 
         SECTION("scalar value") {
           SECTION("with default endianness") {
-            const auto val = buffer.template try_read<uint32_t>();
+            const auto val = buffer.try_read<uint32_t>();
             REQUIRE(val.ok());
             REQUIRE(uint32_t{0xFFAB4567} == val.value());
             REQUIRE(4 == buffer.read_position());

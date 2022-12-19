@@ -7,9 +7,9 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <compare>
 #include <cstdint>
-#include <cctype>
 #include <random>
 #include <regex>
 #include <string>
@@ -169,25 +169,17 @@ namespace detail {
 ///////////////////////////////////////////////////////////////////////////////
 
 struct uuid {
+  using Storage_t = std::array<uint8_t, 16>;
+
   WITE_DEFAULT_CONSTRUCTORS(uuid);
 
-  uuid(unsigned long d1, unsigned short d2, unsigned short d3, std::array<unsigned char, 8> d4)
-      : data{*((uint8_t*)(&d1)),
-             *((uint8_t*)(&d1) + 1),
-             *((uint8_t*)(&d1) + 2),
-             *((uint8_t*)(&d1) + 3),
-             *((uint8_t*)(&d2)),
-             *((uint8_t*)(&d2) + 1),
-             *((uint8_t*)(&d3)),
-             *((uint8_t*)(&d3) + 1),
-             d4[0],
-             d4[1],
-             d4[2],
-             d4[3],
-             d4[4],
-             d4[5],
-             d4[6],
-             d4[7]} {}
+  explicit uuid(Storage_t data) : data{std::move(data)} {}
+
+#ifndef WITE_NO_EXCEPTIONS
+  uuid(unsigned long d1, unsigned short d2, unsigned short d3, std::array<unsigned char, 8> d4) {
+    io::write(data, io::little_endian{d1}, io::little_endian{d2}, io::little_endian{d3}, d4);
+  }
+#endif
 
 #if _WITE_HAS_CONCEPTS
   template <std::invocable Engine_T>
@@ -234,7 +226,7 @@ struct uuid {
   _WITE_NODISCARD std::string str(char format = default_uuid_format) const { return to_string(*this, format); };
   _WITE_NODISCARD std::wstring wstr(char format = default_uuid_format) const { return to_wstring(*this, format); };
 
-  std::array<uint8_t, 16> data{};
+  Storage_t data{};
 
  private:
 #ifndef WITE_NO_EXCEPTIONS
@@ -324,17 +316,18 @@ inline uuid try_make_uuid(std::string_view s) noexcept {
     return nulluuid;
   }
 
-  return uuid{data_1.value(),
-              data_2.value(),
-              data_3.value(),
-              {data_4a.value()[0],
-               data_4a.value()[1],
-               data_4b.value()[0],
-               data_4b.value()[1],
-               data_4b.value()[2],
-               data_4b.value()[3],
-               data_4b.value()[4],
-               data_4b.value()[5]}};
+  auto data = uuid::Storage_t{};
+  if (io::try_write(data,
+                    io::little_endian{data_1.value()},
+                    io::little_endian{data_2.value()},
+                    io::little_endian{data_3.value()},
+                    data_4a.value(),
+                    data_4b.value())
+          .is_error()) {
+    return nulluuid;
+  }
+
+  return uuid{data};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -369,10 +362,15 @@ namespace detail {
       return false;
     }
 
-    const uint32_t& data_1 = *reinterpret_cast<const uint32_t*>(&id);
-    const uint16_t& data_2 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 4);
-    const uint16_t& data_3 = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(&id) + 6);
-    const uint8_t* data_4  = reinterpret_cast<const uint8_t*>(&id) + 8;
+    auto read_pos = reinterpret_cast<const uint8_t*>(&id);
+    auto data_1 = uint32_t{};
+    auto data_2 = uint16_t{};
+    auto data_3 = uint16_t{};
+
+    std::tie(data_1, read_pos)     = io::unchecked_read<io::little_endian<uint32_t>>(read_pos);
+    std::tie(data_2, read_pos)     = io::unchecked_read<io::little_endian<uint16_t>>(read_pos);
+    std::tie(data_3, read_pos)     = io::unchecked_read<io::little_endian<uint16_t>>(read_pos);
+    const uint8_t* data_4 = reinterpret_cast<const uint8_t*>(&id) + 8;
 
     std::ignore = detail::_uuid_sprintf<Char_T>()(buffer,
                                                   max_buffer_length,
