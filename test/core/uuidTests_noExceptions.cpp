@@ -42,14 +42,7 @@ TEST_CASE("Uuid tests (no except)", "[core]") {
     }
 
     SECTION("using a random number generator") {
-      struct FakeEngine {
-        using result_type = uint64_t;
-        constexpr static uint64_t min() { return 0; }
-        constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
-        uint64_t operator()() { return 0x0123456789ABCDEF; }
-      };
-
-      const auto id = uuid{FakeEngine{}};
+      const auto id = uuid{test::FakeRandomEngine{}};
       auto uuid_data =
           uuid::Storage_t{0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0xA3, 0x01, 0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
 

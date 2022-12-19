@@ -228,7 +228,7 @@ TEMPLATE_TEST_CASE("byte_read_buffer_view tests", "[buffer_io]", io::byte, uint8
 
         SECTION("scalar value") {
           SECTION("with default endianness") {
-            const auto val = buffer.try_read<uint32_t>();
+            const auto val = buffer.template try_read<uint32_t>();
             REQUIRE(val.ok());
             REQUIRE(uint32_t{0xFFAB4567} == val.value());
             REQUIRE(4 == buffer.read_position());

@@ -32,4 +32,11 @@ bool ranges_equal(Left_T&& left, Right_T&& right) {
   #endif
 }
 
+struct FakeRandomEngine {
+  using result_type = uint64_t;
+  constexpr static uint64_t min() { return 0; }
+  constexpr static uint64_t max() { return 0xFFFFFFFFFFFFFFFF; }
+  uint64_t operator()() { return 0x0123456789ABCDEF; }
+};
+
 }
