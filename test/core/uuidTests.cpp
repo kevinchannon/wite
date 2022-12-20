@@ -63,8 +63,13 @@ TEST_CASE("Uuid tests", "[core]") {
 
     SECTION("string round-trip"){
       SECTION("narrow strings") {
-        const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const char*, char>(
-            {{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'}, {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'}}));
+        // clang-format off
+        const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const char*, char>({
+          {"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+          {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
+          {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'}
+        }));
+        // clang-format on
 
         SECTION(test_name) {
           REQUIRE(uuid_str == uuid(uuid_str, format_char).str(format_char));
@@ -72,8 +77,13 @@ TEST_CASE("Uuid tests", "[core]") {
       }
 
       SECTION("wide strings") {
-        const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const wchar_t*, char>(
-            {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'}, {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'}}));
+        // clang-format off
+        const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const wchar_t*, char>({
+          {"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
+          {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
+          {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'}
+        }));
+        // clang-format on
 
         SECTION(test_name) {
           REQUIRE(uuid_str == uuid{uuid_str, format_char}.wstr(format_char));

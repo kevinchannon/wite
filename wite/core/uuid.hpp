@@ -101,6 +101,11 @@ struct uuid : public basic_uuid {
         _init_from_n_fmt_string(s);
         break;
       }
+      case 'B':
+      case 'b': {
+        _init_from_b_fmt_string(s);
+        break;
+      }
       default:;
     }
   }
@@ -139,6 +144,16 @@ struct uuid : public basic_uuid {
     } catch (const std::invalid_argument&) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
+  }
+
+  template<typename Char_T>
+  void _init_from_b_fmt_string(std::basic_string_view<Char_T> s) {
+    _init_from_wrapped_fmt_string(s);
+  }
+
+  template<typename Char_T>
+  void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s) {
+    _init_from_d_fmt_string(std::basic_string_view<Char_T>{std::next(s.begin()), std::prev(s.end())});
   }
 
   template<typename Char_T>
