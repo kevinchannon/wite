@@ -108,7 +108,7 @@ struct uuid : public basic_uuid {
     }
 
     try {
-      data = _unsafe_generic_from_string(s);
+      _unsafe_generic_from_string(s, data);
     } catch (const std::invalid_argument&) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
@@ -119,16 +119,23 @@ struct uuid : public basic_uuid {
       throw std::invalid_argument{"Invalid UUID format"};
     }
     try {
-      data = _unsafe_generic_from_string(s);
+      _unsafe_generic_from_string(s, data);
     } catch (const std::invalid_argument&) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
   }
 
-  [[nodiscard]] static std::array<uint8_t, 16> _unsafe_generic_from_string(std::string_view s) {
+  static void _unsafe_generic_from_string(std::string_view s, Storage_t& out) {
     auto c = std::array<char, 38>{};
     std::ranges::copy_if(s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<unsigned char>(ch)); });
-    return binascii::unhexlify<16, uint8_t>(const_cast<const char*>(&c.front()));
+    out = binascii::unhexlify<16, uint8_t>(const_cast<const char*>(&c.front()));
+    _format_raw_array_as_data(out);
+  }
+
+  static void _format_raw_array_as_data(Storage_t& arr) {
+    std::reverse(arr.begin(), std::next(arr.begin(), 4));
+    std::reverse(std::next(arr.begin(), 4), std::next(arr.begin(), 6));
+    std::reverse(std::next(arr.begin(), 6), std::next(arr.begin(), 8));
   }
 #endif
 };
