@@ -43,7 +43,7 @@ struct uuid : public basic_uuid {
   explicit uuid(Storage_t data) : basic_uuid{data} {}
 
 #ifndef WITE_NO_EXCEPTIONS
-  uuid(unsigned long d1, unsigned short d2, unsigned short d3, std::array<unsigned char, 8> d4) : basic_uuid{} {
+  uuid(uint32_t d1, uint16_t d2, uint16_t d3, std::array<uint8_t, 8> d4) : basic_uuid{} {
     io::write(data, io::little_endian{d1}, io::little_endian{d2}, io::little_endian{d3}, d4);
   }
 #endif
