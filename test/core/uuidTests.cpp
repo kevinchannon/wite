@@ -137,6 +137,39 @@ TEST_CASE("Uuid tests", "[core]") {
           WITE_REQ_THROWS(thrower("0123456X89ABCDEF0123456789ABCDEF"), std::invalid_argument, "Invalid UUID format");
         }
       }
+
+      SECTION("B-format") {
+        SECTION("succeeds for valid string") {
+          const auto expected = uuid{{0x67,0x45,0x23,0x01,0xAB,0x89,0xEF,0xCD,0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}};
+          const auto actual   = uuid{"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'};
+          REQUIRE(expected == actual);
+        }
+
+        SECTION("throws std::invalid_argument if the string is too short") {
+          WITE_REQ_THROWS(uuid{"{01234567-89AB-CDEF-0123-456789ABCDE}"}, std::invalid_argument, "Invalid UUID format");
+        }
+
+        SECTION("throws std::invalid_argument if the string is too long") {
+          WITE_REQ_THROWS(uuid{"{01234567-89AB-CDEF-0123-456789ABCDEF0}"}, std::invalid_argument, "Invalid UUID format");
+        }
+
+        SECTION("throws std::invalid_argument if the string contains non-hex or dash characters") {
+          WITE_REQ_THROWS(uuid{"{0123456X-89AB-CDEF-0123-456789ABCDEF}"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"{01234567-89AX-CDEF-0123-456789ABCDEF}"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"{01234567-89AB-CDEF-0123_456789ABCDEF}"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"{01234567-89AB-CDEX-0123-456789ABCDEF}"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"{01234567-89AB-CDEX-0123-456789AXCDEF}"}, std::invalid_argument, "Invalid UUID format");
+        }
+
+        SECTION("throws if string is empty"){
+          WITE_REQ_THROWS(uuid{""}, std::invalid_argument, "Invalid UUID format");
+        }
+
+        SECTION("throws if the first or last character is not a brace"){
+          WITE_REQ_THROWS(uuid{"?01234567-89AB-CDEF-0123-456789ABCDEF}"}, std::invalid_argument, "Invalid UUID format");
+          WITE_REQ_THROWS(uuid{"{01234567-89AB-CDEF-0123-456789ABCDEF?"}, std::invalid_argument, "Invalid UUID format");
+        }
+      }
     }
   }
 

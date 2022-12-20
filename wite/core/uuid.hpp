@@ -148,11 +148,35 @@ struct uuid : public basic_uuid {
 
   template<typename Char_T>
   void _init_from_b_fmt_string(std::basic_string_view<Char_T> s) {
-    _init_from_wrapped_fmt_string(s);
+    constexpr auto open_brace = []() {
+      if constexpr (std::is_same_v<std::make_signed_t<char>, std::make_signed_t<Char_T>>) {
+        return '{';
+      } else {
+        return L'{';
+      }
+    };
+
+    constexpr auto close_brace = []() {
+      if constexpr (std::is_same_v<std::make_signed_t<char>, std::make_signed_t<Char_T>>) {
+        return '}';
+      } else {
+        return L'}';
+      }
+    };
+
+    _init_from_wrapped_fmt_string(s, open_brace(), close_brace());
   }
 
   template<typename Char_T>
-  void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s) {
+  void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s, Char_T opening_char, Char_T closing_char) {
+    if (s.length() < 2){
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+
+    if (opening_char != s.front() or closing_char != s.back()){
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+
     _init_from_d_fmt_string(std::basic_string_view<Char_T>{std::next(s.begin()), std::prev(s.end())});
   }
 
