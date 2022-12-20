@@ -61,6 +61,26 @@ TEST_CASE("Uuid tests", "[core]") {
       REQUIRE(100ms > std::chrono::duration_cast<std::chrono::milliseconds>(duration));
     }
 
+    SECTION("string round-trip"){
+      SECTION("narrow strings") {
+        const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const char*, char>(
+            {{"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'}, {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'}}));
+
+        SECTION(test_name) {
+          REQUIRE(uuid_str == uuid(uuid_str, format_char).str(format_char));
+        }
+      }
+
+      SECTION("wide strings") {
+        const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const wchar_t*, char>(
+            {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'}, {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'}}));
+
+        SECTION(test_name) {
+          REQUIRE(uuid_str == uuid{uuid_str, format_char}.wstr(format_char));
+        }
+      }
+    }
+
     SECTION("from string") {
       SECTION("D-format") {
         SECTION("succeeds for valid string") {
@@ -88,8 +108,9 @@ TEST_CASE("Uuid tests", "[core]") {
 
       SECTION("N-format") {
         SECTION("succeeds for valid string") {
-          const auto test_id = uuid{"0123456789ABCDEF0123456789ABCDEF", 'N'};
-          REQUIRE(uuid{0x01234567, 0x89AB, 0xCDEF, {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}} == test_id);
+          const auto expected = uuid{{0x67,0x45,0x23,0x01,0xAB,0x89,0xEF,0xCD,0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}};
+          const auto actual = uuid{"0123456789ABCDEF0123456789ABCDEF", 'N'};
+          REQUIRE(expected == actual);
         }
 
         const auto thrower = [](auto s) { uuid{s, 'N'}; };

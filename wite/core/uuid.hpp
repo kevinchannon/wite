@@ -67,19 +67,11 @@ struct uuid : public basic_uuid {
 
 #ifndef WITE_NO_EXCEPTIONS
   explicit uuid(const std::string_view s, char format = default_uuid_format) : uuid{} {
-    switch (format) {
-      case 'D':
-      case 'd': {
-        _init_from_d_fmt_string(s);
-        break;
-      }
-      case 'N':
-      case 'n': {
-        _init_from_n_fmt_string(s);
-        break;
-      }
-      default:;
-    }
+    _init_from_string<char>(s, format);
+  }
+
+  explicit uuid(const std::wstring_view s, char format = default_uuid_format) : uuid{} {
+    _init_from_string<wchar_t>(s, format);
   }
 #endif
 
@@ -96,12 +88,35 @@ struct uuid : public basic_uuid {
 
  private:
 #ifndef WITE_NO_EXCEPTIONS
-  void _init_from_d_fmt_string(std::string_view s) {
+  template<typename Char_T>
+  void _init_from_string(std::basic_string_view<Char_T> s, char format) {
+    switch (format) {
+      case 'D':
+      case 'd': {
+        _init_from_d_fmt_string(s);
+        break;
+      }
+      case 'N':
+      case 'n': {
+        _init_from_n_fmt_string(s);
+        break;
+      }
+      default:;
+    }
+  }
+
+  template<typename Char_T>
+  void _init_from_d_fmt_string(std::basic_string_view<Char_T> s) {
     if (s.length() != detail::_uuid_strlen<'D'>() - 1) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    const auto is_not_dash = [](auto c) { return '-' != c; };
+    const auto is_not_dash = [](auto c) {
+      if constexpr (std::is_same_v<char, Char_T>) {
+        return '-' != c;
+      } else {
+        return L'-' != c;
+      }};
 
     if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
       throw std::invalid_argument{"Invalid UUID format"};
@@ -114,7 +129,8 @@ struct uuid : public basic_uuid {
     }
   }
 
-  void _init_from_n_fmt_string(std::string_view s) {
+  template<typename Char_T>
+  void _init_from_n_fmt_string(std::basic_string_view<Char_T> s) {
     if (s.length() != detail::_uuid_strlen<'N'>() - 1) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
@@ -125,10 +141,11 @@ struct uuid : public basic_uuid {
     }
   }
 
-  static void _unsafe_generic_from_string(std::string_view s, Storage_t& out) {
-    auto c = std::array<char, 38>{};
-    std::ranges::copy_if(s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<unsigned char>(ch)); });
-    out = binascii::unhexlify<16, uint8_t>(const_cast<const char*>(&c.front()));
+  template<typename Char_T>
+  static void _unsafe_generic_from_string(std::basic_string_view<Char_T> s, Storage_t& out) {
+    auto c = std::array<Char_T, 38>{};
+    std::ranges::copy_if(s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(ch)); });
+    out = binascii::unhexlify<16, uint8_t>(const_cast<const Char_T*>(&c.front()));
     _format_raw_array_as_data(out);
   }
 
