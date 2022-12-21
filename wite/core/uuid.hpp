@@ -106,6 +106,11 @@ struct uuid : public basic_uuid {
         _init_from_b_fmt_string(s);
         break;
       }
+      case 'P':
+      case 'p': {
+        _init_from_p_fmt_string(s);
+        break;
+      }
       default:;
     }
   }
@@ -148,32 +153,21 @@ struct uuid : public basic_uuid {
 
   template<typename Char_T>
   void _init_from_b_fmt_string(std::basic_string_view<Char_T> s) {
-    constexpr auto open_brace = []() {
-      if constexpr (std::is_same_v<std::make_signed_t<char>, std::make_signed_t<Char_T>>) {
-        return '{';
-      } else {
-        return L'{';
-      }
-    };
-
-    constexpr auto close_brace = []() {
-      if constexpr (std::is_same_v<std::make_signed_t<char>, std::make_signed_t<Char_T>>) {
-        return '}';
-      } else {
-        return L'}';
-      }
-    };
-
-    _init_from_wrapped_fmt_string(s, open_brace(), close_brace());
+    _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::B);
   }
 
   template<typename Char_T>
-  void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s, Char_T opening_char, Char_T closing_char) {
+  void _init_from_p_fmt_string(std::basic_string_view<Char_T> s) {
+    _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::P);
+  }
+
+  template<typename Char_T, typename Format_T>
+  void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s, Format_T&& fmt) {
     if (s.length() < 2){
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    if (opening_char != s.front() or closing_char != s.back()){
+    if (fmt.template opening<Char_T>() != s.front() or fmt.template closing<Char_T>() != s.back()){
       throw std::invalid_argument{"Invalid UUID format"};
     }
 

@@ -1,8 +1,9 @@
 #pragma once
 
-#include <wite/core/basic_uuid.hpp>
 #include <wite/binascii/hexlify.hpp>
+#include <wite/collections/static_lookup.hpp>
 #include <wite/common/constructor_macros.hpp>
+#include <wite/core/basic_uuid.hpp>
 #include <wite/env/features.hpp>
 #include <wite/io/byte_buffer.hpp>
 
@@ -63,72 +64,174 @@ _WITE_NODISCARD inline std::wstring to_wstring(const uuid& id, char format = def
 
 namespace detail {
 
+  template <typename Char_T, Char_T OPENING = Char_T{}, Char_T INTERNAL = Char_T{}, Char_T CLOSING = Char_T{}>
+  struct uuid_format_delimiters {
+    const Char_T opening{OPENING};
+    const Char_T closing{CLOSING};
+    const Char_T internal{INTERNAL};
+  };
+
+  template <char UPPER_FMT_SPEC, char LOWER_FMT_SPEC, size_t SIZE, typename NarrowDelims_T, typename WideDelims_T>
+  struct format_type {
+    const char uppercase_format_specifier = UPPER_FMT_SPEC;
+    const char lowercase_format_specifier = LOWER_FMT_SPEC;
+    const size_t size                     = SIZE;
+
+    const NarrowDelims_T narrow_delimiters{};
+    const WideDelims_T wide_delimiters{};
+
+    constexpr explicit format_type(const char* lowercase_format,
+                                   const char* uppercase_format,
+                                   const wchar_t* lowercase_wide_format,
+                                   const wchar_t* uppercase_wide_format)
+        : lowercase_format_string{lowercase_format}
+        , uppercase_format_string{uppercase_format}
+        , lowercase_wide_format_string{lowercase_wide_format}
+        , uppercase_wide_format_string{uppercase_wide_format} {}
+
+    template <typename C>
+    constexpr C opening() const {
+      if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<C>>) {
+        return narrow_delimiters.opening;
+      } else {
+        return wide_delimiters.opening;
+      }
+    }
+
+    template <typename C>
+    constexpr C closing() const {
+      if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<C>>) {
+        return narrow_delimiters.closing;
+      } else {
+        return wide_delimiters.closing;
+      }
+    }
+
+    const char* lowercase_format_string{};
+    const char* uppercase_format_string{};
+    const wchar_t* lowercase_wide_format_string{};
+    const wchar_t* uppercase_wide_format_string{};
+  };
+}  // namespace detail
+
+namespace uuid_format {
+  static constexpr auto N =
+      detail::format_type<'N', 'n', 32 + 1, detail::uuid_format_delimiters<char>, detail::uuid_format_delimiters<wchar_t>>{
+          "%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x",
+          "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X",
+          L"%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x",
+          L"%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X"};
+
+  static constexpr auto D = detail::format_type<'D',
+                                                'd',
+                                                36 + 1,
+                                                detail::uuid_format_delimiters<char, char{}, '-', char{}>,
+                                                detail::uuid_format_delimiters<wchar_t, wchar_t{}, L'-', wchar_t{}>>{
+      "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+      "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+      L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+      L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X"};
+
+  static constexpr auto B = detail::format_type<'B',
+                                                'b',
+                                                38 + 1,
+                                                detail::uuid_format_delimiters<char, '{', '-', '}'>,
+                                                detail::uuid_format_delimiters<wchar_t, L'{', L'-', L'}'>>{
+      "{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+      "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+      L"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+      L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"};
+
+  static constexpr auto P = detail::format_type<'P',
+                                                'p',
+                                                38 + 1,
+                                                detail::uuid_format_delimiters<char, '(', '-', ')'>,
+                                                detail::uuid_format_delimiters<wchar_t, L'(', L'-', L')'>>{
+      "(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)",
+      "(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)",
+      L"(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)",
+      L"(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)"};
+
+  static constexpr auto X = detail::format_type<'X',
+                                                'x',
+                                                69 + 1,
+                                                detail::uuid_format_delimiters<char, '{', char{}, '}'>,
+                                                detail::uuid_format_delimiters<wchar_t, L'{', wchar_t{}, L'}'>>{
+      "{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}",
+      "{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}",
+      L"{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}",
+      L"{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}"};
+}  // namespace uuid_format
+
+namespace detail {
+
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename Char_T, char FMT_TYPE>
   _WITE_CONSTEVAL auto _uuid_format() {
-    if constexpr (std::is_same_v<Char_T, char>) {
-      if constexpr ('D' == FMT_TYPE) {
-        return "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
-      } else if constexpr ('N' == FMT_TYPE) {
-        return "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X";
-      } else if constexpr ('B' == FMT_TYPE) {
-        return "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}";
-      } else if constexpr ('P' == FMT_TYPE) {
-        return "(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
-      } else if constexpr ('X' == FMT_TYPE) {
-        return "{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
-      } else if constexpr ('d' == FMT_TYPE) {
-        return "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
-      } else if constexpr ('n' == FMT_TYPE) {
-        return "%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x";
-      } else if constexpr ('b' == FMT_TYPE) {
-        return "{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}";
-      } else if constexpr ('p' == FMT_TYPE) {
-        return "(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)";
-      } else if constexpr ('x' == FMT_TYPE) {
-        return "{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}";
-      }
-    } else {
-      if constexpr ('D' == FMT_TYPE) {
-        return L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
-      } else if constexpr ('N' == FMT_TYPE) {
-        return L"%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X";
-      } else if constexpr ('B' == FMT_TYPE) {
-        return L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}";
-      } else if constexpr ('P' == FMT_TYPE) {
-        return L"(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)";
-      } else if constexpr ('X' == FMT_TYPE) {
-        return L"{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}";
-      } else if constexpr ('d' == FMT_TYPE) {
-        return L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
-      } else if constexpr ('n' == FMT_TYPE) {
-        return L"%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x";
-      } else if constexpr ('b' == FMT_TYPE) {
-        return L"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}";
-      } else if constexpr ('p' == FMT_TYPE) {
-        return L"(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)";
-      } else if constexpr ('x' == FMT_TYPE) {
-        return L"{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}";
-      }
-    }
+    using namespace uuid_format;
+
+#define WITE_BEGIN_FORMAT_TYPES \
+  if constexpr (false) {        \
+  }
+#define WITE_ADD_CASE_FOR_FORMAT_TYPE(t)                         \
+  else if constexpr (t.uppercase_format_specifier == FMT_TYPE) { \
+    if constexpr (std::is_same_v<Char_T, char>) {                \
+      return t.uppercase_format_string;                          \
+    } else {                                                     \
+      return t.uppercase_wide_format_string;                     \
+    }                                                            \
+  }                                                              \
+  else if constexpr (t.lowercase_format_specifier == FMT_TYPE) { \
+    if constexpr (std::is_same_v<Char_T, char>) {                \
+      return t.lowercase_format_string;                          \
+    } else {                                                     \
+      return t.lowercase_wide_format_string;                     \
+    }                                                            \
+  }
+#define WITE_END_FORMAT_TYPES                                                     \
+  else {                                                                          \
+    static_assert(common::always_false_v<char>, "Invalid UUID format specifier"); \
+  }
+
+    WITE_BEGIN_FORMAT_TYPES
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(N)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(D)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(B)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(P)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(X)
+    WITE_END_FORMAT_TYPES
+
+#undef WITE_BEGIN_FORMAT_TYPES
+#undef WITE_ADD_CASE_FOR_FORMAT_TYPE
+#undef WITE_END_FORMAT_TYPES
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <char FMT_TYPE>
   _WITE_CONSTEVAL size_t _uuid_strlen() {
-    if constexpr ('D' == FMT_TYPE or 'd' == FMT_TYPE) {
-      return 36 + 1;
-    } else if constexpr ('N' == FMT_TYPE or 'n' == FMT_TYPE) {
-      return 32 + 1;
-    } else if constexpr ('B' == FMT_TYPE or 'b' == FMT_TYPE) {
-      return 38 + 1;
-    } else if constexpr ('P' == FMT_TYPE or 'p' == FMT_TYPE) {
-      return 38 + 1;
-    } else if constexpr ('X' == FMT_TYPE or 'x' == FMT_TYPE) {
-      return 69 + 1;
-    }
+    using namespace uuid_format;
+
+#define WITE_BEGIN_FORMAT_TYPES \
+  if constexpr (false) {        \
+  }
+#define WITE_ADD_CASE_FOR_FORMAT_TYPE(t)                                                                     \
+  else if constexpr (t.uppercase_format_specifier == FMT_TYPE or t.lowercase_format_specifier == FMT_TYPE) { \
+    return t.size;                                                                                           \
+  }
+#define WITE_END_FORMAT_TYPES                                                     \
+  else {                                                                          \
+    static_assert(common::always_false_v<char>, "Invalid UUID format specifier"); \
+  }
+
+    WITE_BEGIN_FORMAT_TYPES
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(N)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(D)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(B)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(P)
+    WITE_ADD_CASE_FOR_FORMAT_TYPE(X)
+    WITE_END_FORMAT_TYPES
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -168,14 +271,14 @@ namespace detail {
     }
 
     auto read_pos = reinterpret_cast<const uint8_t*>(&id);
-    auto data_1 = uint32_t{};
-    auto data_2 = uint16_t{};
-    auto data_3 = uint16_t{};
+    auto data_1   = uint32_t{};
+    auto data_2   = uint16_t{};
+    auto data_3   = uint16_t{};
 
-    std::tie(data_1, read_pos)     = io::unchecked_read<io::little_endian<uint32_t>>(read_pos);
-    std::tie(data_2, read_pos)     = io::unchecked_read<io::little_endian<uint16_t>>(read_pos);
-    std::tie(data_3, read_pos)     = io::unchecked_read<io::little_endian<uint16_t>>(read_pos);
-    const uint8_t* data_4 = reinterpret_cast<const uint8_t*>(&id) + 8;
+    std::tie(data_1, read_pos) = io::unchecked_read<io::little_endian<uint32_t>>(read_pos);
+    std::tie(data_2, read_pos) = io::unchecked_read<io::little_endian<uint16_t>>(read_pos);
+    std::tie(data_3, read_pos) = io::unchecked_read<io::little_endian<uint16_t>>(read_pos);
+    const uint8_t* data_4      = reinterpret_cast<const uint8_t*>(&id) + 8;
 
     std::ignore = detail::_uuid_sprintf<Char_T>()(buffer,
                                                   max_buffer_length,

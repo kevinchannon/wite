@@ -67,7 +67,8 @@ TEST_CASE("Uuid tests", "[core]") {
         const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const char*, char>({
           {"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
           {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
-          {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'}
+          {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+          {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'}
         }));
         // clang-format on
 
@@ -81,7 +82,8 @@ TEST_CASE("Uuid tests", "[core]") {
         const auto [test_name, uuid_str, format_char] = GENERATE(table<const char*, const wchar_t*, char>({
           {"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
           {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
-          {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'}
+          {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
+          {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'}
         }));
         // clang-format on
 
