@@ -191,7 +191,7 @@ namespace detail {
   }
 #define WITE_END_FORMAT_TYPES                                                     \
   else {                                                                          \
-    static_assert(common::always_false_v<char>, "Invalid UUID format specifier"); \
+    static_assert('X' == FMT_TYPE, "Invalid UUID format specifier"); \
   }
 
     WITE_BEGIN_FORMAT_TYPES
@@ -222,7 +222,7 @@ namespace detail {
   }
 #define WITE_END_FORMAT_TYPES                                                     \
   else {                                                                          \
-    static_assert(common::always_false_v<char>, "Invalid UUID format specifier"); \
+    static_assert('X' == FMT_TYPE, "Invalid UUID format specifier"); \
   }
 
     WITE_BEGIN_FORMAT_TYPES
