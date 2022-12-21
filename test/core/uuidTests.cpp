@@ -68,7 +68,8 @@ TEST_CASE("Uuid tests", "[core]") {
           {"D-format", "01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
           {"N-format", "0123456789ABCDEF0123456789ABCDEF", 'N'},
           {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
-          {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'}
+          {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+          {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}
         }));
         // clang-format on
 
@@ -83,7 +84,8 @@ TEST_CASE("Uuid tests", "[core]") {
           {"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D'},
           {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N'},
           {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'},
-          {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'}
+          {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'},
+          {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X'}
         }));
         // clang-format on
 
@@ -222,14 +224,14 @@ TEST_CASE("Uuid tests", "[core]") {
              {"N-format", "0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
              {"B-format", "{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
              {"P-format", "(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
-             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'},
+             {"X-format", "{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 69, 'X'},
              {"d-format", "01234567-89ab-cdef-0123-456789abcdef", 37, 'd'},
              {"n-format", "0123456789abcdef0123456789abcdef", 33, 'n'},
              {"b-format", "{01234567-89ab-cdef-0123-456789abcdef}", 39, 'b'},
              {"p-format", "(01234567-89ab-cdef-0123-456789abcdef)", 39, 'p'},
-             {"x-format", "{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 70, 'x'}}));
+             {"x-format", "{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 69, 'x'}}));
 
-        char buffer[70] = {};
+        char buffer[uuid_format::X.size + 1] = {};
 
         SECTION(test_name) {
           SECTION("succeeds if the buffer is sufficiently sized") {
@@ -256,14 +258,14 @@ TEST_CASE("Uuid tests", "[core]") {
              {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
              {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
              {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
-             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 70, 'X'},
+             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 69, 'X'},
              {"d-format", L"01234567-89ab-cdef-0123-456789abcdef", 37, 'd'},
              {"n-format", L"0123456789abcdef0123456789abcdef", 33, 'n'},
              {"b-format", L"{01234567-89ab-cdef-0123-456789abcdef}", 39, 'b'},
              {"p-format", L"(01234567-89ab-cdef-0123-456789abcdef)", 39, 'p'},
-             {"x-format", L"{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 70, 'x'}}));
+             {"x-format", L"{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 69, 'x'}}));
 
-        wchar_t buffer[70] = {};
+        wchar_t buffer[uuid_format::X.size + 1] = {};
 
         SECTION(test_name) {
           SECTION("succeeds if the buffer is sufficiently sized") {

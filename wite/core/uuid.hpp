@@ -111,29 +111,33 @@ struct uuid : public basic_uuid {
         _init_from_p_fmt_string(s);
         break;
       }
+      case 'X':
+      case 'x': {
+        _init_from_x_fmt_string(s);
+        break;
+      }
       default:;
     }
   }
 
   template<typename Char_T>
   void _init_from_d_fmt_string(std::basic_string_view<Char_T> s) {
-    if (s.length() != detail::_uuid_strlen<'D'>() - 1) {
+    using namespace uuid_format;
+    if (s.length() != D.size) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    const auto is_not_dash = [](auto c) {
-      if constexpr (std::is_same_v<char, Char_T>) {
-        return '-' != c;
-      } else {
-        return L'-' != c;
-      }};
+    const auto internal_separators_are_correct = [](const auto& str) {
+      return D.is_internal_separator(str[8]) and D.is_internal_separator(str[13]) and D.is_internal_separator(str[18]) and
+             D.is_internal_separator(str[23]);
+    };
 
-    if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
+    if (not internal_separators_are_correct(s)) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
     try {
-      _unsafe_generic_from_string(s, data);
+      _unsafe_generic_from_string<Char_T, false>(s, data);
     } catch (const std::invalid_argument&) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
@@ -141,11 +145,11 @@ struct uuid : public basic_uuid {
 
   template<typename Char_T>
   void _init_from_n_fmt_string(std::basic_string_view<Char_T> s) {
-    if (s.length() != detail::_uuid_strlen<'N'>() - 1) {
+    if (s.length() != uuid_format::N.size) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
     try {
-      _unsafe_generic_from_string(s, data);
+      _unsafe_generic_from_string<Char_T, false>(s, data);
     } catch (const std::invalid_argument&) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
@@ -161,24 +165,66 @@ struct uuid : public basic_uuid {
     _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::P);
   }
 
-  template<typename Char_T, typename Format_T>
-  void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s, Format_T&& fmt) {
-    if (s.length() < 2){
+  template<typename Char_T>
+  void _init_from_x_fmt_string(std::basic_string_view<Char_T> s) {
+    if (s.length() != uuid_format::X.size){
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    if (fmt.template opening<Char_T>() != s.front() or fmt.template closing<Char_T>() != s.back()){
+    if (not uuid_format::X.is_opening(s.front()) or not uuid_format::X.is_closing(s.back())){
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+
+    _unsafe_generic_from_string<Char_T, true>(s, data);
+  }
+
+  template<typename Char_T, typename Format_T>
+  void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s, Format_T&& fmt) {
+    if (s.length() != fmt.size){
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+
+    if (not fmt.is_opening(s.front()) or not fmt.is_closing(s.back())){
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
     _init_from_d_fmt_string(std::basic_string_view<Char_T>{std::next(s.begin()), std::prev(s.end())});
   }
 
-  template<typename Char_T>
+  template<typename Char_T, bool REMOVE_HEX_PREFIX>
   static void _unsafe_generic_from_string(std::basic_string_view<Char_T> s, Storage_t& out) {
-    auto c = std::array<Char_T, 38>{};
-    std::ranges::copy_if(s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(ch)); });
-    out = binascii::unhexlify<16, uint8_t>(const_cast<const Char_T*>(&c.front()));
+    auto c = std::array<Char_T, 70>{};
+
+    if constexpr (REMOVE_HEX_PREFIX) {
+      const auto remove_0x_prefixes_and_nonhex_chars = []<typename C>(const auto& in, const C prefix_string[2], auto& out) {
+        auto write_pos = out.begin();
+        auto read_pos  = in.begin();
+        while (in.end() != read_pos) {
+          if (*read_pos == prefix_string[0] and *std::next(read_pos) == prefix_string[1]){
+            read_pos += 2;
+          } else if (not std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(*read_pos))) {
+            ++read_pos;
+          } else {
+            *write_pos = *read_pos;
+            ++write_pos;
+            ++read_pos;
+          }
+        }
+      };
+
+      if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<Char_T>>) {
+        char prefix[2] = {'0', 'x'};
+        remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
+      } else {
+        wchar_t prefix[2] = {L'0', L'x'};
+        remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
+      }
+    } else {
+      std::ranges::copy_if(
+          s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(ch)); });
+    }
+
+    out = binascii::unhexlify<16, uint8_t>(c.data());
     _format_raw_array_as_data(out);
   }
 
