@@ -21,7 +21,6 @@ constexpr auto default_uuid_format = WITE_DEFAULT_UUID_FMT;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef _WITE_HAS_CONCEPTS
 template <typename T>
 concept wite_uuid_like = requires(T& t) { t.data; };
 
@@ -41,7 +40,6 @@ concept guid_like = requires(T& t) {
                     };
 template <typename T>
 concept uuid_like = ((wite_uuid_like<T> or guid_like<T>) and sizeof(T) == 16);
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
