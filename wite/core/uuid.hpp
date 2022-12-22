@@ -151,28 +151,12 @@ struct uuid : public basic_uuid {
     auto c = std::array<Char_T, 70>{};
 
     if (prefixed_values) {
-      const auto remove_0x_prefixes_and_nonhex_chars = []<typename C>(const auto& in, const C prefix_string[2], auto& out) {
-        auto write_pos = out.begin();
-        auto read_pos  = in.begin();
-        while (in.end() != read_pos) {
-          if (*read_pos == prefix_string[0] and *std::next(read_pos) == prefix_string[1]){
-            read_pos += 2;
-          } else if (not std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(*read_pos))) {
-            ++read_pos;
-          } else {
-            *write_pos = *read_pos;
-            ++write_pos;
-            ++read_pos;
-          }
-        }
-      };
-
       if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<Char_T>>) {
         char prefix[2] = {'0', 'x'};
-        remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
+        _remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
       } else {
         wchar_t prefix[2] = {L'0', L'x'};
-        remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
+        _remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
       }
     } else {
       std::ranges::copy_if(
@@ -181,6 +165,23 @@ struct uuid : public basic_uuid {
 
     out = binascii::unhexlify<16, uint8_t>(c.data());
     _format_raw_array_as_data(out);
+  }
+
+  template<typename Char_T>
+  static void _remove_0x_prefixes_and_nonhex_chars(const auto& in, const Char_T prefix_string[2], auto& out){
+    auto write_pos = out.begin();
+    auto read_pos  = in.begin();
+    while (in.end() != read_pos) {
+      if (*read_pos == prefix_string[0] and *std::next(read_pos) == prefix_string[1]){
+        read_pos += 2;
+      } else if (not std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(*read_pos))) {
+        ++read_pos;
+      } else {
+        *write_pos = *read_pos;
+        ++write_pos;
+        ++read_pos;
+      }
+    }
   }
 
   static void _format_raw_array_as_data(Storage_t& arr) {
