@@ -253,35 +253,37 @@ TEST_CASE("Uuid tests", "[core]") {
 
     SECTION("wide chars") {
       SECTION("succeeds for valid format types") {
-        auto [test_name, expected_output, size, format_char] = GENERATE(table<const char*, const wchar_t*, size_t, char>(
-            {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 37, 'D'},
-             {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 33, 'N'},
-             {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 39, 'B'},
-             {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 39, 'P'},
-             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 69, 'X'},
-             {"d-format", L"01234567-89ab-cdef-0123-456789abcdef", 37, 'd'},
-             {"n-format", L"0123456789abcdef0123456789abcdef", 33, 'n'},
-             {"b-format", L"{01234567-89ab-cdef-0123-456789abcdef}", 39, 'b'},
-             {"p-format", L"(01234567-89ab-cdef-0123-456789abcdef)", 39, 'p'},
-             {"x-format", L"{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 69, 'x'}}));
+        using namespace uuid_format;
+
+        auto [test_name, expected_output, format_char, size] = GENERATE(table<const char*, const wchar_t*, char, size_t>(
+            {{"D-format", L"01234567-89AB-CDEF-0123-456789ABCDEF", 'D', D.size},
+             {"N-format", L"0123456789ABCDEF0123456789ABCDEF", 'N', N.size},
+             {"B-format", L"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B', B.size},
+             {"P-format", L"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P', P.size},
+             {"X-format", L"{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X', X.size},
+             {"d-format", L"01234567-89ab-cdef-0123-456789abcdef", 'd', d.size},
+             {"n-format", L"0123456789abcdef0123456789abcdef", 'n', n.size},
+             {"b-format", L"{01234567-89ab-cdef-0123-456789abcdef}", 'b', b.size},
+             {"p-format", L"(01234567-89ab-cdef-0123-456789abcdef)", 'p', p.size},
+             {"x-format", L"{0x01234567,0x89ab,0xcdef,{0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef}}", 'x', x.size}}));
 
         wchar_t buffer[uuid_format::X.size + 1] = {};
 
         SECTION(test_name) {
           SECTION("succeeds if the buffer is sufficiently sized") {
-            REQUIRE(id.into_c_str(buffer, size, format_char));
+            REQUIRE(id.into_c_str(buffer, size + 1, format_char));
             REQUIRE(expected_output == std::wstring{buffer});
           }
 
           SECTION("fails if the buffer is too small") {
-            REQUIRE_FALSE(id.into_c_str(buffer, size - 1, format_char));
+            REQUIRE_FALSE(id.into_c_str(buffer, size, format_char));
           }
         }
       }
 
       SECTION("Fails for invalid format") {
-        wchar_t buffer[70] = {};
-        REQUIRE_FALSE(id.into_c_str(buffer, 70, 'A'));
+        wchar_t buffer[uuid_format::X.size + 1] = {};
+        REQUIRE_FALSE(id.into_c_str(buffer, uuid_format::X.size + 1, 'A'));
       }
     }
   }
