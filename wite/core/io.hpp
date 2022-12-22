@@ -28,13 +28,17 @@ std::ostream& operator<<(std::ostream& os, const Id_T& id) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if _WITE_HAS_CONCEPTS
 template<wite::uuid_like Uuid_T>
 std::ostream& operator<<(std::ostream& os, const Uuid_T& id) {
-#else
-inline std::ostream& operator<<(std::ostream& os, const wite::uuid& id) {
-#endif
   os << wite::to_string(id);
+  return os;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<wite::uuid_like Uuid_T>
+std::wostream& operator<<(std::wostream& os, const Uuid_T& id) {
+  os << wite::to_wstring(id);
   return os;
 }
 
