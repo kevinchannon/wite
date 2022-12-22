@@ -139,15 +139,13 @@ struct uuid : public basic_uuid {
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    try {
-      _unsafe_generic_from_string<Char_T>(s, fmt.prefixed_values, data);
-    } catch (const std::invalid_argument&) {
+     if (not _unsafe_generic_from_string<Char_T>(s, fmt.prefixed_values, data)) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
   }
 
   template<typename Char_T>
-  static void _unsafe_generic_from_string(std::basic_string_view<Char_T> s, bool prefixed_values, Storage_t& out) {
+  static bool _unsafe_generic_from_string(std::basic_string_view<Char_T> s, bool prefixed_values, Storage_t& out) {
     auto c = std::array<Char_T, 70>{};
 
     if (prefixed_values) {
@@ -163,8 +161,16 @@ struct uuid : public basic_uuid {
           s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(ch)); });
     }
 
-    out = binascii::unhexlify<16, uint8_t>(c.data());
+    if (std::distance(c.begin(), std::find_if(c.rbegin(), c.rend(), [](auto ch){ return ch != Char_T{};}).base()) != 32) {
+      return false;
+    }
+
+    // At this point, we only have hex characters and the output array is the right size, so we can use the unsafe version of this
+    // function
+    out = binascii::unsafe_unhexlify<16, uint8_t>(c.data());
     _format_raw_array_as_data(out);
+
+    return true;
   }
 
   template<typename Char_T>
