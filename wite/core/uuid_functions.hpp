@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <wite/binascii/hexlify.hpp>
 #include <wite/collections/static_lookup.hpp>
 #include <wite/common/constructor_macros.hpp>
@@ -49,54 +50,67 @@ _WITE_NODISCARD std::wstring to_wstring(const Uuid_T& id, char format = default_
 
 namespace detail {
 
-  template <typename Char_T, Char_T OPENING = Char_T{}, Char_T INTERNAL = Char_T{}, Char_T CLOSING = Char_T{}>
-  struct uuid_format_delimiters {
-    const Char_T opening{OPENING};
-    const Char_T closing{CLOSING};
-    const Char_T internal{INTERNAL};
+  template <typename Char_T>
+  struct uuid_internal_delimiter {
+    constexpr explicit uuid_internal_delimiter(Char_T v, size_t p) : value{v}, position{p} {}
+
+    Char_T value;
+    size_t position;
   };
 
-  template <size_t SIZE, typename NarrowDelimiters_T, typename WideDelimiters_T>
+  template <typename Char_T, size_t DELIMITER_COUNT = 0, Char_T OPENING = Char_T{}, Char_T CLOSING = Char_T{}>
+  struct uuid_format_delimiters {
+    static constexpr Char_T opening{OPENING};
+    static constexpr Char_T closing{CLOSING};
+
+    constexpr explicit uuid_format_delimiters(const std::array<uuid_internal_delimiter<Char_T>, DELIMITER_COUNT> delimiters) noexcept
+    : internal_delimiters{delimiters}
+    {}
+
+    const std::array<uuid_internal_delimiter<Char_T>, DELIMITER_COUNT> internal_delimiters;
+  };
+
+  template <typename NarrowDelimiters_T, typename WideDelimiters_T>
   struct uuid_format_type {
-    const size_t size           = SIZE;
 
-    const NarrowDelimiters_T narrow_delimiters{};
-    const WideDelimiters_T wide_delimiters{};
-
-    constexpr explicit uuid_format_type(const char* format,
-                                   const wchar_t* wide_format)
-        : format_string{format}
+    constexpr explicit uuid_format_type(size_t size, bool prefixed_values, const char* format,
+                                   const wchar_t* wide_format, NarrowDelimiters_T narrow_delimiters, WideDelimiters_T wide_delimiters)
+        : size{size}
+        , prefixed_values{prefixed_values}
+        , narrow_delimiters{std::move(narrow_delimiters)}
+        , wide_delimiters{std::move(wide_delimiters)}
+        , format_string{format}
         , wide_format_string{wide_format} {}
 
     template <typename C>
-    constexpr bool is_opening(C c) const {
+    _WITE_NODISCARD constexpr bool is_opening(C c) const {
       if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<C>>) {
-        return narrow_delimiters.opening == c;
+        return narrow_delimiters.opening == C{} or narrow_delimiters.opening == c;
       } else {
-        return wide_delimiters.opening == c;
+        return wide_delimiters.opening == C{} or wide_delimiters.opening == c;
       }
     }
 
     template <typename C>
-    constexpr bool is_closing(C c) const {
+    _WITE_NODISCARD constexpr bool is_closing(C c) const {
       if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<C>>) {
-        return narrow_delimiters.closing == c;
+        return narrow_delimiters.closing == C{} or narrow_delimiters.closing == c;
       } else {
-        return wide_delimiters.closing == c;
+        return wide_delimiters.closing == C{} or wide_delimiters.closing == c;
       }
     }
 
     template <typename C>
-    constexpr bool is_internal_separator(C c) const {
+    _WITE_NODISCARD constexpr auto delimiters() const {
       if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<C>>) {
-        return narrow_delimiters.internal == c;
+        return &narrow_delimiters;
       } else {
-        return wide_delimiters.internal == c;
+        return &wide_delimiters;
       }
     }
 
     template <typename C>
-    constexpr const C* format() const {
+    _WITE_NODISCARD constexpr const C* format() const {
       if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<C>>) {
         return format_string;
       } else {
@@ -104,69 +118,124 @@ namespace detail {
       }
     }
 
+    const size_t size{};
+    const bool prefixed_values{false};
+    const NarrowDelimiters_T narrow_delimiters{};
+    const WideDelimiters_T wide_delimiters{};
     const char* format_string{};
     const wchar_t* wide_format_string{};
   };
 }  // namespace detail
 
 namespace uuid_format {
-  static constexpr auto N =
-      detail::uuid_format_type<32, detail::uuid_format_delimiters<char>, detail::uuid_format_delimiters<wchar_t>>{
-          "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X",
-          L"%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X"};
+  static constexpr auto N = detail::uuid_format_type{32, false,
+                                                     "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X",
+                                                     L"%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X",
+                                                     detail::uuid_format_delimiters<char>{{}},
+                                                     detail::uuid_format_delimiters<wchar_t>{{}}};
 
-  static constexpr auto n =
-      detail::uuid_format_type<32, detail::uuid_format_delimiters<char>, detail::uuid_format_delimiters<wchar_t>>{
-          "%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x",
-          L"%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x"};
+  static constexpr auto n = detail::uuid_format_type{32, false,
+                                                     "%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x",
+                                                     L"%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x",
+                                                     detail::uuid_format_delimiters<char>{{}},
+                                                     detail::uuid_format_delimiters<wchar_t>{{}}};
 
-  static constexpr auto D = detail::uuid_format_type<36,
-                                                detail::uuid_format_delimiters<char, char{}, '-', char{}>,
-                                                detail::uuid_format_delimiters<wchar_t, wchar_t{}, L'-', wchar_t{}>>{
+  static constexpr auto D = detail::uuid_format_type{
+      36, false,
       "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-      L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X"};
+      L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+      detail::uuid_format_delimiters<char, 4>{std::array{detail::uuid_internal_delimiter{'-', 8},
+                                                         detail::uuid_internal_delimiter{'-', 13},
+                                                         detail::uuid_internal_delimiter{'-', 18},
+                                                         detail::uuid_internal_delimiter{'-', 23}}},
+      detail::uuid_format_delimiters<wchar_t, 4>{
+          std::array{detail::uuid_internal_delimiter{L'-', 8},
+                     detail::uuid_internal_delimiter{L'-', 13},
+                     detail::uuid_internal_delimiter{L'-', 18},
+                     detail::uuid_internal_delimiter{L'-', 23}}}};
 
-  static constexpr auto d = detail::uuid_format_type<36,
-                                                detail::uuid_format_delimiters<char, char{}, '-', char{}>,
-                                                detail::uuid_format_delimiters<wchar_t, wchar_t{}, L'-', wchar_t{}>>{
+  static constexpr auto d = detail::uuid_format_type{
+      36, false,
       "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-      L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x"};
+      L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+      detail::uuid_format_delimiters<char, 4>{std::array{detail::uuid_internal_delimiter{'-', 8},
+                                                         detail::uuid_internal_delimiter{'-', 13},
+                                                         detail::uuid_internal_delimiter{'-', 18},
+                                                         detail::uuid_internal_delimiter{'-', 23}}},
+      detail::uuid_format_delimiters<wchar_t, 4>{
+          std::array{detail::uuid_internal_delimiter{L'-', 8},
+                     detail::uuid_internal_delimiter{L'-', 13},
+                     detail::uuid_internal_delimiter{L'-', 18},
+                     detail::uuid_internal_delimiter{L'-', 23}}}};
 
-  static constexpr auto B = detail::uuid_format_type<38,
-                                                detail::uuid_format_delimiters<char, '{', '-', '}'>,
-                                                detail::uuid_format_delimiters<wchar_t, L'{', L'-', L'}'>>{
+  static constexpr auto B = detail::uuid_format_type{
+      38, false,
       "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
-      L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"};
+      L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+      detail::uuid_format_delimiters<char, 4, '{', '}'>{std::array{detail::uuid_internal_delimiter{'-', 9},
+                                                         detail::uuid_internal_delimiter{'-', 14},
+                                                         detail::uuid_internal_delimiter{'-', 19},
+                                                         detail::uuid_internal_delimiter{'-', 24}}},
+      detail::uuid_format_delimiters<wchar_t, 4, L'{', L'}'>{
+          std::array{detail::uuid_internal_delimiter{L'-', 9},
+                     detail::uuid_internal_delimiter{L'-', 14},
+                     detail::uuid_internal_delimiter{L'-', 19},
+                     detail::uuid_internal_delimiter{L'-', 24}}}};
 
-  static constexpr auto b = detail::uuid_format_type<38,
-                                                detail::uuid_format_delimiters<char, '{', '-', '}'>,
-                                                detail::uuid_format_delimiters<wchar_t, L'{', L'-', L'}'>>{
+  static constexpr auto b = detail::uuid_format_type{
+      38, false,
       "{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
-      L"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}"};
+      L"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+      detail::uuid_format_delimiters<char, 4, '{', '}'>{std::array{detail::uuid_internal_delimiter{'-', 9},
+                                                                   detail::uuid_internal_delimiter{'-', 14},
+                                                                   detail::uuid_internal_delimiter{'-', 19},
+                                                                   detail::uuid_internal_delimiter{'-', 24}}},
+      detail::uuid_format_delimiters<wchar_t, 4, L'{', L'}'>{
+          std::array{detail::uuid_internal_delimiter{L'-', 9},
+                     detail::uuid_internal_delimiter{L'-', 14},
+                     detail::uuid_internal_delimiter{L'-', 19},
+                     detail::uuid_internal_delimiter{L'-', 24}}}};
 
-  static constexpr auto P = detail::uuid_format_type<38,
-                                                detail::uuid_format_delimiters<char, '(', '-', ')'>,
-                                                detail::uuid_format_delimiters<wchar_t, L'(', L'-', L')'>>{
+  static constexpr auto P = detail::uuid_format_type{
+      38, false,
       "(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)",
-      L"(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)"};
+      L"(%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X)",
+      detail::uuid_format_delimiters<char, 4, '(', ')'>{std::array{detail::uuid_internal_delimiter{'-', 9},
+                                                                   detail::uuid_internal_delimiter{'-', 14},
+                                                                   detail::uuid_internal_delimiter{'-', 19},
+                                                                   detail::uuid_internal_delimiter{'-', 24}}},
+      detail::uuid_format_delimiters<wchar_t, 4, L'(', L')'>{
+          std::array{detail::uuid_internal_delimiter{L'-', 9},
+                     detail::uuid_internal_delimiter{L'-', 14},
+                     detail::uuid_internal_delimiter{L'-', 19},
+                     detail::uuid_internal_delimiter{L'-', 24}}}};
 
-  static constexpr auto p = detail::uuid_format_type<38,
-                                                detail::uuid_format_delimiters<char, '(', '-', ')'>,
-                                                detail::uuid_format_delimiters<wchar_t, L'(', L'-', L')'>>{
+  static constexpr auto p = detail::uuid_format_type{
+      38, false,
       "(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)",
-      L"(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)"};
+      L"(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)",
+      detail::uuid_format_delimiters<char, 4, '(', ')'>{std::array{detail::uuid_internal_delimiter{'-', 9},
+                                                                   detail::uuid_internal_delimiter{'-', 14},
+                                                                   detail::uuid_internal_delimiter{'-', 19},
+                                                                   detail::uuid_internal_delimiter{'-', 24}}},
+      detail::uuid_format_delimiters<wchar_t, 4, L'(', L')'>{
+          std::array{detail::uuid_internal_delimiter{L'-', 9},
+                     detail::uuid_internal_delimiter{L'-', 14},
+                     detail::uuid_internal_delimiter{L'-', 19},
+                     detail::uuid_internal_delimiter{L'-', 24}}}};
 
-  static constexpr auto X = detail::uuid_format_type<68,
-                                                detail::uuid_format_delimiters<char, '{', char{}, '}'>,
-                                                detail::uuid_format_delimiters<wchar_t, L'{', wchar_t{}, L'}'>>{
-      "{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}",
-      L"{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}"};
+  static constexpr auto X = detail::uuid_format_type{68, true,
+                               "{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}",
+                               L"{0x%08X,0x%04X,0x%04X,{0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X}}",
+                               detail::uuid_format_delimiters<char>{{}},
+                               detail::uuid_format_delimiters<wchar_t>{{}}};
 
-  static constexpr auto x = detail::uuid_format_type<68,
-                                                detail::uuid_format_delimiters<char, '{', char{}, '}'>,
-                                                detail::uuid_format_delimiters<wchar_t, L'{', wchar_t{}, L'}'>>{
-      "{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}",
-      L"{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}"};
+  static constexpr auto x =
+      detail::uuid_format_type{68, true,
+                               "{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}",
+                               L"{0x%08x,0x%04x,0x%04x,{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x}}",
+                               detail::uuid_format_delimiters<char, 0, '{', '}'>{{}},
+                               detail::uuid_format_delimiters<wchar_t, 0, L'{', L'}'>{{}}};
 }  // namespace uuid_format
 
 ///////////////////////////////////////////////////////////////////////////////

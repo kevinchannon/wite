@@ -91,91 +91,33 @@ struct uuid : public basic_uuid {
   template<typename Char_T>
   void _init_from_string(std::basic_string_view<Char_T> s, char format) {
     switch (format) {
-      case 'D':
-      case 'd': {
-        _init_from_d_fmt_string(s);
-        break;
-      }
       case 'N':
       case 'n': {
-        _init_from_n_fmt_string(s);
+        _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::N);
+        break;
+      }
+      case 'D':
+      case 'd': {
+        _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::D);
         break;
       }
       case 'B':
       case 'b': {
-        _init_from_b_fmt_string(s);
+        _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::B);
         break;
       }
       case 'P':
       case 'p': {
-        _init_from_p_fmt_string(s);
+        _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::P);
         break;
       }
       case 'X':
       case 'x': {
-        _init_from_x_fmt_string(s);
+        _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::X);
         break;
       }
       default:;
     }
-  }
-
-  template<typename Char_T>
-  void _init_from_d_fmt_string(std::basic_string_view<Char_T> s) {
-    using namespace uuid_format;
-    if (s.length() != D.size) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-
-    const auto internal_separators_are_correct = [](const auto& str) {
-      return D.is_internal_separator(str[8]) and D.is_internal_separator(str[13]) and D.is_internal_separator(str[18]) and
-             D.is_internal_separator(str[23]);
-    };
-
-    if (not internal_separators_are_correct(s)) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-
-    try {
-      _unsafe_generic_from_string<Char_T, false>(s, data);
-    } catch (const std::invalid_argument&) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-  }
-
-  template<typename Char_T>
-  void _init_from_n_fmt_string(std::basic_string_view<Char_T> s) {
-    if (s.length() != uuid_format::N.size) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-    try {
-      _unsafe_generic_from_string<Char_T, false>(s, data);
-    } catch (const std::invalid_argument&) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-  }
-
-  template<typename Char_T>
-  void _init_from_b_fmt_string(std::basic_string_view<Char_T> s) {
-    _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::B);
-  }
-
-  template<typename Char_T>
-  void _init_from_p_fmt_string(std::basic_string_view<Char_T> s) {
-    _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::P);
-  }
-
-  template<typename Char_T>
-  void _init_from_x_fmt_string(std::basic_string_view<Char_T> s) {
-    if (s.length() != uuid_format::X.size){
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-
-    if (not uuid_format::X.is_opening(s.front()) or not uuid_format::X.is_closing(s.back())){
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-
-    _unsafe_generic_from_string<Char_T, true>(s, data);
   }
 
   template<typename Char_T, typename Format_T>
@@ -188,14 +130,27 @@ struct uuid : public basic_uuid {
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    _init_from_d_fmt_string(std::basic_string_view<Char_T>{std::next(s.begin()), std::prev(s.end())});
+    const auto has_invalid_delimiter = [&fmt](const auto& str) {
+      return std::ranges::any_of(fmt.template delimiters<Char_T>()->internal_delimiters,
+                          [&str](const auto& x) {return x.value != str[x.position]; });
+    };
+
+    if (has_invalid_delimiter(s)) {
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
+
+    try {
+      _unsafe_generic_from_string<Char_T>(s, fmt.prefixed_values, data);
+    } catch (const std::invalid_argument&) {
+      throw std::invalid_argument{"Invalid UUID format"};
+    }
   }
 
-  template<typename Char_T, bool REMOVE_HEX_PREFIX>
-  static void _unsafe_generic_from_string(std::basic_string_view<Char_T> s, Storage_t& out) {
+  template<typename Char_T>
+  static void _unsafe_generic_from_string(std::basic_string_view<Char_T> s, bool prefixed_values, Storage_t& out) {
     auto c = std::array<Char_T, 70>{};
 
-    if constexpr (REMOVE_HEX_PREFIX) {
+    if (prefixed_values) {
       const auto remove_0x_prefixes_and_nonhex_chars = []<typename C>(const auto& in, const C prefix_string[2], auto& out) {
         auto write_pos = out.begin();
         auto read_pos  = in.begin();
