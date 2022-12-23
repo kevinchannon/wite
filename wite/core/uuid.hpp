@@ -59,10 +59,10 @@ struct uuid : public basic_uuid {
     auto random_bits = std::uniform_int_distribution<uint64_t>{0x00, 0xFFFFFFFFFFFFFFFF};
 
     *reinterpret_cast<uint64_t*>(&data) = random_bits(engine);
-    data[5]                             = static_cast<uint8_t>((data[5] & 0x0F) | 0x40);  // Version 4 UUID
-    data[6]                             = static_cast<uint8_t>((data[6] & 0x3F) | 0x80);  // Variant 1 UUID
+    data[6]                             = static_cast<uint8_t>((data[6] & 0b0000'1111) | 0b0100'0000);  // Version 4 UUID
 
     *(reinterpret_cast<uint64_t*>(&data) + 1) = random_bits(engine);
+    data[8]                             = static_cast<uint8_t>((data[8] & 0b0011'1111) | 0b1000'0000);  // Variant 1 UUID
   }
 
 #ifndef WITE_NO_EXCEPTIONS

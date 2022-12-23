@@ -38,6 +38,15 @@ TEST_CASE("Uuid tests", "[core]") {
 
     SECTION("create random UUID") {
       const auto id_1 = make_uuid();
+
+      SECTION("version bits should be set to version 4"){
+        REQUIRE(0x4 == (id_1.data[6] >> 4));
+      }
+
+      SECTION("variant bits should be set to 1"){
+        REQUIRE(0b10 == (id_1.data[8] >> 6));
+      }
+
       const auto id_2 = make_uuid();
       REQUIRE(id_1 != id_2);
     }
@@ -45,7 +54,7 @@ TEST_CASE("Uuid tests", "[core]") {
     SECTION("using a random number generator") {
       const auto id = uuid{test::FakeRandomEngine{}};
 
-      REQUIRE(uuid{0x89ABCDEF, 0x4567, 0x01A3, {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);
+      REQUIRE(uuid{{0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x43, 0x01, 0xAF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}} == id);
     }
 
     SECTION("Making a UUID doesn't take too long") {
