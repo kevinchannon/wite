@@ -47,8 +47,10 @@ TEST_CASE("Uuid tests", "[core]") {
         REQUIRE(0b10 == (id_1.data[8] >> 6));
       }
 
-      const auto id_2 = make_uuid();
-      REQUIRE(id_1 != id_2);
+      SECTION("second UUID is not the same as the first") {
+        const auto id_2 = make_uuid();
+        REQUIRE(id_1 != id_2);
+      }
     }
 
     SECTION("using a random number generator") {
