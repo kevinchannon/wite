@@ -235,7 +235,6 @@ TEST_CASE("Uuid tests", "[core]") {
     }
 
     SECTION("try_make_uuid"){
-
       SECTION("from string") {
         SECTION("D-format") {
           SECTION("succeeds for valid string") {

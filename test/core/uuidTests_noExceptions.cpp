@@ -64,31 +64,172 @@ TEST_CASE("Uuid tests (no except)", "[core]") {
     }
 
     SECTION("from string") {
-      SECTION("is null if the string is too short") {
-        REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE").is_error());
-        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE").error());
+      SECTION("D-format") {
+        SECTION("succeeds for valid string") {
+          const auto expected =
+              uuid{{0x67, 0x45, 0x23, 0x01, 0xAB, 0x89, 0xEF, 0xCD, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+          const auto actual = try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF");
+          REQUIRE(actual.ok());
+          REQUIRE(expected == actual.value());
+        }
+
+        SECTION("returns invalid_uuid_format if the string is too short") {
+          REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE").is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE").error());
+        }
+
+        SECTION("returns invalid_uuid_format if the string is too long") {
+          REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").error());
+        }
+
+        SECTION("returns invalid_uuid_format if the string contains non-hex or dash characters") {
+          REQUIRE(try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").error());
+
+          REQUIRE(try_make_uuid("01234567-89AX-CDEF-0123-456789ABCDEF").is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AX-CDEF-0123-456789ABCDEF").error());
+
+          REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123_456789ABCDEF").is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123_456789ABCDEF").error());
+
+          REQUIRE(try_make_uuid("01234567-89AB-CDEX-0123-456789ABCDEF").is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEX-0123-456789ABCDEF").error());
+
+          REQUIRE(try_make_uuid("01234567-89AB-CDEX-0123-456789AXCDEF").is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEX-0123-456789AXCDEF").error());
+        }
       }
 
-      SECTION("is null if the string is too long") {
-        REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").is_error());
-        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").error());
+      SECTION("N-format") {
+        SECTION("succeeds for valid string") {
+          const auto expected =
+              uuid{{0x67, 0x45, 0x23, 0x01, 0xAB, 0x89, 0xEF, 0xCD, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+          const auto actual = try_make_uuid("0123456789ABCDEF0123456789ABCDEF", 'N');
+          REQUIRE(actual.ok());
+          REQUIRE(expected == actual.value());
+        }
+
+        SECTION("returns invalid_uuid_format if the string is too short") {
+          REQUIRE(try_make_uuid("0123456789ABCDEF0123456789ABCDE", 'N').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456789ABCDEF0123456789ABCDE", 'N').error());
+        }
+
+        SECTION("returns invalid_uuid_format if the string is too long") {
+          REQUIRE(try_make_uuid("0123456789ABCDEF0123456789ABCDEF0", 'N').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456789ABCDEF0123456789ABCDEF0", 'N').error());
+        }
+
+        SECTION("returns invalid_uuid_format if the string contains non-hex characters") {
+          REQUIRE(try_make_uuid("0123456X89ABCDEF0123456789ABCDEF", 'N').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456X89ABCDEF0123456789ABCDEF", 'N').error());
+        }
       }
 
-      SECTION("is null if the string contains non-hex or dash characters") {
-        REQUIRE(try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").is_error());
-        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").error());
+      SECTION("B-format") {
+        SECTION("succeeds for valid string") {
+          const auto expected =
+              uuid{{0x67, 0x45, 0x23, 0x01, 0xAB, 0x89, 0xEF, 0xCD, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+          const auto actual = try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B');
+          REQUIRE(actual.ok());
+          REQUIRE(expected == actual.value());
+        }
 
-        REQUIRE(try_make_uuid("01234567-89AX-CDEF-0123-456789ABCDEF").is_error());
-        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AX-CDEF-0123-456789ABCDEF").error());
+        SECTION("returns invalid_uuid_format if the string is too short") {
+          REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDE}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDE}", 'B').error());
+        }
 
-        REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123_456789ABCDEF").is_error());
-        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123_456789ABCDEF").error());
+        SECTION("returns invalid_uuid_format if the string is too long") {
+          REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF0}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF0}", 'B').error());
+        }
 
-        REQUIRE(try_make_uuid("01234567-89AB-CDEX-0123-456789ABCDEF").is_error());
-        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEX-0123-456789ABCDEF").error());
+        SECTION("returns invalid_uuid_format if the string contains non-hex or dash characters") {
+          REQUIRE(try_make_uuid("{0123456X-89AB-CDEF-0123-456789ABCDEF}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{0123456X-89AB-CDEF-0123-456789ABCDEF}", 'B').error());
 
-        REQUIRE(try_make_uuid("01234567-89AB-CDEX-0123-456789AXCDEF").is_error());
-        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEX-0123-456789AXCDEF").error());
+          REQUIRE(try_make_uuid("{01234567-89AX-CDEF-0123-456789ABCDEF}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AX-CDEF-0123-456789ABCDEF}", 'B').error());
+
+          REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123_456789ABCDEF}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123_456789ABCDEF}", 'B').error());
+
+          REQUIRE(try_make_uuid("{01234567-89AB-CDEX-0123-456789ABCDEF}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEX-0123-456789ABCDEF}", 'B').error());
+
+          REQUIRE(try_make_uuid("{01234567-89AB-CDEX-0123-456789AXCDEF}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEX-0123-456789AXCDEF}", 'B').error());
+        }
+
+        SECTION("returns invalid_uuid_format if string is empty") {
+          REQUIRE(try_make_uuid("", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("", 'B').error());
+        }
+
+        SECTION("returns invalid_uuid_format if the first or last character is not a brace") {
+          REQUIRE(try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF}", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF}", 'B').error());
+
+          REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF?", 'B').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF?", 'B').error());
+        }
+      }
+
+      SECTION("P-format") {
+        SECTION("succeeds for valid string") {
+          const auto expected =
+              uuid{{0x67, 0x45, 0x23, 0x01, 0xAB, 0x89, 0xEF, 0xCD, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}};
+          const auto actual = try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P');
+          REQUIRE(actual.ok());
+          REQUIRE(expected == actual.value());
+        }
+
+        SECTION("returns invalid_uuid_format if the string is too short") {
+          REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDE)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDE)", 'P').error());
+        }
+
+        SECTION("returns invalid_uuid_format if the string is too long") {
+          REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF0)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF0)", 'P').error());
+        }
+
+        SECTION("returns invalid_uuid_format if the string contains non-hex or dash characters") {
+          REQUIRE(try_make_uuid("(0123456X-89AB-CDEF-0123-456789ABCDEF)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(0123456X-89AB-CDEF-0123-456789ABCDEF)", 'P').error());
+
+          REQUIRE(try_make_uuid("(01234567-89AX-CDEF-0123-456789ABCDEF)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AX-CDEF-0123-456789ABCDEF)", 'P').error());
+
+          REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123_456789ABCDEF)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123_456789ABCDEF)", 'P').error());
+
+          REQUIRE(try_make_uuid("(01234567-89AB-CDEX-0123-456789ABCDEF)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEX-0123-456789ABCDEF)", 'P').error());
+
+          REQUIRE(try_make_uuid("(01234567-89AB-CDEX-0123-456789AXCDEF)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEX-0123-456789AXCDEF)", 'P').error());
+        }
+
+        SECTION("returns invalid_uuid_format if string is empty") {
+          REQUIRE(try_make_uuid("", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("", 'P').error());
+        }
+
+        SECTION("returns invalid_uuid_format if the first or last character is not a brace") {
+          REQUIRE(try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF)", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF)", 'P').error());
+
+          REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF?", 'P').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF?", 'P').error());
+        }
+      }
+
+      SECTION("returns invalid_uuid_format_type if the format specifier is invalid") {
+        REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF}", '?').is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format_type ==
+                try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF}", '?').error());
       }
     }
   }
