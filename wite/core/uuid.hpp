@@ -118,10 +118,9 @@ struct uuid : public basic_uuid {
         _init_from_wrapped_fmt_string<Char_T>(s, uuid_format::X);
         break;
       }
-      default:;
+      default:
+        throw std::invalid_argument{"Invalid UUID format type"};
     }
-
-    // TODO: throw here.
   }
 
   template<typename Char_T, typename Format_T>

@@ -232,6 +232,11 @@ TEST_CASE("Uuid tests", "[core]") {
           WITE_REQ_THROWS(thrower("(01234567-89AB-CDEF-0123-456789ABCDEF?"), std::invalid_argument, "Invalid UUID format");
         }
       }
+
+      SECTION("throws std::invalid_argument if the format specifier is invalid") {
+        const auto thrower = [](auto s){ uuid{s, '?'}; };
+        WITE_REQ_THROWS(thrower("01234567-89AB-CDEF-0123-456789ABCDEF"), std::invalid_argument, "Invalid UUID format type");
+      }
     }
 
     SECTION("try_make_uuid"){
