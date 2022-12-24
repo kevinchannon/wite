@@ -2,6 +2,7 @@
 
 #include <wite/core/basic_uuid.hpp>
 #include <wite/core/uuid_functions.hpp>
+#include <wite/core/uuid_hash.hpp>
 #include <wite/binascii/hexlify.hpp>
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/features.hpp>
@@ -240,5 +241,15 @@ inline result<uuid, make_uuid_error> try_make_uuid(std::wstring_view s, char for
 ///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace wite
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <>
+struct std::hash<wite::uuid> {
+  std::size_t operator()(const wite::uuid& id) const noexcept {
+    return std::hash<uint64_t>{}(*reinterpret_cast<const uint64_t*>(id.data.data())) ^
+           std::hash<uint64_t>{}(*reinterpret_cast<const uint64_t*>(id.data.data() + sizeof(uint64_t)));
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
