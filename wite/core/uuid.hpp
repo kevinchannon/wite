@@ -158,7 +158,8 @@ inline uuid make_uuid() {
 ///////////////////////////////////////////////////////////////////////////////
 
 enum class make_uuid_error {
-  invalid_uuid_format
+  invalid_uuid_format,
+  invalid_uuid_format_type
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,7 +226,7 @@ namespace detail::uuid {
       default:;
     }
 
-    return {make_uuid_error::invalid_uuid_format};
+    return {make_uuid_error::invalid_uuid_format_type};
   }
 }
 

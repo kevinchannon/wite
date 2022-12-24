@@ -250,12 +250,12 @@ TEST_CASE("Uuid tests", "[core]") {
             REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE").error());
           }
 
-          SECTION("throws std::invalid_argument if the string is too long") {
+          SECTION("returns invalid_uuid_format if the string is too long") {
             REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").is_error());
             REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").error());
           }
 
-          SECTION("throws std::invalid_argument if the string contains non-hex or dash characters") {
+          SECTION("returns invalid_uuid_format if the string contains non-hex or dash characters") {
             REQUIRE(try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").is_error());
             REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").error());
 
@@ -281,90 +281,123 @@ TEST_CASE("Uuid tests", "[core]") {
             REQUIRE(expected == actual.value());
           }
 
-          const auto thrower = [](auto s) { uuid{s, 'N'}; };
-
-          SECTION("throws std::invalid_argument if the string is too short") {
+          SECTION("returns invalid_uuid_format if the string is too short") {
             REQUIRE(try_make_uuid("0123456789ABCDEF0123456789ABCDE", 'N').is_error());
             REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456789ABCDEF0123456789ABCDE", 'N').error());
           }
 
-          SECTION("throws std::invalid_argument if the string is too long") {
-            WITE_REQ_THROWS(thrower("0123456789ABCDEF0123456789ABCDEF0"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string is too long") {
+            REQUIRE(try_make_uuid("0123456789ABCDEF0123456789ABCDEF0", 'N').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456789ABCDEF0123456789ABCDEF0", 'N').error());
           }
 
-          SECTION("throws std::invalid_argument if the string contains non-hex characters") {
-            WITE_REQ_THROWS(thrower("0123456X89ABCDEF0123456789ABCDEF"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string contains non-hex characters") {
+            REQUIRE(try_make_uuid("0123456X89ABCDEF0123456789ABCDEF", 'N').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456X89ABCDEF0123456789ABCDEF", 'N').error());
           }
         }
 
         SECTION("B-format") {
           SECTION("succeeds for valid string") {
             const auto expected = uuid{{0x67,0x45,0x23,0x01,0xAB,0x89,0xEF,0xCD,0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}};
-            const auto actual   = uuid{"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'};
-            REQUIRE(expected == actual);
+            const auto actual = try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B');
+            REQUIRE(actual.ok());
+            REQUIRE(expected == actual.value());
           }
 
-          const auto thrower = [](auto s){ uuid{s, 'B'}; };
-
-          SECTION("throws std::invalid_argument if the string is too short") {
-            WITE_REQ_THROWS(thrower("{01234567-89AB-CDEF-0123-456789ABCDE}"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string is too short") {
+            REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDE}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDE}", 'B').error());
           }
 
-          SECTION("throws std::invalid_argument if the string is too long") {
-            WITE_REQ_THROWS(thrower("{01234567-89AB-CDEF-0123-456789ABCDEF0}"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string is too long") {
+            REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF0}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF0}", 'B').error());
           }
 
-          SECTION("throws std::invalid_argument if the string contains non-hex or dash characters") {
-            WITE_REQ_THROWS(thrower("{0123456X-89AB-CDEF-0123-456789ABCDEF}"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("{01234567-89AX-CDEF-0123-456789ABCDEF}"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("{01234567-89AB-CDEF-0123_456789ABCDEF}"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("{01234567-89AB-CDEX-0123-456789ABCDEF}"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("{01234567-89AB-CDEX-0123-456789AXCDEF}"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string contains non-hex or dash characters") {
+            REQUIRE(try_make_uuid("{0123456X-89AB-CDEF-0123-456789ABCDEF}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{0123456X-89AB-CDEF-0123-456789ABCDEF}", 'B').error());
+
+            REQUIRE(try_make_uuid("{01234567-89AX-CDEF-0123-456789ABCDEF}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AX-CDEF-0123-456789ABCDEF}", 'B').error());
+
+            REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123_456789ABCDEF}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123_456789ABCDEF}", 'B').error());
+
+            REQUIRE(try_make_uuid("{01234567-89AB-CDEX-0123-456789ABCDEF}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEX-0123-456789ABCDEF}", 'B').error());
+
+            REQUIRE(try_make_uuid("{01234567-89AB-CDEX-0123-456789AXCDEF}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEX-0123-456789AXCDEF}", 'B').error());
           }
 
-          SECTION("throws if string is empty"){
-            WITE_REQ_THROWS(thrower(""), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if string is empty"){
+            REQUIRE(try_make_uuid("", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("", 'B').error());
           }
 
-          SECTION("throws if the first or last character is not a brace"){
-            WITE_REQ_THROWS(thrower("?01234567-89AB-CDEF-0123-456789ABCDEF}"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("{01234567-89AB-CDEF-0123-456789ABCDEF?"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the first or last character is not a brace"){
+            REQUIRE(try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF}", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF}", 'B').error());
+
+            REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF?", 'B').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF?", 'B').error());
           }
         }
 
         SECTION("P-format") {
           SECTION("succeeds for valid string") {
             const auto expected = uuid{{0x67,0x45,0x23,0x01,0xAB,0x89,0xEF,0xCD,0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}};
-            const auto actual   = uuid{"(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P'};
-            REQUIRE(expected == actual);
+            const auto actual = try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF)", 'P');
+            REQUIRE(actual.ok());
+            REQUIRE(expected == actual.value());
           }
 
-          const auto thrower = [](auto s){ uuid{s, 'P'}; };
-
-          SECTION("throws std::invalid_argument if the string is too short") {
-            WITE_REQ_THROWS(thrower("(01234567-89AB-CDEF-0123-456789ABCDE)"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string is too short") {
+            REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDE)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDE)", 'P').error());
           }
 
-          SECTION("throws std::invalid_argument if the string is too long") {
-            WITE_REQ_THROWS(thrower("(01234567-89AB-CDEF-0123-456789ABCDEF0)"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string is too long") {
+            REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF0)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF0)", 'P').error());
           }
 
-          SECTION("throws std::invalid_argument if the string contains non-hex or dash characters") {
-            WITE_REQ_THROWS(thrower("(0123456X-89AB-CDEF-0123-456789ABCDEF)"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("(01234567-89AX-CDEF-0123-456789ABCDEF)"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("(01234567-89AB-CDEF-0123_456789ABCDEF)"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("(01234567-89AB-CDEX-0123-456789ABCDEF)"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("(01234567-89AB-CDEX-0123-456789AXCDEF)"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the string contains non-hex or dash characters") {
+            REQUIRE(try_make_uuid("(0123456X-89AB-CDEF-0123-456789ABCDEF)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(0123456X-89AB-CDEF-0123-456789ABCDEF)", 'P').error());
+
+            REQUIRE(try_make_uuid("(01234567-89AX-CDEF-0123-456789ABCDEF)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AX-CDEF-0123-456789ABCDEF)", 'P').error());
+
+            REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123_456789ABCDEF)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123_456789ABCDEF)", 'P').error());
+
+            REQUIRE(try_make_uuid("(01234567-89AB-CDEX-0123-456789ABCDEF)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEX-0123-456789ABCDEF)", 'P').error());
+
+            REQUIRE(try_make_uuid("(01234567-89AB-CDEX-0123-456789AXCDEF)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEX-0123-456789AXCDEF)", 'P').error());
           }
 
-          SECTION("throws if string is empty"){
-            WITE_REQ_THROWS(thrower(""), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if string is empty"){
+            REQUIRE(try_make_uuid("", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("", 'P').error());
           }
 
-          SECTION("throws if the first or last character is not a brace"){
-            WITE_REQ_THROWS(thrower("?01234567-89AB-CDEF-0123-456789ABCDEF)"), std::invalid_argument, "Invalid UUID format");
-            WITE_REQ_THROWS(thrower("(01234567-89AB-CDEF-0123-456789ABCDEF?"), std::invalid_argument, "Invalid UUID format");
+          SECTION("returns invalid_uuid_format if the first or last character is not a brace"){
+            REQUIRE(try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF)", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("?01234567-89AB-CDEF-0123-456789ABCDEF)", 'P').error());
+
+            REQUIRE(try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF?", 'P').is_error());
+            REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("(01234567-89AB-CDEF-0123-456789ABCDEF?", 'P').error());
           }
+        }
+
+        SECTION("returns invalid_uuid_format_type if the format specifier is invalid"){
+          REQUIRE(try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF}", '?').is_error());
+          REQUIRE(make_uuid_error::invalid_uuid_format_type == try_make_uuid("{01234567-89AB-CDEF-0123-456789ABCDEF}", '?').error());
         }
       }
     }
