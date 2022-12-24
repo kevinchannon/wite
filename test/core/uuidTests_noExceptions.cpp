@@ -65,19 +65,30 @@ TEST_CASE("Uuid tests (no except)", "[core]") {
 
     SECTION("from string") {
       SECTION("is null if the string is too short") {
-        REQUIRE(nulluuid == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE"));
+        REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE").is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDE").error());
       }
 
       SECTION("is null if the string is too long") {
-        REQUIRE(nulluuid == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0"));
+        REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123-456789ABCDEF0").error());
       }
 
       SECTION("is null if the string contains non-hex or dash characters") {
-        REQUIRE(nulluuid == try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF"));
-        REQUIRE(nulluuid == try_make_uuid("01234567-89AX-CDEF-0123-456789ABCDEF"));
-        REQUIRE(nulluuid == try_make_uuid("01234567-89AB-CDEF-0123_456789ABCDEF"));
-        REQUIRE(nulluuid == try_make_uuid("01234567-89AB-CDEX-0123-456789ABCDEF"));
-        REQUIRE(nulluuid == try_make_uuid("01234567-89AB-CDEX-0123-456789AXCDEF"));
+        REQUIRE(try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("0123456X-89AB-CDEF-0123-456789ABCDEF").error());
+
+        REQUIRE(try_make_uuid("01234567-89AX-CDEF-0123-456789ABCDEF").is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AX-CDEF-0123-456789ABCDEF").error());
+
+        REQUIRE(try_make_uuid("01234567-89AB-CDEF-0123_456789ABCDEF").is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEF-0123_456789ABCDEF").error());
+
+        REQUIRE(try_make_uuid("01234567-89AB-CDEX-0123-456789ABCDEF").is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEX-0123-456789ABCDEF").error());
+
+        REQUIRE(try_make_uuid("01234567-89AB-CDEX-0123-456789AXCDEF").is_error());
+        REQUIRE(make_uuid_error::invalid_uuid_format == try_make_uuid("01234567-89AB-CDEX-0123-456789AXCDEF").error());
       }
     }
   }

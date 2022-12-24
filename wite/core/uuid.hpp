@@ -6,6 +6,7 @@
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/features.hpp>
 #include <wite/io/byte_buffer.hpp>
+#include <wite/core/result.hpp>
 
 #include <algorithm>
 #include <array>
@@ -13,6 +14,7 @@
 #include <compare>
 #include <cstdint>
 #include <random>
+#include <ranges>
 #include <regex>
 #include <string>
 #include <string_view>
@@ -118,82 +120,26 @@ struct uuid : public basic_uuid {
       }
       default:;
     }
+
+    // TODO: throw here.
   }
 
   template<typename Char_T, typename Format_T>
   void _init_from_wrapped_fmt_string(std::basic_string_view<Char_T> s, Format_T&& fmt) {
-    if (s.length() != fmt.size){
+    if (not fmt.template is_a_valid_uuid_string<Char_T>(s)) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    if (not fmt.is_opening(s.front()) or not fmt.is_closing(s.back())){
+    auto data_as_hex_chars = std::array<Char_T, 2 * std::tuple_size_v<Storage_t>>{};
+    detail::uuid::strip_non_hex_characters<Char_T>(s, fmt.prefixed_values, data_as_hex_chars);
+
+    if (std::distance(data_as_hex_chars.begin(), std::ranges::find_if(data_as_hex_chars | std::views::reverse, [](auto ch) {
+                                                   return ch != Char_T{};
+                                                 }).base()) != static_cast<int64_t>(data_as_hex_chars.size())) {
       throw std::invalid_argument{"Invalid UUID format"};
     }
 
-    const auto has_invalid_delimiter = [&fmt](const auto& str) {
-      return std::ranges::any_of(fmt.template delimiters<Char_T>()->internal_delimiters,
-                          [&str](const auto& x) {return x.value != str[x.position]; });
-    };
-
-    if (has_invalid_delimiter(s)) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-
-     if (not _unsafe_generic_from_string<Char_T>(s, fmt.prefixed_values, data)) {
-      throw std::invalid_argument{"Invalid UUID format"};
-    }
-  }
-
-  template<typename Char_T>
-  static bool _unsafe_generic_from_string(std::basic_string_view<Char_T> s, bool prefixed_values, Storage_t& out) {
-    auto c = std::array<Char_T, 70>{};
-
-    if (prefixed_values) {
-      if constexpr (std::is_same_v<std::make_unsigned_t<char>, std::make_unsigned_t<Char_T>>) {
-        char prefix[2] = {'0', 'x'};
-        _remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
-      } else {
-        wchar_t prefix[2] = {L'0', L'x'};
-        _remove_0x_prefixes_and_nonhex_chars(s, prefix, c);
-      }
-    } else {
-      std::ranges::copy_if(
-          s, c.begin(), [](auto ch) { return 0 != std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(ch)); });
-    }
-
-    if (std::distance(c.begin(), std::find_if(c.rbegin(), c.rend(), [](auto ch){ return ch != Char_T{};}).base()) != 32) {
-      return false;
-    }
-
-    // At this point, we only have hex characters and the output array is the right size, so we can use the unsafe version of this
-    // function
-    out = binascii::unsafe_unhexlify<16, uint8_t>(c.data());
-    _format_raw_array_as_data(out);
-
-    return true;
-  }
-
-  template<typename Char_T>
-  static void _remove_0x_prefixes_and_nonhex_chars(const auto& in, const Char_T prefix_string[2], auto& out){
-    auto write_pos = out.begin();
-    auto read_pos  = in.begin();
-    while (in.end() != read_pos) {
-      if (*read_pos == prefix_string[0] and *std::next(read_pos) == prefix_string[1]){
-        read_pos += 2;
-      } else if (not std::isxdigit(static_cast<std::make_unsigned_t<Char_T>>(*read_pos))) {
-        ++read_pos;
-      } else {
-        *write_pos = *read_pos;
-        ++write_pos;
-        ++read_pos;
-      }
-    }
-  }
-
-  static void _format_raw_array_as_data(Storage_t& arr) {
-    std::reverse(arr.begin(), std::next(arr.begin(), 4));
-    std::reverse(std::next(arr.begin(), 4), std::next(arr.begin(), 6));
-    std::reverse(std::next(arr.begin(), 6), std::next(arr.begin(), 8));
+    data = unsafe_basic_uuid_from_string<Char_T>(std::basic_string_view{data_as_hex_chars.begin(), data_as_hex_chars.end()}).data;
   }
 #endif
 };
@@ -211,54 +157,84 @@ inline uuid make_uuid() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline uuid try_make_uuid(std::string_view s) noexcept {
-  if (s.length() != 36) {
-    return nulluuid;
+enum class make_uuid_error {
+  invalid_uuid_format
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename Char_T>
+uuid unsafe_uuid_from_string(std::basic_string_view<Char_T> s) {
+  auto out = uuid{};
+
+  out = binascii::unsafe_unhexlify<16, uint8_t>(s.data());
+  detail::uuid::format_as_uuid_data(out.data);
+
+  return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Char_T, typename Format_T>
+result<uuid, make_uuid_error> try_make_uuid(std::basic_string_view<Char_T> s, Format_T&& fmt) noexcept {
+  if (not fmt.template is_a_valid_uuid_string(s)){
+    return {make_uuid_error::invalid_uuid_format};
   }
 
-  const auto is_not_dash = [](auto c) { return '-' != c; };
+  auto data_as_hex_chars = std::array<Char_T, 2 * std::tuple_size_v<uuid::Storage_t>>{};
+  detail::uuid::strip_non_hex_characters(s, fmt.prefixed_values, data_as_hex_chars);
 
-  if (is_not_dash(s[8]) or is_not_dash(s[13]) or is_not_dash(s[18]) or is_not_dash(s[23])) {
-    return nulluuid;
+  if (std::distance(data_as_hex_chars.begin(), std::ranges::find_if(data_as_hex_chars | std::views::reverse, [](auto ch) {
+                                                 return ch != Char_T{};
+                                               }).base()) != static_cast<int64_t>(data_as_hex_chars.size())) {
+    return {make_uuid_error::invalid_uuid_format};
   }
 
-  const auto data_1 = binascii::try_from_hex_chars<uint32_t>(s.substr(0, 8));
-  if (data_1.is_error()) {
-    return nulluuid;
-  }
+  auto out = uuid{};
+  out.data = unsafe_basic_uuid_from_string<Char_T>(std::basic_string_view{data_as_hex_chars.begin(), data_as_hex_chars.end()}).data;
 
-  const auto data_2 = binascii::try_from_hex_chars<uint16_t>(s.substr(9, 4));
-  if (data_2.is_error()) {
-    return nulluuid;
-  }
+  return {out};
+}
 
-  const auto data_3 = binascii::try_from_hex_chars<uint16_t>(s.substr(14, 4));
-  if (data_3.is_error()) {
-    return nulluuid;
-  }
+namespace detail::uuid {
+  template <typename Char_T>
+  result<wite::uuid, make_uuid_error> try_make_uuid(std::basic_string_view<Char_T> s, char format) noexcept {
+    using namespace uuid_format;
 
-  const auto data_4a = binascii::try_unhexlify<2, uint8_t>(s.substr(19, 4));
-  if (data_4a.is_error()) {
-    return nulluuid;
-  }
+    switch (format) {
+      case 'N':
+      case 'n': {
+        return wite::try_make_uuid(s, uuid_format::N);
+      }
+      case 'D':
+      case 'd': {
+        return wite::try_make_uuid(s, uuid_format::D);
+      }
+      case 'B':
+      case 'b': {
+        return wite::try_make_uuid(s, uuid_format::B);
+      }
+      case 'P':
+      case 'p': {
+        return wite::try_make_uuid(s, uuid_format::P);
+      }
+      case 'X':
+      case 'x': {
+        return wite::try_make_uuid(s, uuid_format::X);
+      }
+      default:;
+    }
 
-  const auto data_4b = binascii::try_unhexlify<6, uint8_t>(s.substr(24, 12));
-  if (data_4b.is_error()) {
-    return nulluuid;
+    return {make_uuid_error::invalid_uuid_format};
   }
+}
 
-  auto data = uuid::Storage_t{};
-  if (io::try_write(data,
-                    io::little_endian{data_1.value()},
-                    io::little_endian{data_2.value()},
-                    io::little_endian{data_3.value()},
-                    data_4a.value(),
-                    data_4b.value())
-          .is_error()) {
-    return nulluuid;
-  }
+inline result<uuid, make_uuid_error> try_make_uuid(std::string_view s, char format = WITE_DEFAULT_UUID_FMT) noexcept {
+  return detail::uuid::try_make_uuid<char>(s, format);
+}
 
-  return uuid{data};
+inline result<uuid, make_uuid_error> try_make_uuid(std::wstring_view s, char format = WITE_DEFAULT_UUID_FMT) noexcept {
+  return detail::uuid::try_make_uuid<wchar_t>(s, format);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
