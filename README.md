@@ -237,6 +237,35 @@ So, you make lambdas with the types that you want to handle in your pack and the
 
 Anyway, that's overload. It's useful in some niche situations.
 
+## UUID
+```c++
+#include <wite/core/uuid.hpp>
+```
+We all know what UUIDs are, right? On Windows they're generally called GUIDs. But, for some reason, they don't appear in the C++ standard. I think they should just be a type in the standard library, but I don't get to make decisions about this sort of thing :)
+
+Anyway, Wite has a ready-baked UUID type that you can use:
+```c++
+const auto id = wite::make_uuid();
+```
+This will get you a UUID that I would describe as "pretty random".  It's probably fine for what you want, but I would probably look into something else if you want really strong guarantees about the randomness and such. Actually, if you have a random number generator that you know to be sufficient for your application, then you can make a random UUID using it:
+```c++
+auto rng = MyMagicRandomEngine{};
+const auto id = uuid{rng};
+```
+This will generate the values for the bytes with your engine.
+
+### NULL UUIDs
+There is a `wite::nulluuid` for those times when you want a NULL UUID
+
+### UUIDs from strings
+You can initialise your UUID from a string, like this:
+```c++
+const auto id = uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"};
+```
+This does what it says on the tin. It also turns out that there are a bunch of different formats for UUID strings. Wite supports some popular ones that are also supported in .NET:
+```c++
+```
+
 # Collections
 
 ## `make_vector`
