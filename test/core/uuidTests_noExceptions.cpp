@@ -3,8 +3,8 @@
 #include <test/utils.hpp>
 #include <wite/core/io.hpp>
 #include <wite/core/uuid.hpp>
-#include <wite/core/uuid_functions.hpp>
 #include <wite/env/environment.hpp>
+#include "wite/core/uuid/uuid_functions.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 

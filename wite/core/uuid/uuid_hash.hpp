@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wite/core/basic_uuid.hpp>
+#include "wite/core/uuid/basic_uuid.hpp"
 
 #include <functional>
 

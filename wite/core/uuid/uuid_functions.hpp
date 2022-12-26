@@ -1,12 +1,12 @@
 #pragma once
 
 #include <utility>
-#include <wite/binascii/hexlify.hpp>
-#include <wite/collections/static_lookup.hpp>
-#include <wite/common/constructor_macros.hpp>
-#include <wite/core/basic_uuid.hpp>
-#include <wite/env/features.hpp>
-#include <wite/io/byte_buffer.hpp>
+#include "wite/binascii/hexlify.hpp"
+#include "wite/collections/static_lookup.hpp"
+#include "wite/common/constructor_macros.hpp"
+#include "wite/core/uuid/basic_uuid.hpp"
+#include "wite/env/features.hpp"
+#include "wite/io/byte_buffer.hpp"
 
 #include <algorithm>
 #include <array>

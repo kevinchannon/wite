@@ -1,13 +1,13 @@
 #pragma once
 
-#include <wite/core/basic_uuid.hpp>
-#include <wite/core/uuid_functions.hpp>
-#include <wite/core/uuid_hash.hpp>
 #include <wite/binascii/hexlify.hpp>
 #include <wite/common/constructor_macros.hpp>
+#include <wite/core/result.hpp>
 #include <wite/env/features.hpp>
 #include <wite/io/byte_buffer.hpp>
-#include <wite/core/result.hpp>
+#include "wite/core/uuid/basic_uuid.hpp"
+#include "wite/core/uuid/uuid_functions.hpp"
+#include "wite/core/uuid/uuid_hash.hpp"
 
 #include <algorithm>
 #include <array>
