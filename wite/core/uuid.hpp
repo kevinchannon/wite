@@ -178,7 +178,11 @@ uuid unsafe_uuid_from_string(std::basic_string_view<Char_T> s) {
 
 template<typename Char_T, typename Format_T>
 result<uuid, make_uuid_error> try_make_uuid(std::basic_string_view<Char_T> s, Format_T&& fmt) noexcept {
+#ifdef _WITE_COMPILER_MSVC
+  if (not fmt.is_a_valid_uuid_string(s)){
+#else
   if (not fmt.template is_a_valid_uuid_string(s)){
+#endif
     return {make_uuid_error::invalid_uuid_format};
   }
 
