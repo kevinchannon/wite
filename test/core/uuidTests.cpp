@@ -602,7 +602,6 @@ TEST_CASE("Uuid tests", "[core]") {
   }
 
   SECTION("hashing"){
-    const auto id = make_uuid();
     REQUIRE(0 != std::hash<uuid>{}(id));
   }
 }
