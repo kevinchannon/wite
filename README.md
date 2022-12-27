@@ -250,7 +250,7 @@ const auto id = wite::make_uuid();
 This will get you a UUID that I would describe as "pretty random".  It's probably fine for what you want, but I would probably look into something else if you want really strong guarantees about the randomness and such. Actually, if you have a random number generator that you know to be sufficient for your application, then you can make a random UUID using it:
 ```c++
 auto rng = MyMagicRandomEngine{};
-const auto id = uuid{rng};
+const auto id = wite::uuid{rng};
 ```
 This will generate the values for the bytes with your engine.
 
@@ -260,11 +260,59 @@ There is a `wite::nulluuid` for those times when you want a NULL UUID
 ### UUIDs from strings
 You can initialise your UUID from a string, like this:
 ```c++
-const auto id = uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"};
+const auto id = wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"};
 ```
 This does what it says on the tin. It also turns out that there are a bunch of different formats for UUID strings. Wite supports some popular ones that are also supported in .NET:
+
+* D-format: `01234567-89AB-CDEF-0123-456789ABCDEF`
+* N-format: `0123456789ABCDEF0123456789ABCDEF`
+* B-format: `{01234567-89AB-CDEF-0123-456789ABCDEF}`
+* P-format: `(01234567-89AB-CDEF-0123-456789ABCDEF)`
+* X-format: `{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}`
+
+You can create a UUID from a given format by passing its format specifier to the constructor of `uuid`:
 ```c++
+const auto id = wite::uuid{"{01234567-89AB-CDEF-0123-456789ABCDEF}", 'B'};
 ```
+If the format specifier is invalid, then `uuid` will throw `std::invalid_argument`. If you're not using exceptions in your project, then you can use `try_make_uuid` to generate a UUID:
+```c++
+const auto id_result = wite::try_make_uuid("{0x01234567,0x89AB,0xCDEF,{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}}", 'X');
+```
+If this fails, then it will return an `enum` indicating the error (usually `make_uuid_error::invalid_uuid_format`).
+
+### Outputting UUIDs
+If you want to get a UUID as a string, then you can use `wite::to_string` for that:
+```c++
+const auto id = wite::make_uuid();
+
+// id_str <-- "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+const auto id_str = wite::to_string(id);
+```
+Again, if you want the string in one of the other formats, then pass the format specifier to `to_string`:
+```c++
+wite::to_string(id, 'P');
+```
+
+For convenience, `uuid` has a `str()` and `wstr()` member functions that do the same as `to_string()` and `to_wstring()`, respectively:
+```c++
+const auto id = wite::make_uuid();
+
+// id_str <-- L"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+const auto id_str = id.wstr('N')
+```
+In this case, the wide-string version of the function is 
+
+Stream insertion is also overloaded for UUID:
+```c++
+std::cout << "my UUID = " << wite::make_uuid() << std::endl;
+```
+
+### `basic_uuid`
+If you don't want, or can't use, the additional conveniences of `uuid`, for some reason, then you can use `basic_uuid` to just get the bare minimum data struct for holding a UUID:
+```c++
+#include <wite/core/uuid/basic_uuid.hpp>
+```
+`basic_uuid` has a `data` member that holds the UUID data in a 16-byte array and also the comparison operators.
 
 # Collections
 
