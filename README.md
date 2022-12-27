@@ -292,6 +292,13 @@ Again, if you want the string in one of the other formats, then pass the format 
 ```c++
 wite::to_string(id, 'P');
 ```
+By default, the output is in UPPER-CASE hex. If you want a lower-case version, then use a lower-case version letter for the format specifier:
+```c++
+const auto id = wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"};
+
+// id_str <-- "0123456789abcdef0123456789abcdef"
+const auto id_str = wite::to_string(id, 'n');
+```
 
 For convenience, `uuid` has a `str()` and `wstr()` member functions that do the same as `to_string()` and `to_wstring()`, respectively:
 ```c++
@@ -306,6 +313,8 @@ Stream insertion is also overloaded for UUID:
 ```c++
 std::cout << "my UUID = " << wite::make_uuid() << std::endl;
 ```
+### Macros
+The default format for UUIDs is 'D'. If you want to change this, then you can compile with `WITE_DEFAULT_UUID_FMT`set to one of the other values.
 
 ### `basic_uuid`
 If you don't want, or can't use, the additional conveniences of `uuid`, for some reason, then you can use `basic_uuid` to just get the bare minimum data struct for holding a UUID:
@@ -962,6 +971,10 @@ Many of the functions in Wite are marked with the `[[nodiscard]]` attribute, if 
 
 ### `WITE_NO_EXCEPTIONS`
 In general, things that go wrong throw exceptions in Wite. However, if you don't want exceptions being thrown from Wite code in your project, then define this command line variable in compilation. It doesn't guarantee that no exceptions will be emitted, but it does guarantee that Wite won't throw any. If you define this value, some features of the library will not be available to you.
+
+## Core
+### WITE_DEFAULT_UUID_FMT
+Sets the default format for IO of UUIDs. Set to one of 'D', 'd', 'N', 'n', 'B', 'b', 'P', 'p', 'X' or 'x'.
 
 ## IO 
 ### `WITE_USER_DEFINED_BYTE_TYPE_`
