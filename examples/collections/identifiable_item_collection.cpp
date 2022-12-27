@@ -22,7 +22,7 @@ struct Sensor {
 
   explicit Sensor(id_type::value_type id) : _id{id} {}
 
-  const id_type& id() const { return _id; }
+  [[nodiscard]] const id_type& id() const { return _id; }
 };
 
 using SensorCollection = wite::collections::identifiable_item_collection<Sensor>;
@@ -32,7 +32,7 @@ using SensorCollection = wite::collections::identifiable_item_collection<Sensor>
 /// <summary>
 /// A single servo that has current and target positions and an ID.
 /// </summary>
-struct Servo : public wite::id<Servo, uint8_t> {
+struct Servo {
   using id_type = wite::id<Servo, uint8_t>;
 
   id_type _id{};
@@ -41,7 +41,7 @@ struct Servo : public wite::id<Servo, uint8_t> {
 
   explicit Servo(id_type::value_type id, size_t target) : _id{id}, target_position{target} {}
 
-  const id_type& id() const { return _id; }
+  [[nodiscard]] const id_type& id() const { return _id; }
 };
 
 using ServoCollection = wite::collections::identifiable_item_collection<Servo>;

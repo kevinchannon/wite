@@ -410,6 +410,85 @@ These examples are aimed at this use case, but you should be able to put many ot
 > 
 > `static_lookup` doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
 
+## ID
+```c++
+#include <wite/core/id.hpp>
+```
+Wite has a typed ID thing that you can use as an ID value for your classes. This ID is "typed", which means that it will produce a compilation error if you try and use it in the wrong context. So, for example, if you have some system of widgets in a UI, or something, then they're often identified by some kind of ID. You might have some things like this:
+```c++
+class Button { ... };
+using Buttons = std::vector<Button>;
+
+class ScrollBar { ... };
+using ScrollBars = std::vector<ScrollBar>;
+
+class MenuItem { ... };
+using MenuItems = std::vector<MenuItem>;
+```
+Cool. In your code, you probably want to do things with particular items in these collections. So, each will have some kind of ID and you want to find the things by their ID in order to use them. You could replace the vectors above with maps from ID to the item, or something, or you could make some convenience function that gives you the thing, given it's ID:
+```c++
+template<typename Container_T>
+const typename Container_T::value_type* const* find_item(const Container_T& items, const int id) {
+    const auto item = std::find_if(items.begin(), items.end(), [id](auto&& item){
+        return id == item.id();
+    });
+
+    return items.end() != item ? &(*item) : nullptr; 
+}
+```
+Great! Now we can find the things we need using their ID :) However, in a larger codebase, it's not too difficult to make this kind of mistake:
+```c++
+const auto id = button1.id();
+
+/*
+... Insert lots of code here, so that you don't easily see the definition of `id`.
+*/
+
+auto menu_item = find_item(menu_items, id);  // D'oh! This is not the menu item you a looking for.
+```
+This is a bit of a noddy example, but these kinds of error can be annoying and difficult to diagnose if you have lots of collections of lots of types. Typed IDs are a way to prevent this kind of error at compile-time.
+### Defining a typed ID
+The `id` class template definition looks like this:
+```c++
+template <typename Obj_T, typename Id_T>
+struct id;
+```
+The first template parameter is the type of object that is identified by this kind of ID, so `Button`, `ScrollBar` or `MenuItem` from the example above. The second template parameter is the type of the ID value itself. In the example above, that would be an `int`, but it could be a `uuid`, a `std::string`, or some other type. It doesn't really matter too much.
+
+To make use of the template for our items, we can just alias a specific set of types into the template for our class. So, we might define the previous UI classes to have an ID aliased in them like this:
+```c++
+class Button {
+    public:
+    
+    using id_type = wite::id<Button, int>;
+    
+    ...
+};
+
+class ScrollBar {
+    public:
+    
+    using id_type = wite::id<ScrollBar, int>;
+};
+
+class MenuItem {
+    public:
+    
+    using id_type = wite::id<MenuItem, int>;
+};
+```
+Comparison functions (==, !=, <, etc.) for `wite::id` are only defined for types that have equal `Obj_T` template parameters. This means that the compiler doesn't know how to compare a `Button` ID to a `MenuItem` ID, for example. And, if you try and write this comparison in your code, then it will complain at you loudly:
+```c++
+const auto id = button1.id();
+
+/*
+... Insert lots of code here, so that you don't easily see the definition of `id`.
+*/
+
+// This is now a compilation error and not a bug that your users will complain about!
+auto menu_item = find_item(menu_items, id);
+```
+That's about all there is to it. In addition, ID values don't have integer-like sema
 # IO
 ```c++
 #include <wite/io/bytes_buffer.hpp>
