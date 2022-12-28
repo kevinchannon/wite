@@ -410,7 +410,7 @@ These examples are aimed at this use case, but you should be able to put many ot
 > 
 > `static_lookup` doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
 
-## ID
+## Typed-ID
 ```c++
 #include <wite/core/id.hpp>
 ```
@@ -428,7 +428,7 @@ using MenuItems = std::vector<MenuItem>;
 Cool. In your code, you probably want to do things with particular items in these collections. So, each will have some kind of ID and you want to find the things by their ID in order to use them. You could replace the vectors above with maps from ID to the item, or something, or you could make some convenience function that gives you the thing, given it's ID:
 ```c++
 template<typename Container_T>
-const typename Container_T::value_type* const* find_item(const Container_T& items, const int id) {
+const typename Container_T::value_type* const find_item(const Container_T& items, const int id) {
     const auto item = std::find_if(items.begin(), items.end(), [id](auto&& item){
         return id == item.id();
     });
@@ -488,7 +488,43 @@ const auto id = button1.id();
 // This is now a compilation error and not a bug that your users will complain about!
 auto menu_item = find_item(menu_items, id);
 ```
-That's about all there is to it. In addition, ID values don't have integer-like sema
+
+Because of the type-safety thing, to find a particular item, you need to specify the exact type of ID that you're trying to compare to. So, the `find_item` function might be edited to look like:
+```c++
+template<typename Container_T>
+const typename Container_T::value_type* const find_item(
+        const Container_T& items,
+        const wite::id<std::decay_t<decltype(*items.begin())>, int> id) {
+    const auto item = std::find_if(items.begin(), items.end(), [id](auto&& item){
+        return id == item.id();
+    });
+
+    return items.end() != item ? &(*item) : nullptr; 
+}
+```
+Looks a bit of a mouthful, but it's better than confusing the types and generating a runtime error!
+
+That's about all there is to it. In addition, ID values don't have integer-like semantics, so you can't do something like `id++`, or `id_1 + id_2`, but then that's seldom something that makes sense for an ID.
+
+If you want the raw value out of the ID in its original type, then you can use `value()`, or `operator*` on the ID:
+
+## Typed-Index
+```c++
+#include <wite/core/index.hpp>
+```
+Imagine all the same stuff that I just said about IDs, but for indices into some collection. That's what `wite::index` is for. It's basically the same thing, but it's got index-like semantics for incrementing and decrementing it.
+
+```c++
+const auto id = wite::id<MyType, int>{100};
+
+// x <-- int(100)
+const auto x = id.value();
+
+// y <-- int(100)
+const auto y = *id;
+```
+That's about it for 
+
 # IO
 ```c++
 #include <wite/io/bytes_buffer.hpp>
