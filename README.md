@@ -23,11 +23,11 @@ Wite stands for "**W**hy **i**sn't **t**his **e**asy!?". It's a collection of ro
 
 The aim here is not to produce necessarily the most complete set of features, nor the most generic, nor the most performant, nor the most memory-efficient, nor, even, the safest implementations. If we were to make all those considerations, then we'd miss out on 99% of the usefulness, for the sake of 1% of the considerations. This is not to say that those considerations are not made, just that they're not the focus.
 
-The focus is to provide things that are *simple at the point of use*, with implementations that are *intuative* and can almost be guessed and just *do the right thing* in >~95% cases. That is **Wite should be**:
+The focus is to provide things that are *simple at the point of use*, with implementations that are *intuitive* and can almost be guessed and just *do the right thing* in >~95% cases. That is **Wite should be**:
 1. Easy to obtain and include in a project
 2. Easy to call in the project's code
 
-**If you're a C++ beginner**, then you should be able to acquire and use Wite in your project without too much of a headache. That's the aim.  If this is not the case, then let me know and we'll see what we can do to make it even easier :)
+**If you're a C++ beginner**, then you should be able to acquire and use Wite in your project without too much of a headache. That's the aim.  If this is not the case, then let me know, and we'll see what we can do to make it even easier :)
  
 `string::split` is a good example. There isn't (currently) a standard library function for this and every codebase rolls its own, essentially. Sure, I could get it from [Boost](https://www.boost.org/doc/libs/1_80_0/doc/html/string_algo/usage.html#id-1.3.3.5.9), but then I've pulled in quite a heavyweight dependency (or, I've had to exercise a relatively large amount of understanding in order *not* to pull in a large dependency). Wite's `string::split` takes one thing (a string-like thing) and returns a `std::vector<std::string>` with the result in it. Is this the most efficient thing in all cases? No. Is it *good enough* in 99% of cases? Probably.
 
@@ -39,7 +39,7 @@ Right, on with instructions on how to get going...
 Wite doesn't have any dependencies, so you don't have to worry about that sort of thing. If you're developing new features for  Wite, then the tests have a dependency on [Catch2](https://github.com/catchorg/Catch2), but that is handled by CMake [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html), so it should take care of itself (as long as you're connected to the internet). Wite pretty much requires that you're using **C++20**, so I guess that's a prerequisite of sorts.
 
 ## Getting Wite
-There are a bunch of ways you could chose to consume Wite, here are some possibilities
+There are a bunch of ways you could choose to consume Wite, here are some possibilities
 
 ### CMake FetchContent
 If your project is CMake-based, then the preferred way to get going is by using **CMake FetchContent**.  You can find an example project that does this in the [wite-cmake-example](https://github.com/kevinchannon/wite-cmake-example) repository.
@@ -47,7 +47,7 @@ If your project is CMake-based, then the preferred way to get going is by using 
 ### NuGet
 If you use NuGet, then see [NuGet.org](https://www.nuget.org/packages/wite) for more information on acquiring Wite via NuGet.  If you're using Visual Studio for your project, then you can consume Wite via the NuGet integration it has. So, you right-click on your project, or solution, and then choose "Manage NuGet packages..." (or something like that) and then you should be able to search for Wite and include it in your project.  For an example project that has Wite included this way, see the [wite-vs-example](https://github.com/kevinchannon/wite-vs-example) repo.
 
-### Ain't nobody got time for package management!! Just tell me where to doanload it!
+### Ain't nobody got time for package management!! Just tell me where to download it!
 One of the above options should really be your first call, but if you're in a hurry and don't care about controlling the version, or getting updates and stuff like that, then just straight up downloading it and putting it in your source tree will also do the business. You can get it from here: [Releases](https://github.com/kevinchannon/wite/releases).
 
 You'll want the "wite-src.zip" file for the version of your choice.
@@ -207,7 +207,7 @@ void some_fn() {
 ```
 Here, we will see the failure message, but not the success one. In both cases, you will see the message "This is always done!", because that is in a `scope_exit`, which doesn't care about exceptions.
 
-> ⚠️ **WITE_NO_EXCEPTIONS**: If you're compiling with the `WITE_NO_EXCEPTIONS` macro defined, then `scope_success` and `scope_fail` are not defined and you'll get a compilation failure if you try to use them.
+> ⚠️ **WITE_NO_EXCEPTIONS**: If you're compiling with the `WITE_NO_EXCEPTIONS` macro defined, then `scope_success` and `scope_fail` are not defined, and you'll get a compilation failure if you try to use them.
 
 ## `overloaded`
 This is a thing that allows you to do a kind of type-switching on a parameter pack, which is basically directly lifted from [here](https://en.cppreference.com/w/cpp/utility/variant/visit).  So, if you have a function that looks like this:
@@ -371,7 +371,7 @@ v.push_back(1);
 ```c++
 #include <wite/collections/static_lookup.hpp>
 ```
-This is a simple lookup table. It works a bit like a `std::map`; you fill it with key-value pairs and you can look up the values based on the keys (in addition, you can also look up the keys from the values too, which you can't do with a `std::map`). The primary usage for this thing is to provide a low-overhead way to convert an `enum` to a string without writing a switch-case statement.
+This is a simple lookup table. It works a bit like a `std::map`; you fill it with key-value pairs, and you can look up the values based on the keys (in addition, you can also look up the keys from the values too, which you can't do with a `std::map`). The primary usage for this thing is to provide a low-overhead way to convert an `enum` to a string without writing a switch-case statement.
 
 So, say you had some `enum` that you wanted to serialise, or print out in text, or something:
 ```c++
@@ -425,7 +425,7 @@ using ScrollBars = std::vector<ScrollBar>;
 class MenuItem { ... };
 using MenuItems = std::vector<MenuItem>;
 ```
-Cool. In your code, you probably want to do things with particular items in these collections. So, each will have some kind of ID and you want to find the things by their ID in order to use them. You could replace the vectors above with maps from ID to the item, or something, or you could make some convenience function that gives you the thing, given it's ID:
+Cool. In your code, you probably want to do things with particular items in these collections. So, each will have some kind of ID and you want to find the things by their ID in order to use them. You could replace the vectors above with maps from ID to the item, or something, or you could make some convenience function that gives you the thing, given its ID:
 ```c++
 template<typename Container_T>
 const typename Container_T::value_type* const find_item(const Container_T& items, const int id) {
