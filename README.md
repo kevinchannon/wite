@@ -526,6 +526,40 @@ These examples are aimed at this use case, but you should be able to put many ot
 > 
 > `static_lookup` doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
 
+## Identifiable Item Collection
+```c++
+#include <wite/collections/identifiable_item_collection.hpp>
+```
+If you're dealing with things that have IDs, then it's common to have a bunch of collections of those things floating about. If you just chuck them all in a `std::vector`, then you have to also have a load of functions like the `find_item` function shown in the typed-ID section, above. Anyway, Wite provides `wite::identifiable_item_collection<>` to store things that have IDs in:
+```c++
+/// UI button element from above; models the `identifiable` concept.
+class Button {
+    public:
+    
+    using id_type = wite::id<Button, int>;
+    
+    const id_type& id() const { return _id; }
+    
+    ...
+};
+
+using Buttons = wite::identifiable_item_collection<Button>;
+```
+So now `Buttons` is an Identifiable Item Collection of `Button` objects and we can insert and retrieve items using their ID:
+```c++
+auto buttons = Buttons{};
+
+// Add some buttons
+auto button_1 = Button{1};
+buttons.insert(std::move(button_1));
+
+buttons.insert(Button{2});
+
+// Find a button.
+const auto b = buttons.find(Button::id_type{1});
+```
+That's about it. There are quite a few operations that you can do on an `identifiable_item_collection`, so check out the example in [**$/examples/collections/identifiable_item_collection.hpp**](https://github.com/kevinchannon/wite/blob/master/examples/collections/identifiable_item_collection.cpp) for more things.
+
 # IO
 ```c++
 #include <wite/io/bytes_buffer.hpp>
