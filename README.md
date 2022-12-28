@@ -323,92 +323,6 @@ If you don't want, or can't use, the additional conveniences of `uuid`, for some
 ```
 `basic_uuid` has a `data` member that holds the UUID data in a 16-byte array and also the comparison operators.
 
-# Collections
-
-## `make_vector`
-```c++
-#include <wite/collections/make_vector.hpp>
-```
-How much do you hate the aesthetic of having to declare a vector with its default constructor and then immediately on the next line call `reserve` on it, before passing it to some algorithm, or something (which will typically be using `push_back`, or something, on the vector)?  I know I do:
-```c++
-auto v = std::vector<int>{};
-v.reserve(1000);   // What an annoying extra line!
-```
-Anyway, `make_vector` solves this issue:
-```c++
-using namespace wite;
-
-auto v = make_vector<int>(arg::reseve{1000});
-```
-Now, `v` is reserved with space for 1000 elements on one line. Nice.
-
-You can also specify a size for the vector too, if you like:
-```c++
-// v <- [ 1, 1, ... , 1]
-auto v = make_vector<int>(arg::size{1000, 1});
-```
-If you want to specify a size and also reserve space for more things, then you can:
-```c++
-auto v = make_vector<float>(arg::reserve{1000}, arg::size{10, 3.14f});
-```
-This gives a `v` that has 10 values initialised to 3.14, with space reserved for 1000 `float` elements in total. The order of the `arg` parameters is not important; you could have `size` first in the list if you like.  I don't know what the name for this "argument adapter object" pattern, but I quite like it.
-
-## `stack_vector`
-```c++
-#include <wite/collections/stack_vector.hpp>
-```
-
-This is a vector with a compile-time capacity, but a run-time size. It stores its data on the stack, so don't put too many huge things in it.  Other than not being able to call `reserve` on it, the interface is pretty much like that of `std::vector`. For example, you can do something like:
-
-```c++
-auto v = wite::collections::stack_vector<int, 20>{};
-
-v.push_back(1);
-
-```
-
-## `static_lookup`
-```c++
-#include <wite/collections/static_lookup.hpp>
-```
-This is a simple lookup table. It works a bit like a `std::map`; you fill it with key-value pairs, and you can look up the values based on the keys (in addition, you can also look up the keys from the values too, which you can't do with a `std::map`). The primary usage for this thing is to provide a low-overhead way to convert an `enum` to a string without writing a switch-case statement.
-
-So, say you had some `enum` that you wanted to serialise, or print out in text, or something:
-```c++
-enum class fruit { apple, orange, mango, banana, papaya };
-```
-You can make a lookup table that converts these values to strings (assuming `namespace wc = wite::collections`):
-
-```c++
-// This string literal helps readability, I think.
-using namespace std::string_view_literals;
-
-constexpr auto fruit_text_lookup = wc::static_lookup{
-    std::pair{fruit::apple,  "apple"sv},
-    std::pair{fruit::orange, "orange"sv},
-    std::pair{fruit::mango,  "mango"sv},
-    std::pair{fruit::banana, "banana"sv},
-    std::pair{fruit::papaya, "papaya"sv}
-};
-```
-So now we have the lookup table, we can use it to, you know, look stuff up:
-```c++
-constexpr auto f = fruit::mango;
-
-std::cout << "Your fruit is a " << fruit_text_lookup.at(f) << std::endl;
-```
-Or, in reverse:
-```c++
-// b <-- fruit::banana
-const auto b = fruit_text_lookup.with("banana");
-```
-One of the cool things about `static_lookup` is that lots of the parts of it are `constexpr`. So, for example, the definition of `fruit_text_lookup` above is actually all evaluated at compilation time. If you've declared it in global scope, then there's no run-time overhead to it being defined at all. Even the lookups themselves are `constexpr`, so they will also be evaluated by the compiler, if possible. Note: the items in the lookup need to be `constexpr` constructable in order to have the whole thing be `constexpr`. So, if you have `std::string`s in it, then it won't be `constexpr`, for example.
-
-These examples are aimed at this use case, but you should be able to put many other types of things in it.
-
-> ⚠️ **Warning**
-> 
-> `static_lookup` doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
 
 ## Typed-ID
 ```c++
@@ -507,13 +421,6 @@ Looks a bit of a mouthful, but it's better than confusing the types and generati
 That's about all there is to it. In addition, ID values don't have integer-like semantics, so you can't do something like `id++`, or `id_1 + id_2`, but then that's seldom something that makes sense for an ID.
 
 If you want the raw value out of the ID in its original type, then you can use `value()`, or `operator*` on the ID:
-
-## Typed-Index
-```c++
-#include <wite/core/index.hpp>
-```
-Imagine all the same stuff that I just said about IDs, but for indices into some collection. That's what `wite::index` is for. It's basically the same thing, but it's got index-like semantics for incrementing and decrementing it.
-
 ```c++
 const auto id = wite::id<MyType, int>{100};
 
@@ -523,7 +430,101 @@ const auto x = id.value();
 // y <-- int(100)
 const auto y = *id;
 ```
-That's about it for 
+That's about it for typed-IDs.
+
+## Typed-Index
+```c++
+#include <wite/core/index.hpp>
+```
+Imagine all the same stuff that I just said about IDs, but for indices into some collection. That's what `wite::index` is for. It's basically the same thing, but it's got index-like semantics for incrementing and decrementing it.
+
+
+# Collections
+
+## `make_vector`
+```c++
+#include <wite/collections/make_vector.hpp>
+```
+How much do you hate the aesthetic of having to declare a vector with its default constructor and then immediately on the next line call `reserve` on it, before passing it to some algorithm, or something (which will typically be using `push_back`, or something, on the vector)?  I know I do:
+```c++
+auto v = std::vector<int>{};
+v.reserve(1000);   // What an annoying extra line!
+```
+Anyway, `make_vector` solves this issue:
+```c++
+using namespace wite;
+
+auto v = make_vector<int>(arg::reseve{1000});
+```
+Now, `v` is reserved with space for 1000 elements on one line. Nice.
+
+You can also specify a size for the vector too, if you like:
+```c++
+// v <- [ 1, 1, ... , 1]
+auto v = make_vector<int>(arg::size{1000, 1});
+```
+If you want to specify a size and also reserve space for more things, then you can:
+```c++
+auto v = make_vector<float>(arg::reserve{1000}, arg::size{10, 3.14f});
+```
+This gives a `v` that has 10 values initialised to 3.14, with space reserved for 1000 `float` elements in total. The order of the `arg` parameters is not important; you could have `size` first in the list if you like.  I don't know what the name for this "argument adapter object" pattern, but I quite like it.
+
+## `stack_vector`
+```c++
+#include <wite/collections/stack_vector.hpp>
+```
+
+This is a vector with a compile-time capacity, but a run-time size. It stores its data on the stack, so don't put too many huge things in it.  Other than not being able to call `reserve` on it, the interface is pretty much like that of `std::vector`. For example, you can do something like:
+
+```c++
+auto v = wite::collections::stack_vector<int, 20>{};
+
+v.push_back(1);
+
+```
+
+## `static_lookup`
+```c++
+#include <wite/collections/static_lookup.hpp>
+```
+This is a simple lookup table. It works a bit like a `std::map`; you fill it with key-value pairs, and you can look up the values based on the keys (in addition, you can also look up the keys from the values too, which you can't do with a `std::map`). The primary usage for this thing is to provide a low-overhead way to convert an `enum` to a string without writing a switch-case statement.
+
+So, say you had some `enum` that you wanted to serialise, or print out in text, or something:
+```c++
+enum class fruit { apple, orange, mango, banana, papaya };
+```
+You can make a lookup table that converts these values to strings (assuming `namespace wc = wite::collections`):
+
+```c++
+// This string literal helps readability, I think.
+using namespace std::string_view_literals;
+
+constexpr auto fruit_text_lookup = wc::static_lookup{
+    std::pair{fruit::apple,  "apple"sv},
+    std::pair{fruit::orange, "orange"sv},
+    std::pair{fruit::mango,  "mango"sv},
+    std::pair{fruit::banana, "banana"sv},
+    std::pair{fruit::papaya, "papaya"sv}
+};
+```
+So now we have the lookup table, we can use it to, you know, look stuff up:
+```c++
+constexpr auto f = fruit::mango;
+
+std::cout << "Your fruit is a " << fruit_text_lookup.at(f) << std::endl;
+```
+Or, in reverse:
+```c++
+// b <-- fruit::banana
+const auto b = fruit_text_lookup.with("banana");
+```
+One of the cool things about `static_lookup` is that lots of the parts of it are `constexpr`. So, for example, the definition of `fruit_text_lookup` above is actually all evaluated at compilation time. If you've declared it in global scope, then there's no run-time overhead to it being defined at all. Even the lookups themselves are `constexpr`, so they will also be evaluated by the compiler, if possible. Note: the items in the lookup need to be `constexpr` constructable in order to have the whole thing be `constexpr`. So, if you have `std::string`s in it, then it won't be `constexpr`, for example.
+
+These examples are aimed at this use case, but you should be able to put many other types of things in it.
+
+> ⚠️ **Warning**
+> 
+> `static_lookup` doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
 
 # IO
 ```c++
