@@ -430,6 +430,14 @@ const auto x = id.value();
 // y <-- int(100)
 const auto y = *id;
 ```
+
+### Default ID type
+If you don't care what the actual ID type is, then you can just not specify it. In this case, the ID will have a value type of whatever the default ID type is. By default, the default ID type is UUID, so in the preceding examples, we might have simply done:
+```c++
+using id_type = wite::id<Button>;
+```
+and our `Button` type would be using `wite::uuid` for its IDs.  If you don't like the idea of using UUIDs as your default ID type, for some reason, then it is possible to set it the default type at compilation time with the `WITE_DEFAULT_ID_TYPE` compilation flag.
+
 That's about it for typed-IDs.
 
 ## Typed-Index
@@ -1125,6 +1133,8 @@ In general, things that go wrong throw exceptions in Wite. However, if you don't
 ## Core
 ### WITE_DEFAULT_UUID_FMT
 Sets the default format for IO of UUIDs. Set to one of 'D', 'd', 'N', 'n', 'B', 'b', 'P', 'p', 'X' or 'x'.
+### WITE_DEFAULT_ID_TYPE
+Sets the default type that will be used when `wite::id` types are created without specifying a type for the ID value itself.
 
 ## IO 
 ### `WITE_USER_DEFINED_BYTE_TYPE_`
