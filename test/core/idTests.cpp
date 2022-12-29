@@ -5,7 +5,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <sstream>
 #include <string>
 
 TEST_CASE("ID tests", "[core]") {
@@ -26,6 +25,11 @@ TEST_CASE("ID tests", "[core]") {
       constexpr auto id = wite::id<TestItem, size_t>{3};
       REQUIRE(3 == *id);
     }
+
+    SECTION("UUID") {
+      const auto id = wite::id<TestItem, wite::uuid>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"}};
+      REQUIRE(wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"} == *id);
+    }
   }
 
   SECTION("string ID works") {
@@ -34,32 +38,64 @@ TEST_CASE("ID tests", "[core]") {
   }
 
   SECTION("IDs are comparable") {
-    constexpr auto id = wite::id<TestItem, size_t>{100};
+    SECTION("default ID type (UUID)") {
+      const auto id = wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"}};
 
-    SECTION("equality") {
-      REQUIRE(id == wite::id<TestItem, size_t>{100});
+      SECTION("equality") {
+        REQUIRE(id == wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"}});
+      }
+
+      SECTION("inequality") {
+        REQUIRE(id != wite::id<TestItem>{wite::uuid{"F1234567-89AB-CDEF-0123-456789ABCDEF"}});
+      }
+
+      SECTION("less-than") {
+        REQUIRE(id < wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDFF"}});
+      }
+
+      SECTION("greater-than") {
+        REQUIRE(id > wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEE"}});
+      }
+
+      SECTION("less-than-or-equal-to") {
+        REQUIRE(id <= wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDFF"}});
+        REQUIRE(id <= wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"}});
+      }
+
+      SECTION("greater-than-or-equal-to") {
+        REQUIRE(id >= wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"}});
+        REQUIRE(id >= wite::id<TestItem>{wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEE"}});
+      }
     }
 
-    SECTION("inequality") {
-      REQUIRE(id != wite::id<TestItem, size_t>{101});
-    }
+    SECTION("int ID") {
+      constexpr auto id = wite::id<TestItem, size_t>{100};
 
-    SECTION("less-than") {
-      REQUIRE(id < wite::id<TestItem, size_t>{101});
-    }
+      SECTION("equality") {
+        REQUIRE(id == wite::id<TestItem, size_t>{100});
+      }
 
-    SECTION("greater-than") {
-      REQUIRE(id > wite::id<TestItem, size_t>{99});
-    }
+      SECTION("inequality") {
+        REQUIRE(id != wite::id<TestItem, size_t>{101});
+      }
 
-    SECTION("less-than-or-equal-to") {
-      REQUIRE(id <= wite::id<TestItem, size_t>{101});
-      REQUIRE(id <= wite::id<TestItem, size_t>{100});
-    }
+      SECTION("less-than") {
+        REQUIRE(id < wite::id<TestItem, size_t>{101});
+      }
 
-    SECTION("greater-than-or-equal-to") {
-      REQUIRE(id >= wite::id<TestItem, size_t>{100});
-      REQUIRE(id >= wite::id<TestItem, size_t>{99});
+      SECTION("greater-than") {
+        REQUIRE(id > wite::id<TestItem, size_t>{99});
+      }
+
+      SECTION("less-than-or-equal-to") {
+        REQUIRE(id <= wite::id<TestItem, size_t>{101});
+        REQUIRE(id <= wite::id<TestItem, size_t>{100});
+      }
+
+      SECTION("greater-than-or-equal-to") {
+        REQUIRE(id >= wite::id<TestItem, size_t>{100});
+        REQUIRE(id >= wite::id<TestItem, size_t>{99});
+      }
     }
   }
 }

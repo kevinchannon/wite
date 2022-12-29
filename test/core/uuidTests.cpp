@@ -604,6 +604,34 @@ TEST_CASE("Uuid tests", "[core]") {
   SECTION("hashing"){
     REQUIRE(0 != std::hash<uuid>{}(id));
   }
+
+  SECTION("comparison"){
+    SECTION("equality") {
+      REQUIRE(id == wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"});
+    }
+
+    SECTION("inequality") {
+      REQUIRE(id != wite::uuid{"F1234567-89AB-CDEF-0123-456789ABCDEF"});
+    }
+
+    SECTION("less-than") {
+      REQUIRE(id < wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDFF"});
+    }
+
+    SECTION("greater-than") {
+      REQUIRE(id > wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEE"});
+    }
+
+    SECTION("less-than-or-equal-to") {
+      REQUIRE(id <= wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDFF"});
+      REQUIRE(id <= wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"});
+    }
+
+    SECTION("greater-than-or-equal-to") {
+      REQUIRE(id >= wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEF"});
+      REQUIRE(id >= wite::uuid{"01234567-89AB-CDEF-0123-456789ABCDEE"});
+    }
+  }
 }
 
 TEST_CASE("Uuid IO tests", "[core]") {

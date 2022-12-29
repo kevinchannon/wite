@@ -1,7 +1,6 @@
 #include <wite/collections/identifiable_item_collection.hpp>
 #include <wite/core/id.hpp>
 #include <wite/core/io.hpp>
-#include <wite/core/uuid.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -15,12 +14,14 @@
 /// A single sensor that has a value and an ID.
 /// </summary>
 struct Sensor {
-  using id_type = wite::id<Sensor, uint8_t>;
+  using id_type = wite::id<Sensor>;
 
-  const id_type _id{};
+  id_type _id{};
   size_t value{};
 
   explicit Sensor(id_type::value_type id) : _id{id} {}
+
+  WITE_DEFAULT_CONSTRUCTORS(Sensor);
 
   [[nodiscard]] const id_type& id() const { return _id; }
 };
@@ -33,13 +34,15 @@ using SensorCollection = wite::collections::identifiable_item_collection<Sensor>
 /// A single servo that has current and target positions and an ID.
 /// </summary>
 struct Servo {
-  using id_type = wite::id<Servo, uint8_t>;
+  using id_type = wite::id<Servo>;
 
   id_type _id{};
   size_t current_position{};
   size_t target_position{};
 
   explicit Servo(id_type::value_type id, size_t target) : _id{id}, target_position{target} {}
+
+  WITE_DEFAULT_CONSTRUCTORS(Servo);
 
   [[nodiscard]] const id_type& id() const { return _id; }
 };
@@ -50,17 +53,17 @@ using ServoCollection = wite::collections::identifiable_item_collection<Servo>;
 
 void populate(SensorCollection& sensors) {
   // Values are inserted by value, so if you don't need to use the local value again, you can move it in.
-  auto sensor_1 = Sensor{1};
+  auto sensor_1 = Sensor{wite::make_uuid()};
   sensors.insert(std::move(sensor_1));
 
   // This would throw std::logic_error, because the ID already exists in the collection.
   // sensors.insert(Sensor{1});
 
   // No local variable for this one, just construct in the call.
-  sensors.insert(Sensor{2});
+  sensors.insert(Sensor{wite::make_uuid()});
 
   // Insert multiple values in one call, if you know ahead of time what you want to add.
-  const auto insert_result = sensors.try_insert(Sensor{3}, Sensor{4}, Sensor{5});
+  const auto insert_result = sensors.try_insert(Sensor{wite::make_uuid()}, Sensor{wite::make_uuid()}, Sensor{wite::make_uuid()});
   assert(std::ranges::all_of(insert_result, [](auto&& result) { return true == result; }));
 }
 
@@ -68,11 +71,11 @@ void populate(SensorCollection& sensors) {
 
 void populate(ServoCollection& servos) {
   // emplace constructs values directly in the memory used for storage.
-  auto& servo            = servos.emplace(2, 1000);
+  auto& servo            = servos.emplace(wite::make_uuid(), 1000);
   servo.current_position = 500;  // emplace returns a stable reference to the thing that was inserted into the collection, so you
                                  // can edit and use it, if you need to.
 
-  auto servos_vec = std::vector{Servo{1, 0}, Servo{2, 1000}, Servo{3, 500}};
+  auto servos_vec = std::vector{Servo{wite::make_uuid(), 0}, Servo{wite::make_uuid(), 1000}, Servo{wite::make_uuid(), 500}};
 
   // insert items from an existing range. The second element of the result will be FALSE, since a servo with that element's ID
   // already existed in the collection
@@ -98,8 +101,10 @@ int main() {
   //
   // Check that particular items are present
   //
-  const auto id_1 = Sensor::id_type{2};
-  const auto id_2 = Servo::id_type{3};
+  // This example is a little contrived, because the IDs are random UUIDs. In reality, you'd probably know the ID of the thing you
+  // were looking for, rather than getting the thing by index and then extracting its ID!
+  const auto id_1 = sensors.at(SensorCollection::index_type{1}).id();
+  const auto id_2 = servos.at(ServoCollection::index_type{2}).id();
 
   // Compilation will fail if we mix up these (poorly named) IDs. So, you can't write something like `sensors.contains(id_2);`
   // because it won't compile.
@@ -136,9 +141,10 @@ int main() {
   //
   sensors.erase(id_1);  // Typed-ID here means that it's not possible to accidentally put `id_2` here, or compilation will fail.
 
+  const auto id_3 = sensors.at(SensorCollection::index_type{2}).id();
   // Erase multiple elements (returns an array of boolean values indicating whether the item was erased, or not.
   // `result` <-- [true, false], because we already erased id_1 from the collection.
-  const auto result = sensors.erase(Sensor::id_type{3}, id_1);
+  const auto result = sensors.erase(id_3, id_1);
 
   // To remove an item, but keep hold of it locally, then an item can be excised from the collection. NOTE: this is not called
   // `extract`, which would seem to mirror standard library containers more closely. However, extract has some specific behaviours
@@ -147,7 +153,6 @@ int main() {
 
   // Clear everything, if you need to do that, for some reason.
   servos.clear();
-  
 
   return 0;
 }

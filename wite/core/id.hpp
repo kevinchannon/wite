@@ -3,6 +3,12 @@
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/environment.hpp>
 
+#ifndef WITE_DEFAULT_ID_TYPE
+#include <wite/core/uuid.hpp>
+
+#define WITE_DEFAULT_ID_TYPE uuid
+#endif
+
 #include <compare>
 #include <utility>
 
@@ -12,7 +18,7 @@ namespace wite {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename Obj_T, typename Id_T>
+template <typename Obj_T, typename Id_T=WITE_DEFAULT_ID_TYPE>
 struct id {
   struct id_type_tag {
     static constexpr auto value = true;
