@@ -11,20 +11,27 @@ enum class ETestError {
 
 using TestResult_t = wite::result<uint32_t, ETestError>;
 
-TEST_CASE("result::ok returns the expected value", "[core]") {
-  REQUIRE(TestResult_t{10}.ok());
-  REQUIRE_FALSE(TestResult_t{ETestError::error_1}.ok());
-}
+TEST_CASE("Result tests", "[core]") {
+  SECTION("result::ok returns the expected value", "[core]") {
+    REQUIRE(TestResult_t{10}.ok());
+    REQUIRE_FALSE(TestResult_t{ETestError::error_1}.ok());
+  }
 
-TEST_CASE("result::is_error returns the expected value") {
-  REQUIRE_FALSE(TestResult_t{10}.is_error());
-  REQUIRE(TestResult_t{ETestError::error_1}.is_error());
-}
+  SECTION("result::is_error returns the expected value") {
+    REQUIRE_FALSE(TestResult_t{10}.is_error());
+    REQUIRE(TestResult_t{ETestError::error_1}.is_error());
+  }
 
-TEST_CASE("result::value returns the value") {
-  REQUIRE(10 == TestResult_t{10}.value());
-}
+  SECTION("result::value returns the value") {
+    REQUIRE(10 == TestResult_t{10}.value());
+  }
 
-TEST_CASE("result::error returns the error value") {
-  REQUIRE(ETestError::error_2 == TestResult_t{ETestError::error_2}.error());
+  SECTION("result::error returns the error value") {
+    REQUIRE(ETestError::error_2 == TestResult_t{ETestError::error_2}.error());
+  }
+
+  SECTION("dereference operators"){
+    const auto r = TestResult_t{123};
+    REQUIRE(123 == *r);
+  }
 }
