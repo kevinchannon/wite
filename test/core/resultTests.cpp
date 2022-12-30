@@ -86,4 +86,11 @@ TEST_CASE("Result tests", "[core]") {
       REQUIRE(not r.has_value());
     }
   }
+
+  SECTION("value_or"){
+    SECTION("returns the value if the result is valid") {
+      const auto r = TestResult_t{3214};
+      REQUIRE(3214 == r.value_or(20));
+    }
+  }
 }
