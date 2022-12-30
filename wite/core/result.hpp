@@ -25,6 +25,10 @@ class result : std::variant<Value_T, Error_T> {
     return value();
   }
 
+  _WITE_NODISCARD constexpr const value_type* operator->() const noexcept {
+    return &value();
+  }
+
   _WITE_NODISCARD constexpr bool ok() const noexcept { return this->index() == 0; }
   _WITE_NODISCARD constexpr bool is_error() const noexcept { return false == ok(); }
   _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return std::get<Value_T>(*this); }

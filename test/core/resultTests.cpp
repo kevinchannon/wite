@@ -30,8 +30,19 @@ TEST_CASE("Result tests", "[core]") {
     REQUIRE(ETestError::error_2 == TestResult_t{ETestError::error_2}.error());
   }
 
-  SECTION("dereference operators"){
-    const auto r = TestResult_t{123};
-    REQUIRE(123 == *r);
+  SECTION("dereference operators") {
+    SECTION("operator*") {
+      const auto r = TestResult_t{123};
+      REQUIRE(123 == *r);
+    }
+
+    SECTION("operator->"){
+      struct A {
+        int x;
+      };
+
+      const auto r = wite::result<A, int>{A{10}};
+      REQUIRE(10 == r->x);
+    }
   }
 }
