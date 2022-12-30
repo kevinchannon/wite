@@ -20,6 +20,10 @@ class result : std::variant<Value_T, Error_T> {
 
   WITE_DEFAULT_CONSTRUCTORS(result);
 
+  constexpr explicit operator bool() const noexcept {
+    return ok();
+  }
+
   _WITE_NODISCARD constexpr const value_type& operator*() const noexcept { return value(); }
   _WITE_NODISCARD constexpr value_type& operator*() noexcept { return const_cast<value_type&>(value()); }
 

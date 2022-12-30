@@ -62,4 +62,16 @@ TEST_CASE("Result tests", "[core]") {
       }
     }
   }
+
+  SECTION("implicit cast to bool"){
+    SECTION("valid result case"){
+      const auto r = TestResult_t{111};
+      REQUIRE(r);
+    }
+
+    SECTION("error result case") {
+      const auto r = TestResult_t{ETestError::error_3};
+      REQUIRE(not r);
+    }
+  }
 }
