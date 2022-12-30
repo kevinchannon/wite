@@ -34,9 +34,13 @@ class result : std::variant<Value_T, Error_T> {
   _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return std::get<Value_T>(*this); }
   _WITE_NODISCARD constexpr const Error_T& error() const noexcept { return std::get<Error_T>(*this); }
 
-  template<typename AlternativeValue_T>
-  _WITE_NODISCARD constexpr value_type value_or(AlternativeValue_T&&) const {
-    return value();
+  template<typename DefaultValue_T>
+  _WITE_NODISCARD constexpr value_type value_or(DefaultValue_T&& default_value) const {
+    if (has_value()) {
+      return value();
+    } else {
+      return default_value;
+    }
   }
 };
 

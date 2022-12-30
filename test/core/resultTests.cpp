@@ -92,5 +92,10 @@ TEST_CASE("Result tests", "[core]") {
       const auto r = TestResult_t{3214};
       REQUIRE(3214 == r.value_or(20));
     }
+
+    SECTION("returns the default value if the result is an error") {
+      const auto r = TestResult_t{ETestError::error_2};
+      REQUIRE(20 == r.value_or(20));
+    }
   }
 }
