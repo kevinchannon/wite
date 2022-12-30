@@ -98,4 +98,11 @@ TEST_CASE("Result tests", "[core]") {
       REQUIRE(20 == r.value_or(20));
     }
   }
+
+  SECTION("and_then"){
+    SECTION("applies the function if the  result is valid"){
+      const auto r = TestResult_t{1};
+      REQUIRE(2 == r.and_then([](auto&& x) { return 2*x;}));
+    }
+  }
 }
