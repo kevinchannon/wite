@@ -44,8 +44,8 @@ class result : std::variant<Value_T, Error_T> {
   }
 
   template<typename Fn_T>
-  _WITE_NODISCARD constexpr auto and_then(Fn_T&& fn) const {
-    return fn(value());
+  _WITE_NODISCARD constexpr result<value_type, error_type> and_then(Fn_T&& fn) const {
+    return has_value() ? result<value_type, error_type>{fn(value())} : *this;
   }
 };
 
