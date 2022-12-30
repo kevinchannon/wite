@@ -74,4 +74,16 @@ TEST_CASE("Result tests", "[core]") {
       REQUIRE(not r);
     }
   }
+
+  SECTION("has_value"){
+    SECTION("valid result case"){
+      const auto r = TestResult_t{111};
+      REQUIRE(r.has_value());
+    }
+
+    SECTION("error result case") {
+      const auto r = TestResult_t{ETestError::error_3};
+      REQUIRE(not r.has_value());
+    }
+  }
 }
