@@ -1,7 +1,7 @@
 #pragma once
 
-#include <wite/env/environment.hpp>
 #include <wite/common/constructor_macros.hpp>
+#include <wite/env/environment.hpp>
 
 #include <variant>
 
@@ -12,7 +12,6 @@ class result : std::variant<Value_T, Error_T> {
   using _base_t = std::variant<Value_T, Error_T>;
 
  public:
-
   using value_type = Value_T;
   using error_type = Error_T;
 
@@ -21,17 +20,11 @@ class result : std::variant<Value_T, Error_T> {
 
   WITE_DEFAULT_CONSTRUCTORS(result);
 
-  _WITE_NODISCARD constexpr const value_type& operator*() const noexcept {
-    return value();
-  }
+  _WITE_NODISCARD constexpr const value_type& operator*() const noexcept { return value(); }
+  _WITE_NODISCARD constexpr value_type& operator*() noexcept { return const_cast<value_type&>(value()); }
 
-  _WITE_NODISCARD constexpr const value_type* operator->() const noexcept {
-    return &value();
-  }
-
-  _WITE_NODISCARD constexpr value_type* operator->() noexcept {
-    return const_cast<value_type*>(&value());
-  }
+  _WITE_NODISCARD constexpr const value_type* operator->() const noexcept { return &value(); }
+  _WITE_NODISCARD constexpr value_type* operator->() noexcept { return const_cast<value_type*>(&value()); }
 
   _WITE_NODISCARD constexpr bool ok() const noexcept { return this->index() == 0; }
   _WITE_NODISCARD constexpr bool is_error() const noexcept { return false == ok(); }

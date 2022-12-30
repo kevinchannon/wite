@@ -32,8 +32,16 @@ TEST_CASE("Result tests", "[core]") {
 
   SECTION("dereference operators") {
     SECTION("operator*") {
-      const auto r = TestResult_t{123};
-      REQUIRE(123 == *r);
+      SECTION("const operations") {
+        const auto r = TestResult_t{123};
+        REQUIRE(123 == *r);
+      }
+
+      SECTION("mutating operations"){
+        auto r = TestResult_t{123};
+        *r = 321;
+        REQUIRE(321 == *r);
+      }
     }
 
     SECTION("operator->"){
