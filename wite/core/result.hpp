@@ -4,6 +4,7 @@
 #include <wite/env/environment.hpp>
 
 #include <variant>
+#include <functional>
 
 namespace wite {
 
@@ -45,7 +46,7 @@ class result : std::variant<Value_T, Error_T> {
 
   template<typename Fn_T>
   _WITE_NODISCARD constexpr result<value_type, error_type> and_then(Fn_T&& fn) const {
-    return has_value() ? result<value_type, error_type>{fn(value())} : *this;
+    return has_value() ? result<value_type, error_type>{std::invoke(std::forward<Fn_T>(fn), value())} : *this;
   }
 };
 
