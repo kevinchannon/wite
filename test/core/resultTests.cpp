@@ -41,8 +41,17 @@ TEST_CASE("Result tests", "[core]") {
         int x;
       };
 
-      const auto r = wite::result<A, int>{A{10}};
-      REQUIRE(10 == r->x);
+      SECTION("const operations") {
+        const auto r = wite::result<A, int>{A{10}};
+        REQUIRE(10 == r->x);
+      }
+
+      SECTION("mutating operations") {
+        auto r = wite::result<A, int>{A{10}};
+        r->x = 20;
+
+        REQUIRE(20 == r->x);
+      }
     }
   }
 }
