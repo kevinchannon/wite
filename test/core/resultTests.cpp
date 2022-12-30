@@ -105,6 +105,11 @@ TEST_CASE("Result tests", "[core]") {
       REQUIRE(2 == r.and_then([](auto&& x) { return 2*x;}).value());
     }
 
+    SECTION("handles the case that the function returns a result value"){
+      const auto r = TestResult_t{1};
+      REQUIRE(2 == r.and_then([](auto&& x)->TestResult_t { return {2*x};}).value());
+    }
+
     SECTION("returns the original result value if the value is an error") {
       const auto r = TestResult_t{ETestError::error_1};
       REQUIRE(ETestError::error_1 == r.and_then([](auto&& x) { return 2*x;}).error());
