@@ -200,9 +200,18 @@ TEST_CASE("Result tests", "[core]") {
     auto r_1 = TestResult_t{1};
     auto r_2 = TestResult_t{2};
 
-    r_1.swap(r_2);
+    SECTION("member function version") {
+      r_1.swap(r_2);
 
-    REQUIRE(2 == *r_1);
-    REQUIRE(1 == *r_2);
+      REQUIRE(2 == *r_1);
+      REQUIRE(1 == *r_2);
+    }
+
+    SECTION("free function version") {
+      swap(r_1, r_2);
+
+      REQUIRE(2 == *r_1);
+      REQUIRE(1 == *r_2);
+    }
   }
 }

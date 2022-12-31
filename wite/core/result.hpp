@@ -5,6 +5,7 @@
 
 #include <variant>
 #include <functional>
+#include <algorithm>
 
 namespace wite {
 
@@ -88,5 +89,10 @@ class result {
  private:
   _storage_t _data;
 };
+
+template<typename Value_T, typename Error_T>
+void swap(result<Value_T, Error_T>& a, result<Value_T, Error_T>& b) noexcept {
+  a.swap(b);
+}
 
 }  // namespace wite
