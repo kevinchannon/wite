@@ -64,7 +64,7 @@ namespace detail::split {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Result_T>
-_WITE_NODISCARD Result_T split_to(
+_WITE_NODISCARD constexpr Result_T split_to(
     std::basic_string_view<typename Result_T::value_type::value_type> str,
     typename Result_T::value_type::value_type delimiter = detail::split::space_character<typename Result_T::value_type::value_type>(),
     split_behaviour behaviour                           = split_behaviour::drop_empty) noexcept {
@@ -91,9 +91,9 @@ _WITE_NODISCARD Result_T split_to(
 
 template <typename Result_T, typename Char_T>
 #if _WITE_HAS_CONCEPTS
-requires common::is_pod_like<Char_T> _WITE_NODISCARD Result_T split_to(
+requires common::is_pod_like<Char_T> _WITE_NODISCARD constexpr Result_T split_to(
 #else
-    _WITE_NODISCARD std::enable_if_t<std::is_pod_v<Char_T> , Result_T> split_to(
+    _WITE_NODISCARD constexpr std::enable_if_t<std::is_pod_v<Char_T> , Result_T> split_to(
 #endif
     const Char_T* str,
     Char_T delimiter          = detail::split::space_character<Char_T>(),
