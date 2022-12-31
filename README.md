@@ -134,6 +134,10 @@ And now we have a strongly-typed result type that won't allow us to ignore error
 
 So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before you make your next move and then use either `value()` or `error()` to get at the details. That's about it.
 
+> **Note**
+> 
+> The interface of `result` includes much of the functionality of [`std::expected`](https://en.cppreference.com/w/cpp/utility/expected). I would say that, if you have access to `std::expected`, then you should really use that instead. However, the implementation of `result` is provided here for those that don't have `std::expected` (since it's in C++23).
+
 ## Scope Exit Runners
 ```c++
 #include <wite/core/scope.hpp>
