@@ -135,4 +135,16 @@ TEST_CASE("Result tests", "[core]") {
       REQUIRE(ETestError::error_1 == r.error());
     }
   }
+
+  SECTION("or_else"){
+    SECTION("applies the function in the error case") {
+      const auto r = TestResult_t{ETestError::error_1};
+      REQUIRE(ETestError::error_3 == r.or_else([](auto&&) { return ETestError::error_3; }).error());
+    }
+
+    SECTION("returns the original result if the value is not an error"){
+      const auto r = TestResult_t{10};
+      REQUIRE(10 == r.or_else([](auto&&) { return ETestError::error_3; }).value());
+    }
+  }
 }
