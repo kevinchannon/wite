@@ -67,12 +67,10 @@ TEST_CASE("Strip strings", "[string]") {
     }
 
     SECTION("Leading and trailing white-space is removed") {
-      const auto [str, expected] = GENERATE(table<const wchar_t*, std::wstring>({/*{L" space ", L"space"s},*/
-                                                                                 {L"\ttab\t", L"tab"s},
-                                                                                 {L"\rcarriage return\r", L"carriage return"s},
-                                                                                 {L"\vvertical tab\v", L"vertical tab"s}}));
-
-      REQUIRE(expected == string::strip(str));
+      SECTION("spaces"){ REQUIRE(L"space" == string::strip(L" space ")); }
+      SECTION("tabs"){ REQUIRE(L"tab" == string::strip(L"\ttab\t")); }
+      SECTION("carriage returns"){ REQUIRE(L"carriage return" == string::strip(L"\rcarriage return\r")); }
+      SECTION("vertical tabs"){ REQUIRE(L"vertical tab" == string::strip(L"\vvertical tab\v")); }
     }
   }
 }
