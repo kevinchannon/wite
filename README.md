@@ -128,7 +128,7 @@ and then the prototype for `string_maker` just looks like:
 string_maker_result string_maker();
 ```
 And now we have a strongly-typed result type that won't allow us to ignore errors. If you call `value()` on the result when it's actually an error, then it will call `abort` and kill your app... probably.  
-> ⚠️ **Warning**
+> **Warning**
 > 
 > All the methods on `result` are declared `noexcept`, but it's based on `std::variant`, so it will try to throw exceptions. Without the proper things built by the compiler for handling the exceptions, this will probably have some undefined behaviour, but in my experience it just aborts execution of the thing pretty quickly.  What the hell!? I can hear you saying. Well, this is in an error case, where you have ignored the error and tried to use the result anyway, so all bets are off, in my opinion. If you're using the "traditional" error code mechanism, then it may let your app stumble on in a pretty undefined way for some time, but it's still fundamentally in an undefined state (since the error should have been handled properly, but someone failed to write the code to do that). To me, all undefined states are equivalent ;)
 
@@ -143,7 +143,7 @@ So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before
 #include <wite/core/scope.hpp>
 ```
 
-> ⚠️ **NOTE**:
+> **Note**:
 > 
 >These are supposed to be in the C++ standard, but they're stuck in the "experimental" state and not many compilers seem to implement them. This is probably because it's hard to define and implement them in a way that is guaranteed to be safe in all situations. This is the remit of the standards committee, but it is not our remit here :)  So, Wite has simple scope exit runners, but the usual caveats apply: they might not be the MOST memory and performance efficient implementations possible, and it's possible to get yourself into trouble if you use them wrongly!  So, use with care :)
 
@@ -211,7 +211,9 @@ void some_fn() {
 ```
 Here, we will see the failure message, but not the success one. In both cases, you will see the message "This is always done!", because that is in a `scope_exit`, which doesn't care about exceptions.
 
-> ⚠️ **WITE_NO_EXCEPTIONS**: If you're compiling with the `WITE_NO_EXCEPTIONS` macro defined, then `scope_success` and `scope_fail` are not defined, and you'll get a compilation failure if you try to use them.
+> **Warning**
+>
+> If you're compiling with the **WITE_NO_EXCEPTIONS** macro defined, then `scope_success` and `scope_fail` are not defined, and you'll get a compilation failure if you try to use them.
 
 ## `overloaded`
 This is a thing that allows you to do a kind of type-switching on a parameter pack, which is basically directly lifted from [here](https://en.cppreference.com/w/cpp/utility/variant/visit).  So, if you have a function that looks like this:
@@ -534,7 +536,7 @@ One of the cool things about `static_lookup` is that lots of the parts of it are
 
 These examples are aimed at this use case, but you should be able to put many other types of things in it.
 
-> ⚠️ **Warning**
+> **Warning**
 > 
 > `static_lookup` doesn't work well with `const char*` things at the moment (hence the usage of `std::string_view` above :) ).  I'll work on fixing that, at some point. If you're reading this and feel enraged by my sloth, please feel free to fix and submit a PR, or something :)
 
@@ -557,7 +559,7 @@ class Button {
 
 using Buttons = wite::identifiable_item_collection<Button>;
 ```
-So now `Buttons` is an Identifiable Item Collection of `Button` objects and we can insert and retrieve items using their ID:
+So now `Buttons` is an Identifiable Item Collection of `Button` objects, and we can insert and retrieve items using their ID:
 ```c++
 auto buttons = Buttons{};
 
