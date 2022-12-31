@@ -136,7 +136,7 @@ So, yeah. Use `result`, make sure you check `ok()`, or `is_error()` on it before
 
 > **Note**
 > 
-> The interface of `result` includes much of the functionality of [`std::expected`](https://en.cppreference.com/w/cpp/utility/expected). I would say that, if you have access to `std::expected`, then you should really use that instead. However, the implementation of `result` is provided here for those that don't have `std::expected` (since it's in C++23).
+> The interface of `result` includes much of the functionality of [`std::expected`](https://en.cppreference.com/w/cpp/utility/expected). The template function specificity and complexity is probably much lower in `result` than in `std::expected`, but it should do roughly the same thing in most situations. `std::expected` has a lot of additional constructors that `result` doesn't have and there is no analogue to `std::unexpected` in Wite. If `std::expected` wasn't just around the corner, then it would probably be worth doing a better job on the alignment, but life is too short for that :) I would say that, if you have access to `std::expected`, then you should really use that instead. However, the implementation of `result` is provided here for those that don't have `std::expected` (since it's in C++23).
 
 ## Scope Exit Runners
 ```c++
