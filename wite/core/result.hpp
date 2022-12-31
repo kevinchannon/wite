@@ -67,6 +67,12 @@ class result : std::variant<Value_T, Error_T> {
       return result<value_type, error_type>{std::invoke(std::forward<Fn_T>(fn), error())};
     }
   }
+
+  template<typename Fn_T>
+  _WITE_NODISCARD constexpr result<value_type, error_type>& transform_error(Fn_T&& fn) {
+    *this = this->or_else(std::forward<Fn_T>(fn));
+    return *this;
+  }
 };
 
 }  // namespace wite

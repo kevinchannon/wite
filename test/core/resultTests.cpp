@@ -147,4 +147,18 @@ TEST_CASE("Result tests", "[core]") {
       REQUIRE(10 == r.or_else([](auto&&) { return ETestError::error_3; }).value());
     }
   }
+
+  SECTION("transform_error"){
+    SECTION("applies the function in the error case") {
+      auto r = TestResult_t{ETestError::error_1};
+      REQUIRE(ETestError::error_3 == r.transform_error([](auto&&) { return ETestError::error_3; }).error());
+      REQUIRE(ETestError::error_3 == r.error());
+    }
+
+    SECTION("returns the original result if the value is not an error"){
+      auto r = TestResult_t{10};
+      REQUIRE(10 == r.transform_error([](auto&&) { return ETestError::error_3; }).value());
+      REQUIRE(10 == *r);
+    }
+  }
 }
