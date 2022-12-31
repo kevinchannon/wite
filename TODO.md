@@ -1,10 +1,10 @@
 # TODO
 
 ## Core
-* Make the interface of `result` match that of the upcoming `std::expected`
-* UUIDs should be formattable in `std::format` and `std::ostream`. So, you should be able to do something like `std::format("My ID: {:X}\n", id)` to format a uuid in X-format. Alternatively, `std::cout << wite::uuid_format::X << id << std::endl;` should do roughly the same thing.
+* UUIDs should be formattable in `std::format` and `std::ostream`. So, you should be able to do something like `std::format("My ID: {:X}\n", id)` to format a `uuid` in X-format. Alternatively, `std::cout << wite::uuid_format::X << id << std::endl;` should do roughly the same thing.
 * UUIDs should be natively serialisable and deserialisable via wite::io things
-* constructors of `result` should be conditionally explicit (i.e. in the same way as `std::expected`)
+* Constructors of `result` should be conditionally explicit (i.e. in the same way as `std::expected`)
+* If __cpp_lib_expected >= 202202L, then `wite::result` should be a typedef of `std::expected`?
 
 ## IO
 * Simple CSV input?
