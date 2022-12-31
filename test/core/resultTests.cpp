@@ -195,4 +195,14 @@ TEST_CASE("Result tests", "[core]") {
       }
     }
   }
+
+  SECTION("swap"){
+    auto r_1 = TestResult_t{1};
+    auto r_2 = TestResult_t{2};
+
+    r_1.swap(r_2);
+
+    REQUIRE(2 == *r_1);
+    REQUIRE(1 == *r_2);
+  }
 }

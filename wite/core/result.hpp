@@ -80,6 +80,11 @@ class result {
     return *this;
   }
 
+  constexpr void swap(result<value_type, error_type>& other) noexcept {
+    using std::swap;
+    swap(_data, other._data);
+  }
+
  private:
   _storage_t _data;
 };
