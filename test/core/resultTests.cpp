@@ -161,4 +161,38 @@ TEST_CASE("Result tests", "[core]") {
       REQUIRE(10 == *r);
     }
   }
+
+  SECTION("emplace") {
+    struct Emplaceable{
+      int x, y;
+
+      Emplaceable(int _x, int _y) : x{_x}, y{_y} {}
+      WITE_DEFAULT_CONSTRUCTORS(Emplaceable);
+
+      constexpr auto operator<=>(const Emplaceable&) const noexcept = default;
+    };
+
+    SECTION("constructs the new value in place"){
+      SECTION("and replaces the existing value"){
+        auto r = wite::result<Emplaceable, ETestError>{Emplaceable{1, 2}};
+        REQUIRE(Emplaceable{1, 2} == *r);
+
+        auto& updated = r.emplace(3,4);
+        REQUIRE(Emplaceable{3, 4} == *r);
+        SECTION("returns the newly constructed value") {
+          REQUIRE(Emplaceable{3, 4} == updated);
+        }
+      }
+
+      SECTION("and replaces an error value with a success value"){
+        auto r = wite::result<Emplaceable, ETestError>{ETestError::error_1};
+
+        auto& updated = r.emplace(3,4);
+        REQUIRE(Emplaceable{3, 4} == *r);
+        SECTION("returns the newly constructed value") {
+          REQUIRE(Emplaceable{3, 4} == updated);
+        }
+      }
+    }
+  }
 }

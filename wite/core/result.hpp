@@ -9,17 +9,23 @@
 namespace wite {
 
 template <typename Value_T, typename Error_T>
-class result : std::variant<Value_T, Error_T> {
-  using _base_t = std::variant<Value_T, Error_T>;
+class result {
+  using _storage_t = std::variant<Value_T, Error_T>;
 
  public:
   using value_type = Value_T;
   using error_type = Error_T;
 
-  constexpr result(Value_T value) noexcept : _base_t{std::move(value)} {}
-  constexpr result(Error_T error) noexcept : _base_t(std::move(error)) {}
+  constexpr result(Value_T value) noexcept : _data{std::move(value)} {}
+  constexpr result(Error_T error) noexcept : _data(std::move(error)) {}
 
   WITE_DEFAULT_CONSTRUCTORS(result);
+
+  template<typename... Arg_Ts>
+  constexpr value_type& emplace(Arg_Ts... args) noexcept {
+    _data.template emplace<value_type>(std::forward<Arg_Ts>(args)...);
+    return const_cast<value_type&>(value());
+  }
 
   constexpr explicit operator bool() const noexcept { return ok(); }
   _WITE_NODISCARD constexpr bool has_value() const noexcept { return ok(); }
@@ -30,10 +36,10 @@ class result : std::variant<Value_T, Error_T> {
   _WITE_NODISCARD constexpr const value_type* operator->() const noexcept { return &value(); }
   _WITE_NODISCARD constexpr value_type* operator->() noexcept { return const_cast<value_type*>(&value()); }
 
-  _WITE_NODISCARD constexpr bool ok() const noexcept { return this->index() == 0; }
+  _WITE_NODISCARD constexpr bool ok() const noexcept { return _data.index() == 0; }
   _WITE_NODISCARD constexpr bool is_error() const noexcept { return false == ok(); }
-  _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return std::get<Value_T>(*this); }
-  _WITE_NODISCARD constexpr const Error_T& error() const noexcept { return std::get<Error_T>(*this); }
+  _WITE_NODISCARD constexpr const Value_T& value() const noexcept { return std::get<Value_T>(_data); }
+  _WITE_NODISCARD constexpr const Error_T& error() const noexcept { return std::get<Error_T>(_data); }
 
   template <typename DefaultValue_T>
   _WITE_NODISCARD constexpr value_type value_or(DefaultValue_T&& default_value) const {
@@ -73,6 +79,9 @@ class result : std::variant<Value_T, Error_T> {
     *this = this->or_else(std::forward<Fn_T>(fn));
     return *this;
   }
+
+ private:
+  _storage_t _data;
 };
 
 }  // namespace wite
