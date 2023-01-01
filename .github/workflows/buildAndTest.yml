@@ -70,4 +70,4 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}\build\msvc\x64\debug\test
         shell: cmd
-        run: ${{github.workspace}}\build\msvc\x64\debug\test\wite_test.exe
+        run: ${{github.workspace}}\build\msvc\x64\debug\test\Debug\wite_test.exe
