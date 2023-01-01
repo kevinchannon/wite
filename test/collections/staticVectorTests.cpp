@@ -5,6 +5,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <vector>
+
 using namespace std::string_literals;
 using namespace wite;
 
@@ -197,13 +199,26 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
   using iterator_t = collections::detail::_static_vector_const_iterator<decltype(v)>;
 
   SECTION("construction"){
-    const auto it = iterator_t{&v[0]};
+    const auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     REQUIRE(1 == *it);
   }
 
   SECTION("operator->") {
     struct A { int x; };
     constexpr auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
-    REQUIRE(0 == collections::detail::_static_vector_const_iterator<decltype(test_vec)>{test_vec.data()}->x);
+    REQUIRE(0 == collections::detail::_static_vector_const_iterator<decltype(test_vec)>{test_vec.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&test_vec)}->x);
+  }
+
+  SECTION("operator++"){
+    auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+    ++it;
+    REQUIRE(2 == *it);
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("asserts in debug if incrementing past the end of the parent vector") {
+      ++it; ++it; ++it; ++it;
+      WITE_REQUIRE_ASSERTS_WITH(++it, "static_vector:operator++: incrementing past end");
+    }
+#endif
   }
 }

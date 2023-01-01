@@ -2,6 +2,7 @@
 
 #include <wite/common/constructor_macros.hpp>
 #include <wite/env/environment.hpp>
+#include <wite/core/assert.hpp>
 
 #include <algorithm>
 #include <array>
@@ -24,6 +25,16 @@
 #endif  // _WITE_COMPILER_GCC
 #endif  // _WITE_COMPILER_MSVC
 
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef _WITE_CONFIG_DEBUG
+#define _WITE_STATIC_VEC_ITER_DEBUG_ARG(arg) , arg
+#else
+#define _WITE_STATIC_VEC_ITER_DEBUG_ARG(arg)
+#endif  // _WITE_CONFIG_DEBUG
+
+///////////////////////////////////////////////////////////////////////////////
+
 namespace wite::collections {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,16 +54,28 @@ namespace detail {
     using pointer         = typename Vector_T::const_pointer;
     using reference       = const value_type&;
 
-    using _parent_element_pointer = typename Vector_T::const_pointer;
+    using _ptr_t = typename Vector_T::const_pointer;
 
-    constexpr explicit _static_vector_const_iterator(_parent_element_pointer ptr) noexcept : _ptr{ptr} {}
+    constexpr explicit _static_vector_const_iterator(_ptr_t ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
+      : _ptr{ptr}
+      _WITE_STATIC_VEC_ITER_DEBUG_ARG(_parent{parent}) {}
 
     _WITE_NODISCARD constexpr reference operator*() const { return *_ptr; }
     _WITE_NODISCARD constexpr pointer operator->() const { return _ptr; }
 
+    constexpr _static_vector_const_iterator& operator++() _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(_ptr != (_parent->data() + _parent->size()), "static_vector:operator++: incrementing past end");
+
+      ++_ptr;
+      return *this;
+    }
 
    private:
-    _parent_element_pointer _ptr;
+    _ptr_t _ptr;
+
+#ifdef _WITE_CONFIG_DEBUG
+    const Vector_T* _parent;
+#endif
   };
 }  // namespace detail
 
