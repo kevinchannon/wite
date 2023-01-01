@@ -43,11 +43,13 @@ namespace detail {
     using pointer         = typename Vector_T::const_pointer;
     using reference       = const value_type&;
 
-    using _parent_element_pointer = typename Vector_T::pointer;
+    using _parent_element_pointer = typename Vector_T::const_pointer;
 
     constexpr explicit _static_vector_const_iterator(_parent_element_pointer ptr) noexcept : _ptr{ptr} {}
 
     _WITE_NODISCARD constexpr reference operator*() const { return *_ptr; }
+    _WITE_NODISCARD constexpr pointer operator->() const { return _ptr; }
+
 
    private:
     _parent_element_pointer _ptr;

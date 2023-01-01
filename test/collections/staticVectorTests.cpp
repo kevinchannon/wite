@@ -194,8 +194,16 @@ TEST_CASE("Static vector tests", "[collections]") {
 TEST_CASE("Static vector const iterator tests", "[collections]"){
   auto v = collections::static_vector<int, 20>{1, 2, 3, 4, 5};
 
+  using iterator_t = collections::detail::_static_vector_const_iterator<decltype(v)>;
+
   SECTION("construction"){
-    const auto it = collections::detail::_static_vector_const_iterator<decltype(v)>{&v[0]};
+    const auto it = iterator_t{&v[0]};
     REQUIRE(1 == *it);
+  }
+
+  SECTION("operator->") {
+    struct A { int x; };
+    constexpr auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
+    REQUIRE(0 == collections::detail::_static_vector_const_iterator<decltype(test_vec)>{test_vec.data()}->x);
   }
 }
