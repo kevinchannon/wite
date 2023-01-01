@@ -69,4 +69,4 @@ jobs:
         run: cmake --build ${{github.workspace}}/build/msvc/x64/debug --config Debug
       - name: Test
         working-directory: ${{github.workspace}}\build\msvc\x64\debug\test
-        run: .\wite_test
+        run: ${{github.workspace}}\build\msvc\x64\debug\test\wite_test.exe
