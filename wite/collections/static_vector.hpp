@@ -29,7 +29,7 @@ namespace wite::collections {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename Value_T, size_t CAPACITY>
-class stack_vector {
+class static_vector {
   // TODO: This should be an array of std::optional<Value_T>. To do that transparently will require the implementation of a custom
   // iterator type that does the dereference of the optional.
   using data_type = std::array<Value_T, CAPACITY>;
@@ -47,12 +47,12 @@ class stack_vector {
   using reverse_iterator       = typename data_type::reverse_iterator;
   using const_reverse_iterator = typename data_type::const_reverse_iterator;
 
-  WITE_DEFAULT_CONSTRUCTORS(stack_vector);
+  WITE_DEFAULT_CONSTRUCTORS(static_vector);
 
-  constexpr explicit stack_vector(uint8_t size) : _item_count{size} {}
+  constexpr explicit static_vector(uint8_t size) : _item_count{size} {}
 
 #ifndef WITE_NO_EXCEPTIONS
-  constexpr stack_vector(std::initializer_list<value_type> init) {
+  constexpr static_vector(std::initializer_list<value_type> init) {
     if (init.size() > capacity()) {
       throw std::invalid_argument{"Too many initialisation elements"};
     }
@@ -62,7 +62,7 @@ class stack_vector {
   }
 #endif
 
-  constexpr void swap(stack_vector& other) noexcept {
+  constexpr void swap(static_vector& other) noexcept {
     using std::swap;
 
     swap(_data, other._data);
@@ -111,7 +111,7 @@ class stack_vector {
 
 #ifndef WITE_NO_EXCEPTIONS
   _WITE_NODISCARD constexpr auto at(size_type pos) -> reference {
-    return const_cast<reference>(const_cast<const stack_vector*>(this)->at(pos));
+    return const_cast<reference>(const_cast<const static_vector*>(this)->at(pos));
   }
 
   _WITE_NODISCARD constexpr auto at(size_type pos) const -> const_reference {
@@ -144,7 +144,7 @@ class stack_vector {
 
   void clear() noexcept { _item_count = 0; }
 
-  _WITE_NODISCARD constexpr bool operator==(const stack_vector& other) const noexcept {
+  _WITE_NODISCARD constexpr bool operator==(const static_vector& other) const noexcept {
     if (_item_count != other._item_count) {
       return false;
     }
@@ -152,7 +152,7 @@ class stack_vector {
     return std::equal(begin(), end(), other.begin());
   }
 
-  _WITE_NODISCARD constexpr bool operator!=(const stack_vector& other) const noexcept { return !(*this == other); }
+  _WITE_NODISCARD constexpr bool operator!=(const static_vector& other) const noexcept { return !(*this == other); }
 
  private:
   data_type _data{};

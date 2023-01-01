@@ -483,15 +483,15 @@ auto v = make_vector<float>(arg::reserve{1000}, arg::size{10, 3.14f});
 ```
 This gives a `v` that has 10 values initialised to 3.14, with space reserved for 1000 `float` elements in total. The order of the `arg` parameters is not important; you could have `size` first in the list if you like.  I don't know what the name for this "argument adapter object" pattern, but I quite like it.
 
-## `stack_vector`
+## `static_vector`
 ```c++
-#include <wite/collections/stack_vector.hpp>
+#include <wite/collections/static_vector.hpp>
 ```
 
 This is a vector with a compile-time capacity, but a run-time size. It stores its data on the stack, so don't put too many huge things in it.  Other than not being able to call `reserve` on it, the interface is pretty much like that of `std::vector`. For example, you can do something like:
 
 ```c++
-auto v = wite::collections::stack_vector<int, 20>{};
+auto v = wite::collections::static_vector<int, 20>{};
 
 v.push_back(1);
 

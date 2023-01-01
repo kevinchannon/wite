@@ -12,7 +12,6 @@
 ## String
 
 ## Collections
-* Rename `stack_vector` -> `static_vector`
 * `static_vector` should store values in `std::optional` to prevent requiring default constructor
   * `static_vector` will need a custom iterator to unwrap the optional
 * `identifiable_item_collection` needs an iterator type. This is basically an iterator that iterates over the ordered container and dereferences the pointer in its `operator*`.

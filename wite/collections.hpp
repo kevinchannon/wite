@@ -1,3 +1,3 @@
 #pragma once
 
-#include <wite/collections/stack_vector.hpp>
+#include <wite/collections/static_vector.hpp>

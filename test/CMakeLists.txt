@@ -15,7 +15,7 @@ enable_testing()
 add_executable(wite_test 
 	"binascii/binasciiTests.cpp"
   "binascii/binasciiTests_noExceptions.cpp"
-	"collections/stackVectorTests.cpp"
+	"collections/staticVectorTests.cpp"
 	"collections/identifiableItemCollectionTests.cpp"
 	"collections/makeVectorTests.cpp"
 	"collections/staticLookupTests.cpp"
