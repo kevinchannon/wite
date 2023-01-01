@@ -60,12 +60,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Setup MSVC++
-        uses: actions/setup-visual-studio@v1
-        with:
-          version: 'latest'
-          update: true
+      - uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure
         run: cmake -B ${{github.workspace}}/build/msvc/x64/debug -DCMAKE_BUILD_TYPE=Debug
