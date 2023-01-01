@@ -1,7 +1,7 @@
 #pragma once
 
-#include <wite/env/environment.hpp>
 #include <wite/common/constructor_macros.hpp>
+#include <wite/env/environment.hpp>
 
 #include <algorithm>
 #include <array>
@@ -19,12 +19,40 @@
 #define _WITE_USING_MSVC_ARRAY_ITERATOR 1
 #else
 #define _WITE_USING_MSVC_ARRAY_ITERATOR 0
-#endif // _WITE_PLATFORM_OS_WINDOWS
-#endif // _WITE_COMPILER_CLANG
-#endif // _WITE_COMPILER_GCC
-#endif // _WITE_COMPILER_MSVC
+#endif  // _WITE_PLATFORM_OS_WINDOWS
+#endif  // _WITE_COMPILER_CLANG
+#endif  // _WITE_COMPILER_GCC
+#endif  // _WITE_COMPILER_MSVC
 
 namespace wite::collections {
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace detail {
+  template <typename Vector_T>
+  class _static_vector_const_iterator {
+   public:
+#ifdef _WITE_HAS_CONCEPTS
+    using iterator_concept = std::contiguous_iterator_tag;
+#endif
+
+    using iterator_category = std::random_access_iterator_tag;
+
+    using value_type      = typename Vector_T::value_type;
+    using difference_type = typename Vector_T::difference_type;
+    using pointer         = typename Vector_T::const_pointer;
+    using reference       = const value_type&;
+
+    using _parent_element_pointer = typename Vector_T::pointer;
+
+    constexpr explicit _static_vector_const_iterator(_parent_element_pointer ptr) noexcept : _ptr{ptr} {}
+
+    _WITE_NODISCARD constexpr reference operator*() const { return *_ptr; }
+
+   private:
+    _parent_element_pointer _ptr;
+  };
+}  // namespace detail
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,18 +100,18 @@ class static_vector {
   _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return _data.begin(); }
   _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return _data.cbegin(); }
   _WITE_NODISCARD constexpr auto end() noexcept {
-    #if _WITE_USING_MSVC_ARRAY_ITERATOR
-      return iterator(_data.data(), _item_count);
-    #else
-      return iterator(std::next(_data.data(), _item_count));
-    #endif
+#if _WITE_USING_MSVC_ARRAY_ITERATOR
+    return iterator(_data.data(), _item_count);
+#else
+    return iterator(std::next(_data.data(), _item_count));
+#endif
   }
-  _WITE_NODISCARD constexpr auto end() const noexcept { 
-    #if _WITE_USING_MSVC_ARRAY_ITERATOR
-      return const_iterator(_data.data(), _item_count);
-    #else
-      return const_iterator(std::next(_data.data(), _item_count));
-    #endif
+  _WITE_NODISCARD constexpr auto end() const noexcept {
+#if _WITE_USING_MSVC_ARRAY_ITERATOR
+    return const_iterator(_data.data(), _item_count);
+#else
+    return const_iterator(std::next(_data.data(), _item_count));
+#endif
   }
   _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
