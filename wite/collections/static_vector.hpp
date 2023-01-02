@@ -55,6 +55,7 @@ namespace detail {
     using reference       = const value_type&;
 
     using _ptr_t = typename Vector_T::const_pointer;
+    using _this_t = _static_vector_const_iterator;
 
     constexpr explicit _static_vector_const_iterator(_ptr_t ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
       : _ptr{ptr}
@@ -63,47 +64,47 @@ namespace detail {
     _WITE_NODISCARD constexpr reference operator*() const { return *_ptr; }
     _WITE_NODISCARD constexpr pointer operator->() const { return _ptr; }
 
-    constexpr _static_vector_const_iterator& operator++() _WITE_RELEASE_NOEXCEPT {
+    constexpr _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(_ptr != (_parent->data() + _parent->size()), "static_vector:operator++: incrementing past end");
 
       ++_ptr;
       return *this;
     }
 
-    constexpr _static_vector_const_iterator operator++(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
+    constexpr _this_t operator++(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
       auto out = *this;
       ++*this;
       return out;
     }
 
-    constexpr _static_vector_const_iterator& operator--() _WITE_RELEASE_NOEXCEPT {
+    constexpr _this_t& operator--() _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(_ptr != _parent->data(), "static_vector:operator--: decrementing past beginning");
 
       --_ptr;
       return *this;
     }
 
-    constexpr _static_vector_const_iterator operator--(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
+    constexpr _this_t operator--(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
       auto out = *this;
       --*this;
       return out;
     }
 
-    constexpr _static_vector_const_iterator& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
+    constexpr _this_t& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector:operator+=: decrementing past beginning");
       _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector:operator+=: incrementing past end");
       _ptr += offset;
       return *this;
     }
 
-    constexpr _static_vector_const_iterator& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
+    constexpr _this_t& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector:operator-=: decrementing past beginning");
       _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector:operator-=: incrementing past end");
       _ptr -= offset;
       return *this;
     }
 
-    _WITE_NODISCARD constexpr _static_vector_const_iterator operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+    _WITE_NODISCARD constexpr _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector:operator+: decrementing past beginning");
       _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector:operator+: incrementing past end");
 
