@@ -1,8 +1,8 @@
 #pragma once
 
 #include <wite/common/constructor_macros.hpp>
-#include <wite/env/environment.hpp>
 #include <wite/core/assert.hpp>
+#include <wite/env/environment.hpp>
 
 #include <algorithm>
 #include <array>
@@ -54,12 +54,11 @@ namespace detail {
     using pointer         = typename Vector_T::const_pointer;
     using reference       = const value_type&;
 
-    using _ptr_t = typename Vector_T::const_pointer;
+    using _ptr_t  = typename Vector_T::const_pointer;
     using _this_t = _static_vector_const_iterator;
 
     constexpr explicit _static_vector_const_iterator(_ptr_t ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
-      : _ptr{ptr}
-      _WITE_STATIC_VEC_ITER_DEBUG_ARG(_parent{parent}) {}
+        : _ptr{ptr} _WITE_STATIC_VEC_ITER_DEBUG_ARG(_parent{parent}) {}
 
     _WITE_NODISCARD constexpr reference operator*() const { return *_ptr; }
     _WITE_NODISCARD constexpr pointer operator->() const { return _ptr; }
@@ -123,11 +122,13 @@ namespace detail {
     }
 
     _WITE_NODISCARD constexpr difference_type operator-(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_parent == other._parent, "static_vector::operator-: distance comparison between two iterators with different parent containers");
+      _WITE_DEBUG_ASSERT(_parent == other._parent,
+                         "static_vector::operator-: distance comparison between two iterators with different parent containers");
       return _ptr - other._ptr;
     }
 
-    _WITE_NODISCARD constexpr reference operator[](const difference_type offset) const noexcept {
+    _WITE_NODISCARD constexpr reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(_ptr + offset < _parent->data() + _parent->size(), "static_vector::operator[]: index out of range");
       return _ptr[offset];
     }
 

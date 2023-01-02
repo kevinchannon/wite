@@ -398,5 +398,11 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     REQUIRE(3 == it[2]);
     REQUIRE(4 == it[3]);
     REQUIRE(5 == it[4]);
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("asserts in debug if offset is too large") {
+      WITE_REQUIRE_ASSERTS_WITH(it[5], "static_vector::operator[]: index out of range");
+    }
+#endif
   }
 }
