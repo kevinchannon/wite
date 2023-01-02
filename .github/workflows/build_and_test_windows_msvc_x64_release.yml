@@ -3,8 +3,16 @@ name: "Windows | MSVC++ | x64 | Release"
 on:
   push:
     branches: [ "master" ]
+    paths:
+      - wite/**
+      - test/**
+      - examples/**
   pull_request:
     branches: [ "master" ]
+    paths:
+      - wite/**
+      - test/**
+      - examples/**
 
 env:
   BUILD_TYPE: Release

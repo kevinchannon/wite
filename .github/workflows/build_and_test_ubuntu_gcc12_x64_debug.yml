@@ -3,8 +3,16 @@ name: "Ubuntu | GCC 12 | x64 | Debug"
 on:
   push:
     branches: [ "master" ]
+    paths:
+      - wite/**
+      - test/**
+      - examples/**
   pull_request:
     branches: [ "master" ]
+    paths:
+      - wite/**
+      - test/**
+      - examples/**
 
 env:
   BUILD_TYPE: Debug
