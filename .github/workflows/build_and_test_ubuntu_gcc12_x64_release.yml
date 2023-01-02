@@ -1,4 +1,4 @@
-name: "Ubuntu | GCC 12 | x64 | Release"
+name: "Ubuntu | GCC 12 | x64 | Release "
 
 on:
   push:

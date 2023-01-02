@@ -1,4 +1,4 @@
-name: "Windows | MSVC++ | x64 | Debug"
+name: "Windows | MSVC++ | x64 | Debug "
 
 on:
   push:
