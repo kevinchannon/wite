@@ -358,10 +358,20 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
       REQUIRE(4 == *it);
 
 #ifdef _WITE_CONFIG_DEBUG
-      SECTION("asserts in debug if incrementing past the begining of the parent vector") {
+      SECTION("asserts in debug if incrementing past the beginning of the parent vector") {
         WITE_REQUIRE_ASSERTS_WITH(it - (-3), "static_vector:operator-: incrementing past end");
       }
 #endif
+    }
+  }
+
+  SECTION("distance between iterators") {
+    auto begin = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+    auto end = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+
+    SECTION("manual offset calculation works"){
+      REQUIRE(0 == begin - begin);
+      REQUIRE(5 == end - begin);
     }
   }
 }

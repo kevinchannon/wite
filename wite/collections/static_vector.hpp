@@ -122,6 +122,10 @@ namespace detail {
       return out;
     }
 
+    _WITE_NODISCARD constexpr difference_type operator-(const _this_t& other) const noexcept {
+      return _ptr - other._ptr;
+    }
+
    private:
     _ptr_t _ptr;
 
