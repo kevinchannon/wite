@@ -127,6 +127,10 @@ namespace detail {
       return _ptr - other._ptr;
     }
 
+    _WITE_NODISCARD constexpr reference operator[](const difference_type offset) const noexcept {
+      return _ptr[offset];
+    }
+
    private:
     _ptr_t _ptr;
 

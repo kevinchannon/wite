@@ -390,4 +390,13 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     }
 #endif
   }
+
+  SECTION("square-bracket operator"){
+    const auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+    REQUIRE(1 == it[0]);
+    REQUIRE(2 == it[1]);
+    REQUIRE(3 == it[2]);
+    REQUIRE(4 == it[3]);
+    REQUIRE(5 == it[4]);
+  }
 }
