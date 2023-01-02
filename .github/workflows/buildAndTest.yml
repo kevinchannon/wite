@@ -71,3 +71,19 @@ jobs:
         working-directory: ${{github.workspace}}\build\msvc\x64\debug\test
         shell: cmd
         run: ${{github.workspace}}\build\msvc\x64\debug\test\Debug\wite_test.exe
+
+  build-MSVC-x64-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build/msvc/x64/release -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build/msvc/x64/release --configRelease
+      - name: Test
+        working-directory: ${{github.workspace}}\build\msvc\x64\release\test
+        shell: cmd
+        run: ${{github.workspace}}\build\msvc\x64\release\test\Release\wite_test.exe
