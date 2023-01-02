@@ -70,7 +70,7 @@ namespace detail {
       return *this;
     }
 
-    constexpr _static_vector_const_iterator operator++(int) _WITE_RELEASE_NOEXCEPT {
+    constexpr _static_vector_const_iterator operator++(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
       auto tmp = *this;
       ++*this;
       return tmp;
@@ -83,10 +83,16 @@ namespace detail {
       return *this;
     }
 
-    constexpr _static_vector_const_iterator operator--(int) _WITE_RELEASE_NOEXCEPT {
+    constexpr _static_vector_const_iterator operator--(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
       auto tmp = *this;
       --*this;
       return tmp;
+    }
+
+    constexpr _static_vector_const_iterator& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector:operator+=: incrementing past end");
+      _ptr += offset;
+      return *this;
     }
 
    private:
