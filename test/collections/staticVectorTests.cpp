@@ -386,6 +386,7 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
       const auto wrong_begin = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
 
       WITE_REQUIRE_ASSERTS_WITH(end - wrong_begin, "static_vector::operator-: distance comparison between two iterators with different parent containers");
+      WITE_REQUIRE_ASSERTS_WITH(std::distance(wrong_begin, end), "static_vector::operator-: distance comparison between two iterators with different parent containers");
     }
 #endif
   }
