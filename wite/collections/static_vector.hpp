@@ -138,7 +138,15 @@ namespace detail {
       return _ptr == other._ptr;
     }
 
-    _WITE_NODISCARD constexpr auto operator<=>(const _this_t& other) const noexcept = default;
+    _WITE_NODISCARD constexpr auto operator!=(const _this_t& other) const noexcept {
+      return not (*this == other); // NOLINT
+    }
+
+    _WITE_NODISCARD constexpr auto operator<=>(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(_parent == other._parent,
+                         "static_vector::operator<=>: comparison between two iterators with different parent containers");
+      return _ptr <=> other._ptr;
+    }
 
    private:
     _ptr_t _ptr;

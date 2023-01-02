@@ -447,6 +447,15 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
       const auto it_3 = it_1;
       REQUIRE_FALSE(it_1 < it_3);
       REQUIRE_FALSE(it_3 < it_1);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
+        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
+
+        WITE_REQUIRE_ASSERTS_WITH(bad_it < it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+      }
+#endif
     }
 
     SECTION("greater-than"){
@@ -459,6 +468,15 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
       const auto it_3 = it_1;
       REQUIRE_FALSE(it_1 > it_3);
       REQUIRE_FALSE(it_3 > it_1);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
+        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
+
+        WITE_REQUIRE_ASSERTS_WITH(bad_it > it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+      }
+#endif
     }
 
     SECTION("less-than-or-equal-to"){
@@ -471,6 +489,15 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
       const auto it_3 = it_1;
       REQUIRE(it_1 <= it_3);
       REQUIRE(it_3 <= it_1);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
+        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
+
+        WITE_REQUIRE_ASSERTS_WITH(bad_it <= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+      }
+#endif
     }
 
     SECTION("greater-than-or-equal-to"){
@@ -483,6 +510,15 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
       const auto it_3 = it_1;
       REQUIRE(it_1 >= it_3);
       REQUIRE(it_3 >= it_1);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
+        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
+
+        WITE_REQUIRE_ASSERTS_WITH(bad_it >= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+      }
+#endif
     }
   }
 }
