@@ -372,6 +372,12 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     SECTION("manual offset calculation works"){
       REQUIRE(0 == begin - begin);
       REQUIRE(5 == end - begin);
+      REQUIRE(-5 == begin - end);
+    }
+
+    SECTION("std::distance works"){
+      REQUIRE(5 == std::distance(begin, end));
+      REQUIRE(-5 == std::distance(end, begin));
     }
   }
 }
