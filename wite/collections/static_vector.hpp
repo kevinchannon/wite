@@ -83,6 +83,12 @@ namespace detail {
       return *this;
     }
 
+    constexpr _static_vector_const_iterator operator--(int) _WITE_RELEASE_NOEXCEPT {
+      auto tmp = *this;
+      --*this;
+      return tmp;
+    }
+
    private:
     _ptr_t _ptr;
 
