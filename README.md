@@ -1,9 +1,6 @@
-﻿![Ubuntu | GCC12 | x64 | Debug](https://github.com/kevinchannon/wite/actions/workflows/build_and_test_ubuntu_gcc12_x64_debug.yml/badge.svg)
-
-![Ubuntu | GCC12 | x64 | Release](https://github.com/kevinchannon/wite/actions/workflows/build_and_test_ubuntu_gcc12_x64_release.yml/badge.svg)
-
-![Windows | MSVC++ | x64 | Debug](https://github.com/kevinchannon/wite/actions/workflows/build_and_test_windows_msvc_x64_debug.yml/badge.svg)
-
+﻿![Ubuntu | GCC12 | x64 | Debug](https://github.com/kevinchannon/wite/actions/workflows/build_and_test_ubuntu_gcc12_x64_debug.yml/badge.svg)<br>
+![Ubuntu | GCC12 | x64 | Release](https://github.com/kevinchannon/wite/actions/workflows/build_and_test_ubuntu_gcc12_x64_release.yml/badge.svg)<br>
+![Windows | MSVC++ | x64 | Debug](https://github.com/kevinchannon/wite/actions/workflows/build_and_test_windows_msvc_x64_debug.yml/badge.svg)<br>
 ![Windows | MSVC++ | x64 | Release](https://github.com/kevinchannon/wite/actions/workflows/build_and_test_windows_msvc_x64_release.yml/badge.svg)
  
  ### Table of Contents
