@@ -138,6 +138,8 @@ namespace detail {
       return _ptr == other._ptr;
     }
 
+    _WITE_NODISCARD constexpr auto operator<=>(const _this_t& other) const noexcept = default;
+
    private:
     _ptr_t _ptr;
 

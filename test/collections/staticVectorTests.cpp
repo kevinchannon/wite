@@ -423,5 +423,66 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
         REQUIRE_FALSE( it_1 == iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1);
       }
     }
+
+    SECTION("inequality"){
+      const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      const auto it_2 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+
+      SECTION("equal iterators are not not equal"){
+        REQUIRE_FALSE(it_1 != it_2);
+      }
+
+      SECTION("unequal iterators are not equal") {
+        REQUIRE( it_1 != iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1);
+      }
+    }
+
+    SECTION("less-than"){
+      const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      const auto it_2 = it_1 + 1;
+
+      REQUIRE(it_1 < it_2);
+      REQUIRE_FALSE(it_2 < it_1);
+
+      const auto it_3 = it_1;
+      REQUIRE_FALSE(it_1 < it_3);
+      REQUIRE_FALSE(it_3 < it_1);
+    }
+
+    SECTION("greater-than"){
+      const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1;
+      const auto it_2 = it_1 - 1;
+
+      REQUIRE(it_1 > it_2);
+      REQUIRE_FALSE(it_2 > it_1);
+
+      const auto it_3 = it_1;
+      REQUIRE_FALSE(it_1 > it_3);
+      REQUIRE_FALSE(it_3 > it_1);
+    }
+
+    SECTION("less-than-or-equal-to"){
+      const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      const auto it_2 = it_1 + 1;
+
+      REQUIRE(it_1 <= it_2);
+      REQUIRE_FALSE(it_2 <= it_1);
+
+      const auto it_3 = it_1;
+      REQUIRE(it_1 <= it_3);
+      REQUIRE(it_3 <= it_1);
+    }
+
+    SECTION("greater-than-or-equal-to"){
+      const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1;
+      const auto it_2 = it_1 - 1;
+
+      REQUIRE(it_1 >= it_2);
+      REQUIRE_FALSE(it_2 >= it_1);
+
+      const auto it_3 = it_1;
+      REQUIRE(it_1 >= it_3);
+      REQUIRE(it_3 >= it_1);
+    }
   }
 }
