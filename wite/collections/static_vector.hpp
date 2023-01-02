@@ -76,6 +76,13 @@ namespace detail {
       return tmp;
     }
 
+    constexpr _static_vector_const_iterator& operator--() _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(_ptr != _parent->data(), "static_vector:operator--: decrementing past beginning");
+
+      --_ptr;
+      return *this;
+    }
+
    private:
     _ptr_t _ptr;
 

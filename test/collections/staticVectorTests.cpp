@@ -236,4 +236,17 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     }
 #endif
   }
+
+  SECTION("pre-decrement operator"){
+    auto it = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+    --it;
+    REQUIRE(5 == *it);
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("asserts in debug if decrementing past the beginning of the parent vector") {
+      --it; --it; --it; --it;
+      WITE_REQUIRE_ASSERTS_WITH(--it, "static_vector:operator--: decrementing past beginning");
+    }
+#endif
+  }
 }
