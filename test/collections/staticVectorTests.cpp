@@ -317,7 +317,7 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     }
   }
 
-  SECTION("offset operator") {
+  SECTION("positive offset operator") {
     SECTION("with positive increment") {
       auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 3;
       REQUIRE(4 == *it);
@@ -336,6 +336,30 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if decrementing past the begining of the parent vector") {
         WITE_REQUIRE_ASSERTS_WITH(it + (-3), "static_vector:operator+: decrementing past beginning");
+      }
+#endif
+    }
+  }
+
+  SECTION("negative offset operator") {
+    SECTION("with positive increment") {
+      auto it = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} - 3;
+      REQUIRE(3 == *it);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if incrementing past the end of the parent vector") {
+        WITE_REQUIRE_ASSERTS_WITH(it - 3, "static_vector:operator-: decrementing past beginning");
+      }
+#endif
+    }
+
+    SECTION("with negative increment") {
+      auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} - (-3);
+      REQUIRE(4 == *it);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if incrementing past the begining of the parent vector") {
+        WITE_REQUIRE_ASSERTS_WITH(it - (-3), "static_vector:operator-: incrementing past end");
       }
 #endif
     }

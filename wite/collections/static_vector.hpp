@@ -113,6 +113,15 @@ namespace detail {
       return out;
     }
 
+    _WITE_NODISCARD constexpr _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector:operator-: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector:operator-: incrementing past end");
+
+      auto out = *this;
+      out -= offset;
+      return out;
+    }
+
    private:
     _ptr_t _ptr;
 
