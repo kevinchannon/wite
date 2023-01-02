@@ -65,7 +65,7 @@ namespace detail {
     _WITE_NODISCARD constexpr pointer operator->() const { return _ptr; }
 
     constexpr _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr != (_parent->data() + _parent->size()), "static_vector:operator++: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr != (_parent->data() + _parent->size()), "static_vector::operator++: incrementing past end");
 
       ++_ptr;
       return *this;
@@ -78,7 +78,7 @@ namespace detail {
     }
 
     constexpr _this_t& operator--() _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr != _parent->data(), "static_vector:operator--: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr != _parent->data(), "static_vector::operator--: decrementing past beginning");
 
       --_ptr;
       return *this;
@@ -91,22 +91,22 @@ namespace detail {
     }
 
     constexpr _this_t& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector:operator+=: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector:operator+=: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector::operator+=: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector::operator+=: incrementing past end");
       _ptr += offset;
       return *this;
     }
 
     constexpr _this_t& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector:operator-=: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector:operator-=: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector::operator-=: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector::operator-=: incrementing past end");
       _ptr -= offset;
       return *this;
     }
 
     _WITE_NODISCARD constexpr _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector:operator+: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector:operator+: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector::operator+: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector::operator+: incrementing past end");
 
       auto out = *this;
       out += offset;
@@ -114,15 +114,16 @@ namespace detail {
     }
 
     _WITE_NODISCARD constexpr _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector:operator-: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector:operator-: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector::operator-: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector::operator-: incrementing past end");
 
       auto out = *this;
       out -= offset;
       return out;
     }
 
-    _WITE_NODISCARD constexpr difference_type operator-(const _this_t& other) const noexcept {
+    _WITE_NODISCARD constexpr difference_type operator-(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(_parent == other._parent, "static_vector::operator-: distance comparison between two iterators with different parent containers");
       return _ptr - other._ptr;
     }
 
