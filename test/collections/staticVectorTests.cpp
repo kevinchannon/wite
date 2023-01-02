@@ -409,4 +409,19 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     }
 #endif
   }
+
+  SECTION("comparison"){
+    SECTION("equality") {
+      const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      const auto it_2 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+
+      SECTION("equal iterators are equal"){
+        REQUIRE(it_1 == it_2);
+      }
+
+      SECTION("unequal iterators are not equal") {
+        REQUIRE_FALSE( it_1 == iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1);
+      }
+    }
+  }
 }

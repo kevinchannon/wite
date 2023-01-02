@@ -8,6 +8,7 @@
 #include <array>
 #include <cstdint>
 #include <stdexcept>
+#include <compare>
 
 #ifdef _WITE_COMPILER_MSVC
 #define _WITE_USING_MSVC_ARRAY_ITERATOR 1
@@ -131,6 +132,10 @@ namespace detail {
       _WITE_DEBUG_ASSERT(offset >= 0, "static_vector::operator[]: negative indices are invalid");
       _WITE_DEBUG_ASSERT(_ptr + offset < _parent->data() + _parent->size(), "static_vector::operator[]: index out of range");
       return _ptr[offset];
+    }
+
+    _WITE_NODISCARD constexpr auto operator==(const _this_t& other) const noexcept {
+      return _ptr == other._ptr;
     }
 
    private:
