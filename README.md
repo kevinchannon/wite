@@ -1,4 +1,4 @@
-﻿[Build & Test](https://github.com/kevinchannon/wite/blob/master/.github/workflows/buildAndTest.yml/badge.svg)
+﻿![Build & Test](https://github.com/kevinchannon/wite/blob/master/.github/workflows/buildAndTest.yml/badge.svg)
  
  ### Table of Contents
 
