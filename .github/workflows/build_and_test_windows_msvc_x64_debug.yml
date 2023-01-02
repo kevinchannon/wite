@@ -1,0 +1,27 @@
+name: "Build and Test | Windows | MSVC++ | x64 | Debug"
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build/msvc/x64/debug -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build/msvc/x64/debug --config Debug
+      - name: Test
+        working-directory: ${{github.workspace}}\build\msvc\x64\debug\test
+        shell: cmd
+        run: ${{github.workspace}}\build\msvc\x64\debug\test\Debug\wite_test.exe

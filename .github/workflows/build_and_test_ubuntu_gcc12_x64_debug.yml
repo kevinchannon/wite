@@ -1,0 +1,34 @@
+name: "Build and Test | Ubuntu | GCC 12 | x64 | Debug"
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install GCC12
+        shell: bash
+        run:  |
+          sudo apt update
+          sudo apt install gcc-12 g++-12
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 120 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12
+
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build/gcc/x64/debug -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build/gcc/x64/debug --config Debug
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build/gcc/x64/debug/test
+        run: ./wite_test
