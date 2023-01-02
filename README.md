@@ -1,4 +1,6 @@
-﻿### Table of Contents
+﻿[Build & Test](https://github.com/kevinchannon/wite/blob/master/.github/workflows/buildAndTest.yml/badge.svg)
+ 
+ ### Table of Contents
 
 * [Wite](https://github.com/kevinchannon/wite#Wite)
   * [Prerequisites](https://github.com/kevinchannon/wite#Prerequisites)
