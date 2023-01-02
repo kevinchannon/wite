@@ -1,4 +1,4 @@
-name: "Build and Test | Ubuntu | GCC 12 | x64 | Debug"
+name: "Ubuntu | GCC 12 | x64 | Debug"
 
 on:
   push:

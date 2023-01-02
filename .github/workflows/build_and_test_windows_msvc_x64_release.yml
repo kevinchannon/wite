@@ -1,4 +1,4 @@
-name: "Build and Test | Windows | MSVC++ | x64 | Release"
+name: "Windows | MSVC++ | x64 | Release"
 
 on:
   push:
