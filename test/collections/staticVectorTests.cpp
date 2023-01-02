@@ -403,6 +403,10 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     SECTION("asserts in debug if offset is too large") {
       WITE_REQUIRE_ASSERTS_WITH(it[5], "static_vector::operator[]: index out of range");
     }
+
+    SECTION("asserts in debug if offset is negative") {
+      WITE_REQUIRE_ASSERTS_WITH(it[-1], "static_vector::operator[]: negative indices are invalid");
+    }
 #endif
   }
 }

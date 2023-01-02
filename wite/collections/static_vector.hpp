@@ -128,6 +128,7 @@ namespace detail {
     }
 
     _WITE_NODISCARD constexpr reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(offset >= 0, "static_vector::operator[]: negative indices are invalid");
       _WITE_DEBUG_ASSERT(_ptr + offset < _parent->data() + _parent->size(), "static_vector::operator[]: index out of range");
       return _ptr[offset];
     }
