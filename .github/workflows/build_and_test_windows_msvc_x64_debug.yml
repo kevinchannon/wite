@@ -7,12 +7,14 @@ on:
       - wite/**
       - test/**
       - examples/**
+      - .github/workflows/build_and_test_windows_msvc_x64_debug.yml
   pull_request:
     branches: [ "master" ]
     paths:
       - wite/**
       - test/**
       - examples/**
+      - .github/workflows/build_and_test_windows_msvc_x64_debug.yml
 
 env:
   BUILD_TYPE: Debug
