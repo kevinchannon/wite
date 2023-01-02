@@ -209,7 +209,7 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     REQUIRE(0 == collections::detail::_static_vector_const_iterator<decltype(test_vec)>{test_vec.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&test_vec)}->x);
   }
 
-  SECTION("operator++"){
+  SECTION("pre-increment operator"){
     auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     ++it;
     REQUIRE(2 == *it);
@@ -218,6 +218,21 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     SECTION("asserts in debug if incrementing past the end of the parent vector") {
       ++it; ++it; ++it; ++it;
       WITE_REQUIRE_ASSERTS_WITH(++it, "static_vector:operator++: incrementing past end");
+    }
+#endif
+  }
+
+  SECTION("post-increment operator"){
+    auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+    const auto it_prev = it++;
+
+    REQUIRE(1 == *it_prev);
+    REQUIRE(2 == *it);
+
+#ifdef _WITE_CONFIG_DEBUG
+    SECTION("asserts in debug if incrementing past the end of the parent vector") {
+      ++it; ++it; ++it; ++it;
+      WITE_REQUIRE_ASSERTS_WITH(it++, "static_vector:operator++: incrementing past end");
     }
 #endif
   }
