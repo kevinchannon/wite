@@ -148,12 +148,33 @@ namespace detail {
       return _ptr <=> other._ptr;
     }
 
-   private:
+   protected:
     _ptr_t _ptr;
 
 #ifdef _WITE_CONFIG_DEBUG
     const Vector_T* _parent;
 #endif
+  };
+
+  template<typename Vector_T>
+  class _static_vector_iterator : public _static_vector_const_iterator<Vector_T> {
+
+    using _base_t = _static_vector_const_iterator<Vector_T>;
+
+   public:
+#ifdef _WITE_HAS_CONCEPTS
+    using iterator_concept = std::contiguous_iterator_tag;
+#endif
+
+    using iterator_category = std::random_access_iterator_tag;
+
+    using value_type        = typename Vector_T::value_type;
+    using difference_type   = typename Vector_T::difference_type;
+    using pointer           = typename Vector_T::pointer;
+    using reference         = value_type&;
+
+    constexpr explicit _static_vector_iterator(typename std::remove_const<typename _base_t::_ptr_t>::type ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
+        : _base_t{ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(parent)} {}
   };
 }  // namespace detail
 

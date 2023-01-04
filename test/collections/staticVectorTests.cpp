@@ -2,6 +2,7 @@
 
 #include "../utils.hpp"
 
+#include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -9,6 +10,8 @@
 
 using namespace std::string_literals;
 using namespace wite;
+
+using TestContainer_t = collections::static_vector<int, 20>;
 
 TEST_CASE("Static vector tests", "[collections]") {
   SECTION("has correct capacity on construction", "[static_vector]") {
@@ -193,37 +196,47 @@ TEST_CASE("Static vector tests", "[collections]") {
   }
 }
 
-TEST_CASE("Static vector const iterator tests", "[collections]"){
-  auto v = collections::static_vector<int, 20>{1, 2, 3, 4, 5};
+TEMPLATE_TEST_CASE("Static vector const iterator tests",
+                   "[collections]",
+                   collections::detail::_static_vector_const_iterator<TestContainer_t>,
+                   collections::detail::_static_vector_iterator<TestContainer_t>) {
+  auto v = TestContainer_t{1, 2, 3, 4, 5};
 
-  using iterator_t = collections::detail::_static_vector_const_iterator<decltype(v)>;
+  using iterator_t = TestType;
 
-  SECTION("construction"){
+  SECTION("construction") {
     const auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     REQUIRE(1 == *it);
   }
 
   SECTION("operator->") {
-    struct A { int x; };
+    struct A {
+      int x;
+    };
     constexpr auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
-    REQUIRE(0 == collections::detail::_static_vector_const_iterator<decltype(test_vec)>{test_vec.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&test_vec)}->x);
+    REQUIRE(0 == collections::detail::_static_vector_const_iterator<decltype(test_vec)> {
+      test_vec.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&test_vec)
+    } -> x);
   }
 
-  SECTION("pre-increment operator"){
+  SECTION("pre-increment operator") {
     auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     ++it;
     REQUIRE(2 == *it);
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("asserts in debug if incrementing past the end of the parent vector") {
-      ++it; ++it; ++it; ++it;
+      ++it;
+      ++it;
+      ++it;
+      ++it;
       WITE_REQUIRE_ASSERTS_WITH(++it, "static_vector::operator++: incrementing past end");
     }
 #endif
   }
 
-  SECTION("post-increment operator"){
-    auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+  SECTION("post-increment operator") {
+    auto it            = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     const auto it_prev = it++;
 
     REQUIRE(1 == *it_prev);
@@ -231,27 +244,33 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("asserts in debug if incrementing past the end of the parent vector") {
-      ++it; ++it; ++it; ++it;
+      ++it;
+      ++it;
+      ++it;
+      ++it;
       WITE_REQUIRE_ASSERTS_WITH(it++, "static_vector::operator++: incrementing past end");
     }
 #endif
   }
 
-  SECTION("pre-decrement operator"){
+  SECTION("pre-decrement operator") {
     auto it = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     --it;
     REQUIRE(5 == *it);
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("asserts in debug if decrementing past the beginning of the parent vector") {
-      --it; --it; --it; --it;
+      --it;
+      --it;
+      --it;
+      --it;
       WITE_REQUIRE_ASSERTS_WITH(--it, "static_vector::operator--: decrementing past beginning");
     }
 #endif
   }
 
-  SECTION("post-decrement operator"){
-    auto it = iterator_t{v.data() + v.size() - 1 _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+  SECTION("post-decrement operator") {
+    auto it            = iterator_t{v.data() + v.size() - 1 _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     const auto it_prev = it--;
 
     REQUIRE(5 == *it_prev);
@@ -259,13 +278,15 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("asserts in debug if decrementing past the beginning of the parent vector") {
-      --it; --it; --it;
+      --it;
+      --it;
+      --it;
       WITE_REQUIRE_ASSERTS_WITH(it--, "static_vector::operator--: decrementing past beginning");
     }
 #endif
   }
 
-  SECTION("increment assignment"){
+  SECTION("increment assignment") {
     SECTION("with positive increment") {
       auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
       it += 3;
@@ -291,7 +312,7 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
     }
   }
 
-  SECTION("decrement assignment"){
+  SECTION("decrement assignment") {
     SECTION("with positive decrement") {
       auto it = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
       it -= 3;
@@ -367,31 +388,35 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 
   SECTION("distance between iterators") {
     const auto begin = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
-    const auto end = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+    const auto end   = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
 
-    SECTION("manual offset calculation works"){
+    SECTION("manual offset calculation works") {
       REQUIRE(0 == begin - begin);
       REQUIRE(5 == end - begin);
       REQUIRE(-5 == begin - end);
     }
 
-    SECTION("std::distance works"){
+    SECTION("std::distance works") {
       REQUIRE(5 == std::distance(begin, end));
       REQUIRE(-5 == std::distance(end, begin));
     }
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("asserts in debug if distance calculation happens for iterators that have different parent containers") {
-      const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+      const auto not_v       = collections::static_vector<int, 20>{6, 7, 8, 9};
       const auto wrong_begin = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
 
-      WITE_REQUIRE_ASSERTS_WITH(end - wrong_begin, "static_vector::operator-: distance comparison between two iterators with different parent containers");
-      WITE_REQUIRE_ASSERTS_WITH(std::distance(wrong_begin, end), "static_vector::operator-: distance comparison between two iterators with different parent containers");
+      WITE_REQUIRE_ASSERTS_WITH(
+          end - wrong_begin,
+          "static_vector::operator-: distance comparison between two iterators with different parent containers");
+      WITE_REQUIRE_ASSERTS_WITH(
+          std::distance(wrong_begin, end),
+          "static_vector::operator-: distance comparison between two iterators with different parent containers");
     }
 #endif
   }
 
-  SECTION("square-bracket operator"){
+  SECTION("square-bracket operator") {
     const auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
     REQUIRE(1 == it[0]);
     REQUIRE(2 == it[1]);
@@ -410,34 +435,34 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 #endif
   }
 
-  SECTION("comparison"){
+  SECTION("comparison") {
     SECTION("equality") {
       const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
       const auto it_2 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
 
-      SECTION("equal iterators are equal"){
+      SECTION("equal iterators are equal") {
         REQUIRE(it_1 == it_2);
       }
 
       SECTION("unequal iterators are not equal") {
-        REQUIRE_FALSE( it_1 == iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1);
+        REQUIRE_FALSE(it_1 == iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1);
       }
     }
 
-    SECTION("inequality"){
+    SECTION("inequality") {
       const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
       const auto it_2 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
 
-      SECTION("equal iterators are not not equal"){
+      SECTION("equal iterators are not not equal") {
         REQUIRE_FALSE(it_1 != it_2);
       }
 
       SECTION("unequal iterators are not equal") {
-        REQUIRE( it_1 != iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1);
+        REQUIRE(it_1 != iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1);
       }
     }
 
-    SECTION("less-than"){
+    SECTION("less-than") {
       const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
       const auto it_2 = it_1 + 1;
 
@@ -450,15 +475,16 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
         const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
 
-        WITE_REQUIRE_ASSERTS_WITH(bad_it < it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+        WITE_REQUIRE_ASSERTS_WITH(
+            bad_it < it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
       }
 #endif
     }
 
-    SECTION("greater-than"){
+    SECTION("greater-than") {
       const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1;
       const auto it_2 = it_1 - 1;
 
@@ -471,15 +497,16 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
         const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
 
-        WITE_REQUIRE_ASSERTS_WITH(bad_it > it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+        WITE_REQUIRE_ASSERTS_WITH(
+            bad_it > it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
       }
 #endif
     }
 
-    SECTION("less-than-or-equal-to"){
+    SECTION("less-than-or-equal-to") {
       const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
       const auto it_2 = it_1 + 1;
 
@@ -492,15 +519,16 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
         const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
 
-        WITE_REQUIRE_ASSERTS_WITH(bad_it <= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+        WITE_REQUIRE_ASSERTS_WITH(
+            bad_it <= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
       }
 #endif
     }
 
-    SECTION("greater-than-or-equal-to"){
+    SECTION("greater-than-or-equal-to") {
       const auto it_1 = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 1;
       const auto it_2 = it_1 - 1;
 
@@ -513,10 +541,11 @@ TEST_CASE("Static vector const iterator tests", "[collections]"){
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
         const auto bad_it = iterator_t{not_v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&not_v)};
 
-        WITE_REQUIRE_ASSERTS_WITH(bad_it >= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
+        WITE_REQUIRE_ASSERTS_WITH(
+            bad_it >= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
       }
 #endif
     }
