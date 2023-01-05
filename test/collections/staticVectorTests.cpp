@@ -196,7 +196,7 @@ TEST_CASE("Static vector tests", "[collections]") {
   }
 }
 
-TEMPLATE_TEST_CASE("Static vector const iterator tests",
+TEMPLATE_TEST_CASE("Static vector const iterator operations tests",
                    "[collections]",
                    collections::detail::_static_vector_const_iterator<TestContainer_t>,
                    collections::detail::_static_vector_iterator<TestContainer_t>) {
@@ -548,6 +548,36 @@ TEMPLATE_TEST_CASE("Static vector const iterator tests",
             bad_it >= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
       }
 #endif
+    }
+  }
+}
+
+TEST_CASE("Mutating static vector iterator operations", "[collections]") {
+  auto v = TestContainer_t{1, 2, 3, 4, 5};
+
+  using iterator_t = collections::detail::_static_vector_iterator<TestContainer_t>;
+
+  SECTION("dereference allows editing") {
+    SECTION("via operator*") {
+      const auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      *it           = 6;
+
+      REQUIRE(6 == v[0]);
+    }
+
+    SECTION("via operator->"){
+      struct A {
+        int x;
+      };
+
+      auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
+      const auto it = collections::detail::_static_vector_iterator<decltype(test_vec)> {
+        test_vec.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&test_vec)
+      };
+
+      it->x = 5;
+
+      REQUIRE(5 == test_vec[0].x);
     }
   }
 }

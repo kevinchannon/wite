@@ -6,9 +6,9 @@
 
 #include <algorithm>
 #include <array>
+#include <compare>
 #include <cstdint>
 #include <stdexcept>
-#include <compare>
 
 #ifdef _WITE_COMPILER_MSVC
 #define _WITE_USING_MSVC_ARRAY_ITERATOR 1
@@ -61,8 +61,8 @@ namespace detail {
     constexpr explicit _static_vector_const_iterator(_ptr_t ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
         : _ptr{ptr} _WITE_STATIC_VEC_ITER_DEBUG_ARG(_parent{parent}) {}
 
-    _WITE_NODISCARD constexpr reference operator*() const { return *_ptr; }
-    _WITE_NODISCARD constexpr pointer operator->() const { return _ptr; }
+    _WITE_NODISCARD constexpr reference operator*() const noexcept { return *_ptr; }
+    _WITE_NODISCARD constexpr pointer operator->() const noexcept { return _ptr; }
 
     constexpr _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(_ptr != (_parent->data() + _parent->size()), "static_vector::operator++: incrementing past end");
@@ -134,12 +134,10 @@ namespace detail {
       return _ptr[offset];
     }
 
-    _WITE_NODISCARD constexpr auto operator==(const _this_t& other) const noexcept {
-      return _ptr == other._ptr;
-    }
+    _WITE_NODISCARD constexpr auto operator==(const _this_t& other) const noexcept { return _ptr == other._ptr; }
 
     _WITE_NODISCARD constexpr auto operator!=(const _this_t& other) const noexcept {
-      return not (*this == other); // NOLINT
+      return not(*this == other);  // NOLINT
     }
 
     _WITE_NODISCARD constexpr auto operator<=>(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
@@ -156,9 +154,8 @@ namespace detail {
 #endif
   };
 
-  template<typename Vector_T>
+  template <typename Vector_T>
   class _static_vector_iterator : public _static_vector_const_iterator<Vector_T> {
-
     using _base_t = _static_vector_const_iterator<Vector_T>;
 
    public:
@@ -168,13 +165,17 @@ namespace detail {
 
     using iterator_category = std::random_access_iterator_tag;
 
-    using value_type        = typename Vector_T::value_type;
-    using difference_type   = typename Vector_T::difference_type;
-    using pointer           = typename Vector_T::pointer;
-    using reference         = value_type&;
+    using value_type      = typename Vector_T::value_type;
+    using difference_type = typename Vector_T::difference_type;
+    using pointer         = typename Vector_T::pointer;
+    using reference       = value_type&;
 
-    constexpr explicit _static_vector_iterator(typename std::remove_const<typename _base_t::_ptr_t>::type ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
+    constexpr explicit _static_vector_iterator(typename std::remove_const<typename _base_t::_ptr_t>::type ptr
+                                                   _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
         : _base_t{ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(parent)} {}
+
+    _WITE_NODISCARD constexpr reference operator*() const noexcept { return const_cast<reference>(_base_t::operator*()); }
+    _WITE_NODISCARD constexpr pointer operator->() const noexcept { return const_cast<pointer>(_base_t::operator->()); }
   };
 }  // namespace detail
 
