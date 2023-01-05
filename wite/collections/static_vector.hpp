@@ -157,7 +157,7 @@ namespace detail {
   template <typename Vector_T>
   class _static_vector_iterator : public _static_vector_const_iterator<Vector_T> {
     using _base_t = _static_vector_const_iterator<Vector_T>;
-
+    using _this_t = _static_vector_iterator;
    public:
 #ifdef _WITE_HAS_CONCEPTS
     using iterator_concept = std::contiguous_iterator_tag;
@@ -176,6 +176,19 @@ namespace detail {
 
     _WITE_NODISCARD constexpr reference operator*() const noexcept { return const_cast<reference>(_base_t::operator*()); }
     _WITE_NODISCARD constexpr pointer operator->() const noexcept { return const_cast<pointer>(_base_t::operator->()); }
+
+    constexpr _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
+      _base_t::operator++();
+      return *this;
+    }
+
+    constexpr _this_t operator++(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
+      auto out = *this;
+      ++*this;
+      return out;
+    }
+
+
   };
 }  // namespace detail
 
