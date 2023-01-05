@@ -621,5 +621,44 @@ TEST_CASE("Mutating static vector iterator operations", "[collections]") {
       }
 #endif
     }
+
+    SECTION("pre-decrement operator") {
+      auto it = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      auto it_2 = --it;
+      REQUIRE(5 == *it);
+
+      *it_2 = 10;
+      REQUIRE(10 == *it);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if decrementing past the beginning of the parent vector") {
+        --it;
+        --it;
+        --it;
+        --it;
+        WITE_REQUIRE_ASSERTS_WITH(--it, "static_vector::operator--: decrementing past beginning");
+      }
+#endif
+    }
+
+    SECTION("post-decrement operator") {
+      auto it            = iterator_t{v.data() + v.size() - 1 _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      const auto it_prev = it--;
+
+      REQUIRE(5 == *it_prev);
+      REQUIRE(4 == *it);
+
+      *it_prev = 6;
+      REQUIRE(6 == v[4]);
+
+#ifdef _WITE_CONFIG_DEBUG
+      SECTION("asserts in debug if decrementing past the beginning of the parent vector") {
+        --it;
+        --it;
+        --it;
+        WITE_REQUIRE_ASSERTS_WITH(it--, "static_vector::operator--: decrementing past beginning");
+      }
+#endif
+    }
   }
 }

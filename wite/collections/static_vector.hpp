@@ -188,7 +188,16 @@ namespace detail {
       return out;
     }
 
+    constexpr _this_t& operator--() _WITE_RELEASE_NOEXCEPT {
+      _base_t::operator--();
+      return *this;
+    }
 
+    constexpr _this_t operator--(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
+      auto out = *this;
+      --*this;
+      return out;
+    }
   };
 }  // namespace detail
 
