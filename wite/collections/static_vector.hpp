@@ -198,6 +198,16 @@ namespace detail {
       --*this;
       return out;
     }
+
+    constexpr _this_t& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
+      _base_t::operator+=(offset);
+      return *this;
+    }
+
+    constexpr _this_t& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
+      _base_t::operator-=(offset);
+      return *this;
+    }
   };
 }  // namespace detail
 
