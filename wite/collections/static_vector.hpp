@@ -208,6 +208,32 @@ namespace detail {
       _base_t::operator-=(offset);
       return *this;
     }
+
+    _WITE_NODISCARD constexpr _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(this->_ptr + offset >= this->_parent->data(), "static_vector::operator+: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(this->_ptr + offset < (this->_parent->data() + this->_parent->size()), "static_vector::operator+: incrementing past end");
+
+      auto out = *this;
+      out += offset;
+      return out;
+    }
+
+    _WITE_NODISCARD constexpr _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+      _WITE_DEBUG_ASSERT(this->_ptr - offset >= this->_parent->data(), "static_vector::operator-: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(this->_ptr - offset < (this->_parent->data() + this->_parent->size()), "static_vector::operator-: incrementing past end");
+
+      auto out = *this;
+      out -= offset;
+      return out;
+    }
+
+    _WITE_NODISCARD constexpr difference_type operator-(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
+      return _base_t::operator-(other);
+    }
+
+    _WITE_NODISCARD constexpr reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
+      return const_cast<reference>(_base_t::operator[](offset));
+    }
   };
 }  // namespace detail
 

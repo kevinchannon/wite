@@ -639,5 +639,23 @@ TEST_CASE("Mutating static vector iterator operations", "[collections]") {
       *it_2 = 10;
       REQUIRE(10 == *it);
     }
+
+    SECTION("positive offset operator") {
+      auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} + 3;
+      *it = 10;
+      REQUIRE(10 == v[3]);
+    }
+
+    SECTION("negative offset operator") {
+      auto it = iterator_t{v.data() + v.size() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)} - 3;
+      *it = 10;
+      REQUIRE(10 == v[2]);
+    }
+
+    SECTION("square-bracket operator") {
+      const auto it = iterator_t{v.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&v)};
+      it[3] = 10;
+      REQUIRE(10 == it[3]);
+    }
   }
 }
