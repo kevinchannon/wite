@@ -213,7 +213,7 @@ TEMPLATE_TEST_CASE("Static vector const iterator operations tests",
     struct A {
       int x;
     };
-    constexpr auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
+    _WITE_RELEASE_CONSTEXPR auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
     REQUIRE(0 == collections::detail::_static_vector_const_iterator<decltype(test_vec)> {
       test_vec.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&test_vec)
     } -> x);
