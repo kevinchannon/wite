@@ -67,7 +67,7 @@ namespace detail {
     _WITE_NODISCARD constexpr pointer operator->() const noexcept { return _ptr; }
 
     _WITE_RELEASE_CONSTEXPR _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr != (_parent->data() + _parent->size()), "static_vector::operator++: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr != (_parent->ptr() + _parent->size()), "static_vector::operator++: incrementing past end");
 
       ++_ptr;
       return *this;
@@ -80,7 +80,7 @@ namespace detail {
     }
 
     _WITE_RELEASE_CONSTEXPR _this_t& operator--() _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr != _parent->data(), "static_vector::operator--: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr != _parent->ptr(), "static_vector::operator--: decrementing past beginning");
 
       --_ptr;
       return *this;
@@ -93,22 +93,22 @@ namespace detail {
     }
 
     _WITE_RELEASE_CONSTEXPR _this_t& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector::operator+=: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector::operator+=: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->ptr(), "static_vector::operator+=: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->ptr() + _parent->size()), "static_vector::operator+=: incrementing past end");
       _ptr += offset;
       return *this;
     }
 
     _WITE_RELEASE_CONSTEXPR _this_t& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector::operator-=: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector::operator-=: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->ptr(), "static_vector::operator-=: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->ptr() + _parent->size()), "static_vector::operator-=: incrementing past end");
       _ptr -= offset;
       return *this;
     }
 
     _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->data(), "static_vector::operator+: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->data() + _parent->size()), "static_vector::operator+: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->ptr(), "static_vector::operator+: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->ptr() + _parent->size()), "static_vector::operator+: incrementing past end");
 
       auto out = *this;
       out += offset;
@@ -116,8 +116,8 @@ namespace detail {
     }
 
     _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->data(), "static_vector::operator-: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->data() + _parent->size()), "static_vector::operator-: incrementing past end");
+      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->ptr(), "static_vector::operator-: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->ptr() + _parent->size()), "static_vector::operator-: incrementing past end");
 
       auto out = *this;
       out -= offset;
@@ -132,7 +132,7 @@ namespace detail {
 
     _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(offset >= 0, "static_vector::operator[]: negative indices are invalid");
-      _WITE_DEBUG_ASSERT(_ptr + offset < _parent->data() + _parent->size(), "static_vector::operator[]: index out of range");
+      _WITE_DEBUG_ASSERT(_ptr + offset < _parent->ptr() + _parent->size(), "static_vector::operator[]: index out of range");
       return _ptr[offset];
     }
 
@@ -214,8 +214,8 @@ namespace detail {
     }
 
     _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(this->_ptr + offset >= this->_parent->data(), "static_vector::operator+: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(this->_ptr + offset < (this->_parent->data() + this->_parent->size()), "static_vector::operator+: incrementing past end");
+      _WITE_DEBUG_ASSERT(this->_ptr + offset >= this->_parent->ptr(), "static_vector::operator+: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(this->_ptr + offset < (this->_parent->ptr() + this->_parent->size()), "static_vector::operator+: incrementing past end");
 
       auto out = *this;
       out += offset;
@@ -223,8 +223,8 @@ namespace detail {
     }
 
     _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(this->_ptr - offset >= this->_parent->data(), "static_vector::operator-: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(this->_ptr - offset < (this->_parent->data() + this->_parent->size()), "static_vector::operator-: incrementing past end");
+      _WITE_DEBUG_ASSERT(this->_ptr - offset >= this->_parent->ptr(), "static_vector::operator-: decrementing past beginning");
+      _WITE_DEBUG_ASSERT(this->_ptr - offset < (this->_parent->ptr() + this->_parent->size()), "static_vector::operator-: incrementing past end");
 
       auto out = *this;
       out -= offset;
@@ -314,8 +314,8 @@ class static_vector {
   _WITE_NODISCARD constexpr auto back() const -> const_reference { return at(size() - 1); }
 #endif
 
-  _WITE_NODISCARD constexpr auto data() noexcept { return _data.data(); }
-  _WITE_NODISCARD constexpr auto data() const noexcept { return _data.data(); }
+  _WITE_NODISCARD constexpr auto ptr() noexcept { return _data.data(); }
+  _WITE_NODISCARD constexpr auto ptr() const noexcept { return _data.data(); }
 
 #ifndef WITE_NO_EXCEPTIONS
   _WITE_NODISCARD constexpr auto at(size_type pos) -> reference {
