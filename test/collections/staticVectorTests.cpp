@@ -122,13 +122,23 @@ TEST_CASE("Static vector tests", "[collections]") {
 
   SECTION("resize() changes the size of the vector as expected", "[static_vector]") {
     auto v = collections::static_vector<int, 5>{1, 2};
-    v.resize(4);
 
-    REQUIRE(4 == v.size());
+    SECTION("if the new size is greater than the existing size") {
+      v.resize(4);
 
-    SECTION("And the new values are default constructed") {
-      REQUIRE(int{} == v[2]);
-      REQUIRE(int{} == v[3]);
+      REQUIRE(4 == v.size());
+
+      SECTION("And the new values are default constructed") {
+        REQUIRE(int{} == v[2]);
+        REQUIRE(int{} == v[3]);
+      }
+    }
+
+    SECTION("if the new size is smaller than the existing size"){
+      v.resize(1);
+
+      REQUIRE(1 == v.size());
+      REQUIRE(1 == v[0]);
     }
 
     SECTION("And throws if the new size is bigger than the capacity") {
@@ -561,7 +571,7 @@ TEST_CASE("Mutating static vector iterator operations", "[collections]") {
         int x;
       };
 
-      auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
+      collections::static_vector<A, 5> test_vec = {A{0}, A{1}, A{2}, A{3}, A{4}};
       const auto it = collections::detail::_static_vector_iterator<decltype(test_vec)> {
         test_vec.ptr() _WITE_STATIC_VEC_ITER_DEBUG_ARG(&test_vec)
       };

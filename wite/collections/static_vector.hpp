@@ -9,6 +9,7 @@
 #include <compare>
 #include <cstdint>
 #include <stdexcept>
+#include <optional>
 
 #ifdef _WITE_COMPILER_MSVC
 #define _WITE_USING_MSVC_ARRAY_ITERATOR 1
@@ -52,10 +53,10 @@ namespace detail {
 
     using value_type      = typename Vector_T::value_type;
     using difference_type = typename Vector_T::difference_type;
-    using pointer         = typename Vector_T::const_pointer;
+    using pointer         = const value_type*;
     using reference       = const value_type&;
 
-    using _ptr_t  = typename Vector_T::const_pointer;
+    using _ptr_t  = const typename std::optional<value_type>*;
     using _this_t = _static_vector_const_iterator;
 
     constexpr explicit _static_vector_const_iterator(_ptr_t ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
@@ -63,8 +64,8 @@ namespace detail {
 
     WITE_DEFAULT_CONSTRUCTORS(_static_vector_const_iterator);
 
-    _WITE_NODISCARD constexpr reference operator*() const noexcept { return *_ptr; }
-    _WITE_NODISCARD constexpr pointer operator->() const noexcept { return _ptr; }
+    _WITE_NODISCARD constexpr reference operator*() const noexcept { return **_ptr; }
+    _WITE_NODISCARD constexpr pointer operator->() const noexcept { return &**_ptr; }
 
     _WITE_RELEASE_CONSTEXPR _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(_ptr != (_parent->ptr() + _parent->size()), "static_vector::operator++: incrementing past end");
@@ -133,7 +134,7 @@ namespace detail {
     _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
       _WITE_DEBUG_ASSERT(offset >= 0, "static_vector::operator[]: negative indices are invalid");
       _WITE_DEBUG_ASSERT(_ptr + offset < _parent->ptr() + _parent->size(), "static_vector::operator[]: index out of range");
-      return _ptr[offset];
+      return _ptr[offset].value();
     }
 
     _WITE_NODISCARD constexpr auto operator==(const _this_t& other) const noexcept { return _ptr == other._ptr; }
@@ -169,7 +170,7 @@ namespace detail {
 
     using value_type      = typename Vector_T::value_type;
     using difference_type = typename Vector_T::difference_type;
-    using pointer         = typename Vector_T::pointer;
+    using pointer         = value_type*;
     using reference       = value_type&;
 
     constexpr explicit _static_vector_iterator(typename std::remove_const<typename _base_t::_ptr_t>::type ptr
@@ -245,19 +246,17 @@ namespace detail {
 
 template <typename Value_T, size_t CAPACITY>
 class static_vector {
-  // TODO: This should be an array of std::optional<Value_T>. To do that transparently will require the implementation of a custom
-  // iterator type that does the dereference of the optional.
-  using data_type = std::array<Value_T, CAPACITY>;
+  using data_type = std::array<std::optional<Value_T>, CAPACITY>;
   using _this_t = static_vector<Value_T, CAPACITY>;
 
  public:
-  using value_type             = typename data_type::value_type;
+  using value_type             = Value_T;
   using size_type              = typename data_type::size_type;
   using difference_type        = typename data_type::difference_type;
-  using pointer                = typename data_type::pointer;
-  using const_pointer          = typename data_type::const_pointer;
-  using reference              = typename data_type::reference;
-  using const_reference        = typename data_type::const_reference;
+  using pointer                = value_type*;
+  using const_pointer          = const value_type*;
+  using reference              = value_type&;
+  using const_reference        = const value_type&;
   using iterator               = detail::_static_vector_iterator<_this_t>;
   using const_iterator         = detail::_static_vector_const_iterator<_this_t>;
   using reverse_iterator       = std::reverse_iterator<iterator>;
@@ -274,7 +273,7 @@ class static_vector {
     }
 
     _item_count = init.size();
-    std::copy(init.begin(), init.end(), begin());
+    std::transform(init.begin(), init.end(), _data.begin(), [](auto&& x){return std::optional<value_type>{x};});
   }
 #endif
 
@@ -285,13 +284,13 @@ class static_vector {
     swap(_item_count, other._item_count);
   }
 
-  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return iterator{_data.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)}; }
-  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return const_iterator{_data.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)}; }
+  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return iterator(_data.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)); }
+  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return const_iterator(_data.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)); }
   _WITE_NODISCARD constexpr auto end() noexcept {
-    return iterator{std::next(_data.data(), _item_count) _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)};
+    return iterator(std::next(_data.data(), _item_count) _WITE_STATIC_VEC_ITER_DEBUG_ARG(this));
   }
   _WITE_NODISCARD constexpr auto end() const noexcept {
-    return const_iterator{std::next(_data.data(), _item_count) _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)};
+    return const_iterator(std::next(_data.data(), _item_count) _WITE_STATIC_VEC_ITER_DEBUG_ARG(this));
   }
   _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
@@ -304,8 +303,8 @@ class static_vector {
   _WITE_NODISCARD constexpr auto size() const noexcept { return _item_count; }
   _WITE_NODISCARD constexpr auto capacity() const noexcept -> size_type { return _data.max_size(); }
   _WITE_NODISCARD constexpr auto empty() const noexcept { return _item_count == 0; }
-  _WITE_NODISCARD constexpr auto operator[](size_type pos) noexcept -> reference { return _data[pos]; }
-  _WITE_NODISCARD constexpr auto operator[](size_type pos) const noexcept -> const_reference { return _data[pos]; }
+  _WITE_NODISCARD constexpr auto operator[](size_type pos) noexcept -> reference { return *_data[pos]; }
+  _WITE_NODISCARD constexpr auto operator[](size_type pos) const noexcept -> const_reference { return *_data[pos]; }
 
 #ifndef WITE_NO_EXCEPTIONS
   _WITE_NODISCARD constexpr auto front() -> reference { return at(0); }
@@ -327,7 +326,7 @@ class static_vector {
       throw std::out_of_range{"Static vector access violation"};
     }
 
-    return _data[pos];
+    return operator[](pos);
   }
 
   void resize(size_type new_size) {
@@ -335,7 +334,7 @@ class static_vector {
       throw std::bad_array_new_length{};
     }
 
-    _item_count = new_size;
+    _unsafe_resize(new_size);
   }
 
   void push_back(const_reference x) {
@@ -363,6 +362,26 @@ class static_vector {
   _WITE_NODISCARD constexpr bool operator!=(const static_vector& other) const noexcept { return !(*this == other); }
 
  private:
+
+  void _alloc(size_type n) noexcept(noexcept(value_type{})) {
+    std::generate_n(std::next(_data.begin(), _item_count), n, [](){ return std::optional<value_type>{value_type{}};});
+  }
+
+  void _destroy_last_n(size_type n) noexcept {
+    const auto erase_start = std::reverse_iterator{std::next(_data.begin(), _item_count)};
+    std::for_each(erase_start, std::next(erase_start, n), [](auto&& val) { val.reset();});
+  }
+
+  void _unsafe_resize(size_type n) {
+    if (n > size()) {
+      _alloc(n - size());
+    } else if (n < size()) {
+      _destroy_last_n(size() - n);
+    }
+
+    _item_count = n;
+  }
+
   data_type _data{};
   size_type _item_count{0};
 };
