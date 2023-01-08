@@ -45,7 +45,7 @@ TEST_CASE("Static vector tests", "[collections]") {
     REQUIRE(test::ranges_equal(std::vector<double>{1.1, 2.2, 3.3}, v));
   }
 
-  SECTION("can hold types that are not default-constructable"){
+  SECTION("can hold types that are not default-constructable", "[static_vector]"){
     struct A {
       explicit A(int a) : a{a} {}
 
@@ -74,7 +74,7 @@ TEST_CASE("Static vector tests", "[collections]") {
     REQUIRE(test::ranges_equal(expected_2, v_2));
   }
 
-  SECTION("comparison works") {
+  SECTION("comparison works", "[static_vector]") {
     auto v_1 = collections::static_vector<int, 5>{1, 2, 3, 4, 5};
     auto v_2 = collections::static_vector<int, 5>{1, 2, 3, 4, 5};
 
@@ -140,13 +140,22 @@ TEST_CASE("Static vector tests", "[collections]") {
     auto v = collections::static_vector<int, 5>{1, 2};
 
     SECTION("if the new size is greater than the existing size") {
-      v.resize(4);
-
-      REQUIRE(4 == v.size());
-
       SECTION("And the new values are default constructed") {
+        v.resize(4);
+
+        REQUIRE(4 == v.size());
+
         REQUIRE(int{} == v[2]);
         REQUIRE(int{} == v[3]);
+      }
+
+      SECTION("And the new values are as specified") {
+        v.resize(4, 20);
+
+        REQUIRE(4 == v.size());
+
+        REQUIRE(20 == v[2]);
+        REQUIRE(20 == v[3]);
       }
     }
 
