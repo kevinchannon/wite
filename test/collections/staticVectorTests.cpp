@@ -45,6 +45,22 @@ TEST_CASE("Static vector tests", "[collections]") {
     REQUIRE(test::ranges_equal(std::vector<double>{1.1, 2.2, 3.3}, v));
   }
 
+  SECTION("can hold types that are not default-constructable"){
+    struct A {
+      explicit A(int a) : a{a} {}
+
+      A() = delete;
+
+      int a;
+    };
+
+    auto vec = collections::static_vector<A, 10>{};
+    REQUIRE(vec.empty());
+
+    vec.push_back(A{10});
+    REQUIRE(1 == vec.size());
+  }
+
   SECTION("swaps", "[static_vector]") {
     auto v_1 = collections::static_vector<int, 5>{1, 2, 3, 4, 5};
     auto v_2 = collections::static_vector<int, 5>{6, 7, 8, 9, 10};

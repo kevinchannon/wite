@@ -329,7 +329,7 @@ class static_vector {
     return operator[](pos);
   }
 
-  void resize(size_type new_size) {
+  constexpr void resize(size_type new_size) {
     if (new_size > capacity()) {
       throw std::bad_array_new_length{};
     }
@@ -337,14 +337,20 @@ class static_vector {
     _unsafe_resize(new_size);
   }
 
+  constexpr void resize(size_type new_size, value_type value) {
+    if (new_size > capacity()) {
+      throw std::bad_array_new_length{};
+    }
+
+    _unsafe_resize(new_size, std::move(value));
+  }
+
   void push_back(const_reference x) {
-    resize(size() + 1);
-    back() = x;
+    resize(size() + 1, x);
   }
 
   void push_back(value_type&& x) {
-    resize(size() + 1);
-    back() = std::forward<value_type>(x);
+    resize(size() + 1, std::forward<value_type>(x));
   }
 
 #endif
@@ -363,8 +369,8 @@ class static_vector {
 
  private:
 
-  void _alloc(size_type n) noexcept(noexcept(value_type{})) {
-    std::generate_n(std::next(_data.begin(), _item_count), n, [](){ return std::optional<value_type>{value_type{}};});
+  constexpr void _alloc(size_type n, value_type v) noexcept(noexcept(value_type{v})) {
+    std::generate_n(std::next(_data.begin(), _item_count), n, [&v](){ return std::optional<value_type>{v};});
   }
 
   void _destroy_last_n(size_type n) noexcept {
@@ -372,9 +378,9 @@ class static_vector {
     std::for_each(erase_start, std::next(erase_start, n), [](auto&& val) { val.reset();});
   }
 
-  void _unsafe_resize(size_type n) {
+  constexpr void _unsafe_resize(size_type n, value_type v = value_type{}) {
     if (n > size()) {
-      _alloc(n - size());
+      _alloc(n - size(), std::move(v));
     } else if (n < size()) {
       _destroy_last_n(size() - n);
     }
