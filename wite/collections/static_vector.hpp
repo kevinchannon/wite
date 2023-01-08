@@ -331,7 +331,7 @@ class static_vector {
 
   constexpr void resize(size_type new_size) {
     if (new_size > capacity()) {
-      throw std::bad_array_new_length{};
+      throw std::length_error{"static_vector: new size exceeds max size"};
     }
 
     _unsafe_resize(new_size);
@@ -339,7 +339,7 @@ class static_vector {
 
   constexpr void resize(size_type new_size, value_type value) {
     if (new_size > capacity()) {
-      throw std::bad_array_new_length{};
+      throw std::length_error{"static_vector: new size exceeds max size"};
     }
 
     _unsafe_resize(new_size, std::move(value));

@@ -167,7 +167,7 @@ TEST_CASE("Static vector tests", "[collections]") {
     }
 
     SECTION("And throws if the new size is bigger than the capacity") {
-      REQUIRE_THROWS_AS(v.resize(6), std::bad_array_new_length);
+      WITE_REQ_THROWS(v.resize(6), std::length_error, "static_vector: new size exceeds max size");
     }
   }
 
@@ -181,7 +181,7 @@ TEST_CASE("Static vector tests", "[collections]") {
     REQUIRE(2 == v.size());
 
     SECTION("And throws if the capacity is exceeded") {
-      REQUIRE_THROWS_AS(v.push_back(30), std::bad_array_new_length);
+      WITE_REQ_THROWS(v.push_back(30), std::length_error, "static_vector: new size exceeds max size");
     }
   }
 
