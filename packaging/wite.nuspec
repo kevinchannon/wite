@@ -2,7 +2,7 @@
 <package >
     <metadata>
         <id>wite</id>
-        <version>0.13.0</version>
+        <version>0.14.0</version>
         <authors>Kevin J Channon</authors>
         <description>Why Isn't This Easy (Wite) C++ convenience functions</description>
         <repository url="https://github.com/kevinchannon/wite.git" type="git"/>
@@ -11,7 +11,7 @@
         <readme>README.md</readme>
         <tags>Native, native, buffers, strings, utilities, utility, geometry</tags>
         <releaseNotes>
-            Update wite::result so that its interface includes most of the functionality of `std::expected`.
+            collections::static_vector now holds its items as std::optional values. This means that the items do not get default-constructed when the vector is instanciated, which is generally preferable. There is a side-effect that static_vector::data() would now not do the expected thing, so it's been removed. If you know what you're doing and you want a pointer to the array of optionals, then you can now use the static_vector::ptr() method instead.
         </releaseNotes>
     </metadata>
      
