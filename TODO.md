@@ -26,3 +26,4 @@
 ## Maths
 
 ## Build things
+* Add CI builds for example repos (CMake & VS)
