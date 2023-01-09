@@ -46,6 +46,15 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
     SECTION("default constructed collection is empty") {
       REQUIRE(identifiable_item_collection<TestItem>{}.empty());
     }
+
+    SECTION("initializer-list construction") {
+      using TestItems = identifiable_item_collection<TestItem>;
+      const auto list_constructed = TestItems{TestItem{1}, TestItem{2}, TestItem{3}};
+      REQUIRE(3 == list_constructed.size());
+      REQUIRE(1 == list_constructed.at(TestItems::index_type{0}).id().value());
+      REQUIRE(2 == list_constructed.at(TestItems::index_type{1}).id().value());
+      REQUIRE(3 == list_constructed.at(TestItems::index_type{2}).id().value());
+    }
   }
 
   SECTION("inserting items") {
@@ -312,4 +321,11 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
       REQUIRE_FALSE(items.contains(TestItem::id_type{4}));
     }
   }
+}
+
+TEST_CASE("Identifiable item collection iterator tests", "[collections]") {
+  auto items        = identifiable_item_collection<TestItem>{};
+  const auto item_0 = TestItem{1};
+  const auto item_1 = TestItem{2};
+  const auto item_2 = TestItem{3};
 }

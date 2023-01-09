@@ -33,10 +33,18 @@ class identifiable_item_collection {
   using id_type    = typename value_type::id_type;
   using index_type = index<identifiable_item_collection<value_type>>;
 
+  constexpr identifiable_item_collection(std::initializer_list<Item_T> items) {
+    insert(items);
+  }
+
+  constexpr identifiable_item_collection() = default;
+  identifiable_item_collection(identifiable_item_collection&&) noexcept = default;
+  identifiable_item_collection& operator=(identifiable_item_collection&&) noexcept = default;
+
   _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _items.empty(); }
 
-  void insert(Item_T item) {
+  constexpr void insert(Item_T item) {
     if (this->contains(item.id())) {
       throw std::logic_error{"Insertion of duplicate ID into identifiable_item_collection"};
     }
@@ -44,7 +52,20 @@ class identifiable_item_collection {
     _unchecked_insert(std::make_unique<Item_T>(std::move(item)));
   }
 
-  bool try_insert(Item_T item) {
+  template <std::ranges::forward_range Range_T>
+    requires std::is_same_v<value_type, typename std::decay_t<Range_T>::value_type>
+  constexpr void insert(Range_T&& values) {
+    std::ranges::for_each(
+        std::forward<Range_T>(values), [this](auto&& val) { this->try_insert(val); });
+  }
+
+  template <identifiable... Item_Ts>
+  constexpr void insert(Item_Ts&&... items) {
+    (...,
+     [this](value_type item) { insert(std::move(item)); }(std::forward<Item_Ts>(items)));
+  }
+
+  constexpr bool try_insert(Item_T item) {
     auto p = std::make_unique<Item_T>(std::move(item));
 
     const auto [_, newly_inserted] = _try_unchecked_insert(std::move(p));
@@ -53,7 +74,7 @@ class identifiable_item_collection {
 
   template <std::ranges::forward_range Range_T>
     requires std::is_same_v<value_type, typename std::decay_t<Range_T>::value_type>
-  std::vector<bool> try_insert(Range_T&& values) {
+  constexpr std::vector<bool> try_insert(Range_T&& values) {
     auto out = std::vector<bool>{};
     if constexpr (common::is_sized_range_v<Range_T>) {
       out.reserve(values.size());
@@ -66,7 +87,7 @@ class identifiable_item_collection {
   }
 
   template <identifiable... Item_Ts>
-  std::array<bool, sizeof...(Item_Ts)> try_insert(Item_Ts&&... items) {
+  constexpr std::array<bool, sizeof...(Item_Ts)> try_insert(Item_Ts&&... items) {
     auto out     = std::array<bool, sizeof...(Item_Ts)>{};
     auto out_idx = size_t{0};
 
@@ -76,7 +97,7 @@ class identifiable_item_collection {
     return out;
   }
 
-  bool erase(const id_type& id) {
+  constexpr bool erase(const id_type& id) {
     const auto to_erase =
         std::find_if(_ordered_items.begin(), _ordered_items.end(), [&id](auto&& item) { return id == item->id(); });
     if (_ordered_items.end() == to_erase) {
@@ -91,7 +112,7 @@ class identifiable_item_collection {
 
   template <std::ranges::forward_range Range_T>
     requires std::is_same_v<id_type, typename std::decay_t<Range_T>::value_type>
-  std::vector<bool> erase(Range_T&& ids) {
+  constexpr std::vector<bool> erase(Range_T&& ids) {
     auto out = std::vector<bool>{};
     if constexpr (common::is_sized_range_v<Range_T>) {
       out.reserve(ids.size());
@@ -103,7 +124,7 @@ class identifiable_item_collection {
   }
 
   template <id_like... Id_Ts>
-  std::array<bool, sizeof...(Id_Ts)> erase(const Id_Ts&... ids) {
+  constexpr std::array<bool, sizeof...(Id_Ts)> erase(const Id_Ts&... ids) {
     auto out     = std::array<bool, sizeof...(Id_Ts)>{};
     auto out_idx = size_t{0};
 
@@ -113,7 +134,7 @@ class identifiable_item_collection {
   }
 
   template <typename... Arg_Ts>
-  value_type& emplace(Arg_Ts&&... args) {
+  constexpr value_type& emplace(Arg_Ts&&... args) {
     auto p                         = std::make_unique<value_type>(std::forward<Arg_Ts>(args)...);
     auto [out, inserted_new_value] = _try_unchecked_insert(std::move(p));
     if (not inserted_new_value) {
@@ -141,7 +162,7 @@ class identifiable_item_collection {
     return out;
   }
 
-  const value_type& at(const id_type& id) const {
+  constexpr const value_type& at(const id_type& id) const {
     if (const auto item = _items.find(id); _items.end() != item) {
       return *(item->second);
     }
@@ -149,7 +170,7 @@ class identifiable_item_collection {
     throw std::out_of_range{"identifiable_item_collection failed to retreive item by ID"};
   }
 
-  const value_type& at(const index_type& idx) const {
+  constexpr const value_type& at(const index_type& idx) const {
     if (*idx >= _ordered_items.size()) {
       throw std::out_of_range{"identifiable_item_collection failed to retreive item by index"};
     }
@@ -157,15 +178,15 @@ class identifiable_item_collection {
     return *_ordered_items[*idx];
   }
 
-  void clear() {
+  constexpr void clear() {
     _items.clear();
     _ordered_items.clear();
   }
 
-  _WITE_NODISCARD bool contains(const id_type& id) const noexcept { return _items.contains(id); }
+  _WITE_NODISCARD constexpr bool contains(const id_type& id) const noexcept { return _items.contains(id); }
 
  private:
-  auto _try_unchecked_insert(std::unique_ptr<value_type> value) {
+  constexpr auto _try_unchecked_insert(std::unique_ptr<value_type> value) {
     auto id           = value->id();
     auto item_pointer = value.get();
     const auto out    = _items.insert(typename _associative_storage_type::value_type{std::move(id), std::move(value)});
@@ -177,7 +198,7 @@ class identifiable_item_collection {
     return out;
   }
 
-  void _unchecked_insert(std::unique_ptr<value_type> value) {
+  constexpr void _unchecked_insert(std::unique_ptr<value_type> value) {
     auto id           = value->id();
     auto item_pointer = value.get();
     _items.insert(typename _associative_storage_type::value_type{std::move(id), std::move(value)});
