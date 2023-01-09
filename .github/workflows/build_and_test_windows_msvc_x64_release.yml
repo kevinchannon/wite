@@ -30,7 +30,7 @@ jobs:
         run: cmake -B ${{github.workspace}}/build/msvc/x64/release -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build/msvc/x64/release --config Release --target all
+        run: cmake --build ${{github.workspace}}/build/msvc/x64/release --config Release
 
       - name: Test
         working-directory: ${{github.workspace}}\build\msvc\x64\release\test
