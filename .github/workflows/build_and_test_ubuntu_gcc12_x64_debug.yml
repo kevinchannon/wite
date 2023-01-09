@@ -37,7 +37,7 @@ jobs:
         run: cmake -B ${{github.workspace}}/build/gcc/x64/debug -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build/gcc/x64/debug --config Debug
+        run: cmake --build ${{github.workspace}}/build/gcc/x64/debug --config Debug --target all
 
       - name: Test
         working-directory: ${{github.workspace}}/build/gcc/x64/debug/test

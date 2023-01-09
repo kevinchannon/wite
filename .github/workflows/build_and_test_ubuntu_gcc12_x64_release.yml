@@ -37,7 +37,7 @@ jobs:
         run: cmake -B ${{github.workspace}}/build/gcc/x64/release -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build/gcc/x64/release --config Release
+        run: cmake --build ${{github.workspace}}/build/gcc/x64/release --config Release --target all
 
       - name: Test
         working-directory: ${{github.workspace}}/build/gcc/x64/release/test

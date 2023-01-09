@@ -30,7 +30,8 @@ jobs:
         run: cmake -B ${{github.workspace}}/build/msvc/x64/debug -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build/msvc/x64/debug --config Debug
+        run: cmake --build ${{github.workspace}}/build/msvc/x64/debug --config Debug --target all
+
       - name: Test
         working-directory: ${{github.workspace}}\build\msvc\x64\debug\test
         shell: cmd
