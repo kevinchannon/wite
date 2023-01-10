@@ -324,8 +324,16 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 }
 
 TEST_CASE("Identifiable item collection iterator tests", "[collections]") {
-  auto items        = identifiable_item_collection<TestItem>{};
-  const auto item_0 = TestItem{1};
-  const auto item_1 = TestItem{2};
-  const auto item_2 = TestItem{3};
+  using Index_t = identifiable_item_collection<TestItem>::index_type;
+  auto items = identifiable_item_collection<TestItem>{TestItem{3}, TestItem{2}, TestItem{1}};
+
+  SECTION("begin points to the first item that was added") {
+    REQUIRE(3 == items.begin()->id().value());
+  }
+
+  SECTION("mutating begin gives editable iterator") {
+    items.begin()->data = "some data";
+
+    REQUIRE("some data" == items.at(Index_t{0}).data);
+  }
 }

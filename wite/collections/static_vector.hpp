@@ -30,14 +30,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef _WITE_CONFIG_DEBUG
-#define _WITE_STATIC_VEC_ITER_DEBUG_ARG(arg) , arg
-#else
-#define _WITE_STATIC_VEC_ITER_DEBUG_ARG(arg)
-#endif  // _WITE_CONFIG_DEBUG
-
-///////////////////////////////////////////////////////////////////////////////
-
 namespace wite::collections {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -86,13 +78,13 @@ class static_vector {
     swap(_item_count, other._item_count);
   }
 
-  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return iterator(_data.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)); }
-  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return const_iterator(_data.data() _WITE_STATIC_VEC_ITER_DEBUG_ARG(this)); }
+  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return iterator(_data.data() _WITE_DEREF_ITER_DEBUG_ARG(this)); }
+  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return const_iterator(_data.data() _WITE_DEREF_ITER_DEBUG_ARG(this)); }
   _WITE_NODISCARD constexpr auto end() noexcept {
-    return iterator(std::next(_data.data(), _item_count) _WITE_STATIC_VEC_ITER_DEBUG_ARG(this));
+    return iterator(std::next(_data.data(), _item_count) _WITE_DEREF_ITER_DEBUG_ARG(this));
   }
   _WITE_NODISCARD constexpr auto end() const noexcept {
-    return const_iterator(std::next(_data.data(), _item_count) _WITE_STATIC_VEC_ITER_DEBUG_ARG(this));
+    return const_iterator(std::next(_data.data(), _item_count) _WITE_DEREF_ITER_DEBUG_ARG(this));
   }
   _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }

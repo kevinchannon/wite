@@ -1,5 +1,6 @@
 #pragma once
 
+#include <wite/collections/dereferencing_iterator.hpp>
 #include <wite/collections/make_vector.hpp>
 #include <wite/common/concepts.hpp>
 #include <wite/core/id.hpp>
@@ -24,22 +25,40 @@ template <identifiable Item_T,
           typename AssocContainer_T = std::map<typename Item_T::id_type, std::unique_ptr<Item_T>>,
           typename OrderedCont_T    = std::vector<Item_T*>>
 class identifiable_item_collection {
-  using _associative_storage_type      = AssocContainer_T;
-  using _ordered_storage_type = OrderedCont_T;
+  using _associative_storage_type = AssocContainer_T;
+  using _ordered_storage_type     = OrderedCont_T;
+  using _this_t                   = identifiable_item_collection;
 
  public:
-  using size_type  = typename _associative_storage_type::size_type;
-  using value_type = Item_T;
+  using raw_value_type = Item_T*;
+
+  using size_type              = typename _associative_storage_type::size_type;
+  using value_type             = Item_T;
+  using difference_type        = std::ptrdiff_t;
+  using pointer                = value_type*;
+  using const_pointer          = const value_type*;
+  using reference              = value_type&;
+  using const_reference        = const value_type&;
+  using iterator               = dereferencing_iterator<_this_t>;
+  using const_iterator         = dereferencing_const_iterator<_this_t>;
+  using reverse_iterator       = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
   using id_type    = typename value_type::id_type;
   using index_type = index<identifiable_item_collection<value_type>>;
 
-  constexpr identifiable_item_collection(std::initializer_list<Item_T> items) {
-    insert(items);
-  }
+  constexpr identifiable_item_collection(std::initializer_list<Item_T> items) { insert(items); }
 
-  constexpr identifiable_item_collection() = default;
-  identifiable_item_collection(identifiable_item_collection&&) noexcept = default;
+  constexpr identifiable_item_collection()                                         = default;
+  identifiable_item_collection(identifiable_item_collection&&) noexcept            = default;
   identifiable_item_collection& operator=(identifiable_item_collection&&) noexcept = default;
+
+  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator {
+    return iterator(const_cast<raw_value_type*>(_ordered_items.data()) _WITE_DEREF_ITER_DEBUG_ARG(this));
+  }
+  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator {
+    return const_iterator(_ordered_items.data() _WITE_DEREF_ITER_DEBUG_ARG(this));
+  }
 
   _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _items.empty(); }
@@ -55,14 +74,12 @@ class identifiable_item_collection {
   template <std::ranges::forward_range Range_T>
     requires std::is_same_v<value_type, typename std::decay_t<Range_T>::value_type>
   constexpr void insert(Range_T&& values) {
-    std::ranges::for_each(
-        std::forward<Range_T>(values), [this](auto&& val) { this->try_insert(val); });
+    std::ranges::for_each(std::forward<Range_T>(values), [this](auto&& val) { this->try_insert(val); });
   }
 
   template <identifiable... Item_Ts>
   constexpr void insert(Item_Ts&&... items) {
-    (...,
-     [this](value_type item) { insert(std::move(item)); }(std::forward<Item_Ts>(items)));
+    (..., [this](value_type item) { insert(std::move(item)); }(std::forward<Item_Ts>(items)));
   }
 
   constexpr bool try_insert(Item_T item) {
@@ -155,10 +172,11 @@ class identifiable_item_collection {
     _items.erase(id_and_item);
 
     const auto to_erase = std::find(_ordered_items.begin(), _ordered_items.end(), out.get());
-    _WITE_DEBUG_ASSERT(_ordered_items.end() != to_erase, "Failed to find item in orderer items that was found in associative items");
+    _WITE_DEBUG_ASSERT(_ordered_items.end() != to_erase,
+                       "Failed to find item in orderer items that was found in associative items");
 
     _ordered_items.erase(to_erase);
-    
+
     return out;
   }
 
