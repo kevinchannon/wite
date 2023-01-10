@@ -246,6 +246,10 @@ namespace detail {
 
 template <typename Value_T, size_t CAPACITY>
 class static_vector {
+ public:
+  using raw_value_type = std::optional<Value_T>;
+
+ private:
   using data_type = std::array<std::optional<Value_T>, CAPACITY>;
   using _this_t = static_vector<Value_T, CAPACITY>;
 

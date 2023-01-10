@@ -47,7 +47,7 @@ add_executable(wite_test
 	"maths/ioTests.cpp"
 	"maths/numericTests.cpp"
 	"maths/boundedValueTests.cpp"
-)
+        collections/dereferencingIteratorTests.cpp)
 
 target_compile_options(wite_test PRIVATE
 	$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
