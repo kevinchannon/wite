@@ -3,6 +3,7 @@
 #include <wite/common/constructor_macros.hpp>
 #include <wite/core/assert.hpp>
 #include <wite/env/environment.hpp>
+#include <wite/collections/dereferencing_iterator.hpp>
 
 #include <algorithm>
 #include <array>
@@ -41,209 +42,6 @@ namespace wite::collections {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace detail {
-  template <typename Vector_T>
-  class _static_vector_const_iterator {
-   public:
-#ifdef _WITE_HAS_CONCEPTS
-    using iterator_concept = std::contiguous_iterator_tag;
-#endif
-
-    using iterator_category = std::random_access_iterator_tag;
-
-    using value_type      = typename Vector_T::value_type;
-    using difference_type = typename Vector_T::difference_type;
-    using pointer         = const value_type*;
-    using reference       = const value_type&;
-
-    using _ptr_t  = const typename std::optional<value_type>*;
-    using _this_t = _static_vector_const_iterator;
-
-    constexpr explicit _static_vector_const_iterator(_ptr_t ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
-        : _ptr{ptr} _WITE_STATIC_VEC_ITER_DEBUG_ARG(_parent{parent}) {}
-
-    WITE_DEFAULT_CONSTRUCTORS(_static_vector_const_iterator);
-
-    _WITE_NODISCARD constexpr reference operator*() const noexcept { return **_ptr; }
-    _WITE_NODISCARD constexpr pointer operator->() const noexcept { return &**_ptr; }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr != (_parent->ptr() + _parent->size()), "static_vector::operator++: incrementing past end");
-
-      ++_ptr;
-      return *this;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t operator++(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
-      auto out = *this;
-      ++*this;
-      return out;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator--() _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr != _parent->ptr(), "static_vector::operator--: decrementing past beginning");
-
-      --_ptr;
-      return *this;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t operator--(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
-      auto out = *this;
-      --*this;
-      return out;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->ptr(), "static_vector::operator+=: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->ptr() + _parent->size()), "static_vector::operator+=: incrementing past end");
-      _ptr += offset;
-      return *this;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->ptr(), "static_vector::operator-=: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->ptr() + _parent->size()), "static_vector::operator-=: incrementing past end");
-      _ptr -= offset;
-      return *this;
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->ptr(), "static_vector::operator+: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->ptr() + _parent->size()), "static_vector::operator+: incrementing past end");
-
-      auto out = *this;
-      out += offset;
-      return out;
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->ptr(), "static_vector::operator-: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->ptr() + _parent->size()), "static_vector::operator-: incrementing past end");
-
-      auto out = *this;
-      out -= offset;
-      return out;
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR difference_type operator-(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_parent == other._parent,
-                         "static_vector::operator-: distance comparison between two iterators with different parent containers");
-      return _ptr - other._ptr;
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(offset >= 0, "static_vector::operator[]: negative indices are invalid");
-      _WITE_DEBUG_ASSERT(_ptr + offset < _parent->ptr() + _parent->size(), "static_vector::operator[]: index out of range");
-      return _ptr[offset].value();
-    }
-
-    _WITE_NODISCARD constexpr auto operator==(const _this_t& other) const noexcept { return _ptr == other._ptr; }
-
-    _WITE_NODISCARD constexpr auto operator!=(const _this_t& other) const noexcept {
-      return not(*this == other);  // NOLINT
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR auto operator<=>(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(_parent == other._parent,
-                         "static_vector::operator<=>: comparison between two iterators with different parent containers");
-      return _ptr <=> other._ptr;
-    }
-
-   protected:
-    _ptr_t _ptr;
-
-#ifdef _WITE_CONFIG_DEBUG
-    const Vector_T* _parent;
-#endif
-  };
-
-  template <typename Vector_T>
-  class _static_vector_iterator : public _static_vector_const_iterator<Vector_T> {
-    using _base_t = _static_vector_const_iterator<Vector_T>;
-    using _this_t = _static_vector_iterator;
-   public:
-#ifdef _WITE_HAS_CONCEPTS
-    using iterator_concept = std::contiguous_iterator_tag;
-#endif
-
-    using iterator_category = std::random_access_iterator_tag;
-
-    using value_type      = typename Vector_T::value_type;
-    using difference_type = typename Vector_T::difference_type;
-    using pointer         = value_type*;
-    using reference       = value_type&;
-
-    constexpr explicit _static_vector_iterator(typename std::remove_const<typename _base_t::_ptr_t>::type ptr
-                                                   _WITE_STATIC_VEC_ITER_DEBUG_ARG(const Vector_T* parent)) noexcept
-        : _base_t{ptr _WITE_STATIC_VEC_ITER_DEBUG_ARG(parent)} {}
-
-    WITE_DEFAULT_CONSTRUCTORS(_static_vector_iterator);
-
-    _WITE_NODISCARD constexpr reference operator*() const noexcept { return const_cast<reference>(_base_t::operator*()); }
-    _WITE_NODISCARD constexpr pointer operator->() const noexcept { return const_cast<pointer>(_base_t::operator->()); }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
-      _base_t::operator++();
-      return *this;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t operator++(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
-      auto out = *this;
-      ++*this;
-      return out;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator--() _WITE_RELEASE_NOEXCEPT {
-      _base_t::operator--();
-      return *this;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t operator--(int) _WITE_RELEASE_NOEXCEPT {  // NOLINT(cert-dcl21-cpp)
-      auto out = *this;
-      --*this;
-      return out;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _base_t::operator+=(offset);
-      return *this;
-    }
-
-    _WITE_RELEASE_CONSTEXPR _this_t& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-      _base_t::operator-=(offset);
-      return *this;
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(this->_ptr + offset >= this->_parent->ptr(), "static_vector::operator+: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(this->_ptr + offset < (this->_parent->ptr() + this->_parent->size()), "static_vector::operator+: incrementing past end");
-
-      auto out = *this;
-      out += offset;
-      return out;
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      _WITE_DEBUG_ASSERT(this->_ptr - offset >= this->_parent->ptr(), "static_vector::operator-: decrementing past beginning");
-      _WITE_DEBUG_ASSERT(this->_ptr - offset < (this->_parent->ptr() + this->_parent->size()), "static_vector::operator-: incrementing past end");
-
-      auto out = *this;
-      out -= offset;
-      return out;
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR difference_type operator-(const _this_t& other) const _WITE_RELEASE_NOEXCEPT {
-      return _base_t::operator-(other);
-    }
-
-    _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-      return const_cast<reference>(_base_t::operator[](offset));
-    }
-  };
-}  // namespace detail
-
-///////////////////////////////////////////////////////////////////////////////
-
 template <typename Value_T, size_t CAPACITY>
 class static_vector {
  public:
@@ -261,8 +59,8 @@ class static_vector {
   using const_pointer          = const value_type*;
   using reference              = value_type&;
   using const_reference        = const value_type&;
-  using iterator               = detail::_static_vector_iterator<_this_t>;
-  using const_iterator         = detail::_static_vector_const_iterator<_this_t>;
+  using iterator               = dereferencing_iterator<_this_t>;
+  using const_iterator         = dereferencing_const_iterator<_this_t>;
   using reverse_iterator       = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
