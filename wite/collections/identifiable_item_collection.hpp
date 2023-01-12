@@ -74,6 +74,14 @@ class identifiable_item_collection {
                         _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
                             _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
   }
+  _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
+  _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
+  _WITE_NODISCARD constexpr auto rend() noexcept { return reverse_iterator(begin()); }
+  _WITE_NODISCARD constexpr auto rend() const noexcept { return const_reverse_iterator(begin()); }
+  _WITE_NODISCARD constexpr auto cbegin() const noexcept { return begin(); }
+  _WITE_NODISCARD constexpr auto cend() const noexcept { return end(); }
+  _WITE_NODISCARD constexpr auto crbegin() const noexcept { return rbegin(); }
+  _WITE_NODISCARD constexpr auto crend() const noexcept { return rend(); }
 
   _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
   _WITE_NODISCARD constexpr bool empty() const noexcept { return _items.empty(); }
