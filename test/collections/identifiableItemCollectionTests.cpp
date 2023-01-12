@@ -10,6 +10,7 @@
 #include <forward_list>
 #include <stdexcept>
 #include <vector>
+#include <iterator>
 
 namespace {
 
@@ -335,5 +336,15 @@ TEST_CASE("Identifiable item collection iterator tests", "[collections]") {
     items.begin()->data = "some data";
 
     REQUIRE("some data" == items.at(Index_t{0}).data);
+  }
+
+  SECTION("The distance between begin and end is equal to the size") {
+    REQUIRE(items.size() == static_cast<size_t>(std::distance(items.begin(), items.end())));
+  }
+
+  SECTION("mutating end gives editable iterator") {
+    std::prev(items.end())->data = "some data";
+
+    REQUIRE("some data" == items.at(Index_t{2}).data);
   }
 }

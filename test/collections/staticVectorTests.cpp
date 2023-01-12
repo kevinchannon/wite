@@ -40,7 +40,7 @@ TEST_CASE("Static vector tests", "[collections]") {
   }
 
   SECTION("intializer-list assignment operator works", "[static_vector]") {
-    collections::static_vector<double, 10> v = {1.1, 2.2, 3.3};
+    const collections::static_vector<double, 10> v = {1.1, 2.2, 3.3};
     REQUIRE(3 == v.size());
     REQUIRE(test::ranges_equal(std::vector<double>{1.1, 2.2, 3.3}, v));
   }

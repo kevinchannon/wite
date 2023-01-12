@@ -19,7 +19,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
   using iterator_t = TestType;
 
   SECTION("construction") {
-    const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+    const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
     REQUIRE(1 == *it);
   }
 
@@ -29,12 +29,12 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     };
     _WITE_RELEASE_CONSTEXPR auto test_vec = collections::static_vector<A, 5>{{0}, {1}, {2}, {3}, {4}};
     REQUIRE(0 == collections::dereferencing_const_iterator<decltype(test_vec)> {
-      test_vec.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&test_vec)
+      test_vec.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&test_vec) _WITE_DEREF_ITER_DEBUG_ARG(test_vec.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(test_vec.ptr() + test_vec.size())
     } -> x);
   }
 
   SECTION("pre-increment operator") {
-    auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+    auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
     ++it;
     REQUIRE(2 == *it);
 
@@ -50,7 +50,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
   }
 
   SECTION("post-increment operator") {
-    auto it            = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+    auto it            = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
     const auto it_prev = it++;
 
     REQUIRE(1 == *it_prev);
@@ -68,7 +68,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
   }
 
   SECTION("pre-decrement operator") {
-    auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+    auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
     --it;
     REQUIRE(5 == *it);
 
@@ -84,7 +84,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
   }
 
   SECTION("post-decrement operator") {
-    auto it            = iterator_t{v.ptr() + v.size() - 1 _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+    auto it            = iterator_t{v.ptr() + v.size() - 1 _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
     const auto it_prev = it--;
 
     REQUIRE(5 == *it_prev);
@@ -102,7 +102,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
   SECTION("increment assignment") {
     SECTION("with positive increment") {
-      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       it += 3;
       REQUIRE(4 == *it);
 
@@ -114,7 +114,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     }
 
     SECTION("with negative increment") {
-      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       it += -3;
       REQUIRE(3 == *it);
 
@@ -128,7 +128,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
   SECTION("decrement assignment") {
     SECTION("with positive decrement") {
-      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       it -= 3;
       REQUIRE(3 == *it);
 
@@ -140,7 +140,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     }
 
     SECTION("with negative increment") {
-      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       it -= -3;
       REQUIRE(4 == *it);
 
@@ -154,7 +154,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
   SECTION("positive offset operator") {
     SECTION("with positive increment") {
-      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)} + 3;
+      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} + 3;
       REQUIRE(4 == *it);
 
 #ifdef _WITE_CONFIG_DEBUG
@@ -165,7 +165,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     }
 
     SECTION("with negative increment") {
-      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)} + (-3);
+      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} + (-3);
       REQUIRE(3 == *it);
 
 #ifdef _WITE_CONFIG_DEBUG
@@ -178,7 +178,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
   SECTION("negative offset operator") {
     SECTION("with positive increment") {
-      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)} - 3;
+      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} - 3;
       REQUIRE(3 == *it);
 
 #ifdef _WITE_CONFIG_DEBUG
@@ -189,7 +189,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     }
 
     SECTION("with negative increment") {
-      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)} - (-3);
+      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} - (-3);
       REQUIRE(4 == *it);
 
 #ifdef _WITE_CONFIG_DEBUG
@@ -201,8 +201,8 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
   }
 
   SECTION("distance between iterators") {
-    const auto begin = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
-    const auto end   = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+    const auto begin = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
+    const auto end   = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
 
     SECTION("manual offset calculation works") {
       REQUIRE(0 == begin - begin);
@@ -217,8 +217,8 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
 #ifdef _WITE_CONFIG_DEBUG
     SECTION("asserts in debug if distance calculation happens for iterators that have different parent containers") {
-      const auto not_v       = collections::static_vector<int, 20>{6, 7, 8, 9};
-      const auto wrong_begin = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v)};
+      auto not_v       = collections::static_vector<int, 20>{6, 7, 8, 9};
+      const auto wrong_begin = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr() + v.size())};
 
       WITE_REQUIRE_ASSERTS_WITH(
           end - wrong_begin,
@@ -231,7 +231,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
   }
 
   SECTION("square-bracket operator") {
-    const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+    const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
     REQUIRE(1 == it[0]);
     REQUIRE(2 == it[1]);
     REQUIRE(3 == it[2]);
@@ -251,33 +251,33 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
   SECTION("comparison") {
     SECTION("equality") {
-      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
-      const auto it_2 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
+      const auto it_2 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
 
       SECTION("equal iterators are equal") {
         REQUIRE(it_1 == it_2);
       }
 
       SECTION("unequal iterators are not equal") {
-        REQUIRE_FALSE(it_1 == iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)} + 1);
+        REQUIRE_FALSE(it_1 == iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} + 1);
       }
     }
 
     SECTION("inequality") {
-      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
-      const auto it_2 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
+      const auto it_2 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
 
       SECTION("equal iterators are not not equal") {
         REQUIRE_FALSE(it_1 != it_2);
       }
 
       SECTION("unequal iterators are not equal") {
-        REQUIRE(it_1 != iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)} + 1);
+        REQUIRE(it_1 != iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} + 1);
       }
     }
 
     SECTION("less-than") {
-      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       const auto it_2 = it_1 + 1;
 
       REQUIRE(it_1 < it_2);
@@ -289,8 +289,8 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
-        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v)};
+        auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr() + v.size())};
 
         WITE_REQUIRE_ASSERTS_WITH(
             bad_it < it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
@@ -299,7 +299,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     }
 
     SECTION("greater-than") {
-      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)} + 1;
+      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} + 1;
       const auto it_2 = it_1 - 1;
 
       REQUIRE(it_1 > it_2);
@@ -311,8 +311,8 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
-        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v)};
+        auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr() + v.size())};
 
         WITE_REQUIRE_ASSERTS_WITH(
             bad_it > it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
@@ -321,7 +321,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     }
 
     SECTION("less-than-or-equal-to") {
-      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       const auto it_2 = it_1 + 1;
 
       REQUIRE(it_1 <= it_2);
@@ -333,8 +333,8 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
-        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v)};
+        auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr() + v.size())};
 
         WITE_REQUIRE_ASSERTS_WITH(
             bad_it <= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
@@ -343,7 +343,7 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
     }
 
     SECTION("greater-than-or-equal-to") {
-      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)} + 1;
+      const auto it_1 = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} + 1;
       const auto it_2 = it_1 - 1;
 
       REQUIRE(it_1 >= it_2);
@@ -355,8 +355,8 @@ TEMPLATE_TEST_CASE("Dereferencing const iterator operations tests",
 
 #ifdef _WITE_CONFIG_DEBUG
       SECTION("asserts in debug if comparison happens for iterators that have different parent containers") {
-        const auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
-        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v)};
+        auto not_v  = collections::static_vector<int, 20>{6, 7, 8, 9};
+        const auto bad_it = iterator_t{not_v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&not_v) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(not_v.ptr() + v.size())};
 
         WITE_REQUIRE_ASSERTS_WITH(
             bad_it >= it_1, "static_vector::operator<=>: comparison between two iterators with different parent containers");
@@ -373,7 +373,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
 
   SECTION("dereference allows editing") {
     SECTION("via operator*") {
-      const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       *it           = 6;
 
       REQUIRE(6 == v[0]);
@@ -386,7 +386,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
 
       collections::static_vector<A, 5> test_vec = {A{0}, A{1}, A{2}, A{3}, A{4}};
       const auto it = collections::dereferencing_iterator<decltype(test_vec)> {
-          test_vec.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&test_vec)
+          test_vec.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&test_vec) _WITE_DEREF_ITER_DEBUG_ARG(test_vec.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(test_vec.ptr() + v.size())
       };
 
       it->x = 5;
@@ -397,7 +397,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
 
   SECTION("operations that return reference to self return mutating versions") {
     SECTION("pre-increment operator") {
-      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       auto it_2 = ++it;
 
       *it_2 = 10;
@@ -405,7 +405,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
     }
 
     SECTION("post-increment operator") {
-      auto it            = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it            = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       const auto it_prev = it++;
 
       *it_prev = 6;
@@ -413,7 +413,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
     }
 
     SECTION("pre-decrement operator") {
-      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       auto it_2 = --it;
 
       *it_2 = 10;
@@ -421,7 +421,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
     }
 
     SECTION("post-decrement operator") {
-      auto it            = iterator_t{v.ptr() + v.size() - 1 _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it            = iterator_t{v.ptr() + v.size() - 1 _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       const auto it_prev = it--;
 
       *it_prev = 6;
@@ -429,7 +429,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
     }
 
     SECTION("increment assignment") {
-      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       const auto it_2 = it += 3;
 
       *it_2 = 10;
@@ -437,7 +437,7 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
     }
 
     SECTION("decrement assignment") {
-      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       const auto it_2 = it -= 3;
 
       *it_2 = 10;
@@ -445,19 +445,19 @@ TEST_CASE("Mutating dereferencing iterator operations", "[collections]") {
     }
 
     SECTION("positive offset operator") {
-      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)} + 3;
+      auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} + 3;
       *it = 10;
       REQUIRE(10 == v[3]);
     }
 
     SECTION("negative offset operator") {
-      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v)} - 3;
+      auto it = iterator_t{v.ptr() + v.size() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())} - 3;
       *it = 10;
       REQUIRE(10 == v[2]);
     }
 
     SECTION("square-bracket operator") {
-      const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v)};
+      const auto it = iterator_t{v.ptr() _WITE_DEREF_ITER_DEBUG_ARG(&v) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr()) _WITE_DEREF_ITER_DEBUG_ARG(v.ptr() + v.size())};
       it[3] = 10;
       REQUIRE(10 == it[3]);
     }

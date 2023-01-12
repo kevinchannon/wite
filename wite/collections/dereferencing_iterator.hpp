@@ -36,11 +36,14 @@ class dereferencing_const_iterator {
   using pointer         = const value_type*;
   using reference       = const value_type&;
 
-  using _ptr_t  = const typename Container_T::raw_value_type*;
-  using _this_t = dereferencing_const_iterator;
+  using _ptr_t = const typename Container_T::raw_value_type*;
+  using _this_t      = dereferencing_const_iterator;
 
-  constexpr explicit dereferencing_const_iterator(_ptr_t ptr _WITE_DEREF_ITER_DEBUG_ARG(const Container_T* parent)) noexcept
-      : _ptr{ptr} _WITE_DEREF_ITER_DEBUG_ARG(_parent{parent}) {}
+  constexpr explicit dereferencing_const_iterator(_ptr_t ptr _WITE_DEREF_ITER_DEBUG_ARG(const Container_T* parent)
+                                                      _WITE_DEREF_ITER_DEBUG_ARG(_ptr_t parent_begin)
+                                                          _WITE_DEREF_ITER_DEBUG_ARG(_ptr_t parent_end)) noexcept
+      : _ptr{ptr} _WITE_DEREF_ITER_DEBUG_ARG(_parent{parent}) _WITE_DEREF_ITER_DEBUG_ARG(_parent_begin{parent_begin})
+            _WITE_DEREF_ITER_DEBUG_ARG(_parent_end{parent_end}) {}
 
   WITE_DEFAULT_CONSTRUCTORS(dereferencing_const_iterator);
 
@@ -48,7 +51,7 @@ class dereferencing_const_iterator {
   _WITE_NODISCARD constexpr pointer operator->() const noexcept { return &**_ptr; }
 
   _WITE_RELEASE_CONSTEXPR _this_t& operator++() _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(_ptr != (_parent->ptr() + _parent->size()), "static_vector::operator++: incrementing past end");
+    _WITE_DEBUG_ASSERT(_ptr != _parent_end, "static_vector::operator++: incrementing past end");
 
     ++_ptr;
     return *this;
@@ -61,7 +64,7 @@ class dereferencing_const_iterator {
   }
 
   _WITE_RELEASE_CONSTEXPR _this_t& operator--() _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(_ptr != _parent->ptr(), "static_vector::operator--: decrementing past beginning");
+    _WITE_DEBUG_ASSERT(_ptr != _parent_begin, "static_vector::operator--: decrementing past beginning");
 
     --_ptr;
     return *this;
@@ -74,22 +77,22 @@ class dereferencing_const_iterator {
   }
 
   _WITE_RELEASE_CONSTEXPR _this_t& operator+=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->ptr(), "static_vector::operator+=: decrementing past beginning");
-    _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->ptr() + _parent->size()), "static_vector::operator+=: incrementing past end");
+    _WITE_DEBUG_ASSERT(_ptr + offset >= _parent_begin, "static_vector::operator+=: decrementing past beginning");
+    _WITE_DEBUG_ASSERT(_ptr + offset < _parent_end, "static_vector::operator+=: incrementing past end");
     _ptr += offset;
     return *this;
   }
 
   _WITE_RELEASE_CONSTEXPR _this_t& operator-=(const difference_type offset) _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->ptr(), "static_vector::operator-=: decrementing past beginning");
-    _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->ptr() + _parent->size()), "static_vector::operator-=: incrementing past end");
+    _WITE_DEBUG_ASSERT(_ptr - offset >= _parent_begin, "static_vector::operator-=: decrementing past beginning");
+    _WITE_DEBUG_ASSERT(_ptr - offset < _parent_end, "static_vector::operator-=: incrementing past end");
     _ptr -= offset;
     return *this;
   }
 
   _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(_ptr + offset >= _parent->ptr(), "static_vector::operator+: decrementing past beginning");
-    _WITE_DEBUG_ASSERT(_ptr + offset < (_parent->ptr() + _parent->size()), "static_vector::operator+: incrementing past end");
+    _WITE_DEBUG_ASSERT(_ptr + offset >= _parent_begin, "static_vector::operator+: decrementing past beginning");
+    _WITE_DEBUG_ASSERT(_ptr + offset < _parent_end, "static_vector::operator+: incrementing past end");
 
     auto out = *this;
     out += offset;
@@ -97,8 +100,8 @@ class dereferencing_const_iterator {
   }
 
   _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(_ptr - offset >= _parent->ptr(), "static_vector::operator-: decrementing past beginning");
-    _WITE_DEBUG_ASSERT(_ptr - offset < (_parent->ptr() + _parent->size()), "static_vector::operator-: incrementing past end");
+    _WITE_DEBUG_ASSERT(_ptr - offset >= _parent_begin, "static_vector::operator-: decrementing past beginning");
+    _WITE_DEBUG_ASSERT(_ptr - offset < _parent_end, "static_vector::operator-: incrementing past end");
 
     auto out = *this;
     out -= offset;
@@ -113,7 +116,7 @@ class dereferencing_const_iterator {
 
   _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
     _WITE_DEBUG_ASSERT(offset >= 0, "static_vector::operator[]: negative indices are invalid");
-    _WITE_DEBUG_ASSERT(_ptr + offset < _parent->ptr() + _parent->size(), "static_vector::operator[]: index out of range");
+    _WITE_DEBUG_ASSERT(_ptr + offset < _parent_end, "static_vector::operator[]: index out of range");
     return _ptr[offset].value();
   }
 
@@ -129,11 +132,24 @@ class dereferencing_const_iterator {
     return _ptr <=> other._ptr;
   }
 
- protected:
-  _ptr_t _ptr;
+  friend void swap(dereferencing_const_iterator& a, dereferencing_const_iterator& b) noexcept {
+    using std::swap;
+    swap(a._ptr, b.ptr);
 
 #ifdef _WITE_CONFIG_DEBUG
-  const Container_T* _parent;
+    swap(a._parent, b._parent);
+    swap(a._parent_begin, b._parent_begin);
+    swap(a._parent_end, b._parent_end);
+#endif
+  }
+
+ protected:
+  _ptr_t _ptr{nullptr};
+
+#ifdef _WITE_CONFIG_DEBUG
+  const Container_T* _parent{nullptr};
+  _ptr_t _parent_begin{nullptr};
+  _ptr_t _parent_end{nullptr};
 #endif
 };
 
@@ -154,9 +170,14 @@ class dereferencing_iterator : public dereferencing_const_iterator<Container_T> 
   using pointer         = value_type*;
   using reference       = value_type&;
 
-  constexpr explicit dereferencing_iterator(typename std::remove_const<typename _base_t::_ptr_t>::type ptr
-                                                _WITE_DEREF_ITER_DEBUG_ARG(const Container_T* parent)) noexcept
-      : _base_t{ptr _WITE_DEREF_ITER_DEBUG_ARG(parent)} {}
+  using _ptr_t       = typename Container_T::raw_value_type*;
+  using _const_ptr_t = typename _base_t::_ptr_t;
+
+  constexpr explicit dereferencing_iterator(_ptr_t ptr _WITE_DEREF_ITER_DEBUG_ARG(const Container_T* parent)
+                                                _WITE_DEREF_ITER_DEBUG_ARG(_const_ptr_t parent_begin)
+                                                    _WITE_DEREF_ITER_DEBUG_ARG(_const_ptr_t parent_end)) noexcept
+      : _base_t{ptr _WITE_DEREF_ITER_DEBUG_ARG(parent) _WITE_DEREF_ITER_DEBUG_ARG(parent_begin)
+                    _WITE_DEREF_ITER_DEBUG_ARG(parent_end)} {}
 
   WITE_DEFAULT_CONSTRUCTORS(dereferencing_iterator);
 
@@ -196,8 +217,8 @@ class dereferencing_iterator : public dereferencing_const_iterator<Container_T> 
   }
 
   _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator+(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(this->_ptr + offset >= this->_parent->ptr(), "static_vector::operator+: decrementing past beginning");
-    _WITE_DEBUG_ASSERT(this->_ptr + offset < (this->_parent->ptr() + this->_parent->size()),
+    _WITE_DEBUG_ASSERT(this->_ptr + offset >= this->_parent_begin, "static_vector::operator+: decrementing past beginning");
+    _WITE_DEBUG_ASSERT(this->_ptr + offset < this->_parent_end,
                        "static_vector::operator+: incrementing past end");
 
     auto out = *this;
@@ -206,8 +227,8 @@ class dereferencing_iterator : public dereferencing_const_iterator<Container_T> 
   }
 
   _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR _this_t operator-(const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
-    _WITE_DEBUG_ASSERT(this->_ptr - offset >= this->_parent->ptr(), "static_vector::operator-: decrementing past beginning");
-    _WITE_DEBUG_ASSERT(this->_ptr - offset < (this->_parent->ptr() + this->_parent->size()),
+    _WITE_DEBUG_ASSERT(this->_ptr - offset >= this->_parent_begin, "static_vector::operator-: decrementing past beginning");
+    _WITE_DEBUG_ASSERT(this->_ptr - offset < this->_parent_end,
                        "static_vector::operator-: incrementing past end");
 
     auto out = *this;
@@ -221,6 +242,10 @@ class dereferencing_iterator : public dereferencing_const_iterator<Container_T> 
 
   _WITE_NODISCARD _WITE_RELEASE_CONSTEXPR reference operator[](const difference_type offset) const _WITE_RELEASE_NOEXCEPT {
     return const_cast<reference>(_base_t::operator[](offset));
+  }
+
+  friend void swap(dereferencing_iterator& a, dereferencing_iterator& b) noexcept {
+    swap(static_cast<_base_t&>(a), static_cast<_base_t&>(b));
   }
 };
 

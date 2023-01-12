@@ -1,16 +1,16 @@
 #pragma once
 
+#include <wite/collections/dereferencing_iterator.hpp>
 #include <wite/common/constructor_macros.hpp>
 #include <wite/core/assert.hpp>
 #include <wite/env/environment.hpp>
-#include <wite/collections/dereferencing_iterator.hpp>
 
 #include <algorithm>
 #include <array>
 #include <compare>
 #include <cstdint>
-#include <stdexcept>
 #include <optional>
+#include <stdexcept>
 
 #ifdef _WITE_COMPILER_MSVC
 #define _WITE_USING_MSVC_ARRAY_ITERATOR 1
@@ -41,7 +41,7 @@ class static_vector {
 
  private:
   using data_type = std::array<std::optional<Value_T>, CAPACITY>;
-  using _this_t = static_vector<Value_T, CAPACITY>;
+  using _this_t   = static_vector<Value_T, CAPACITY>;
 
  public:
   using value_type             = Value_T;
@@ -67,7 +67,7 @@ class static_vector {
     }
 
     _item_count = init.size();
-    std::transform(init.begin(), init.end(), _data.begin(), [](auto&& x){return std::optional<value_type>{x};});
+    std::transform(init.begin(), init.end(), _data.begin(), [](auto&& x) { return std::optional<value_type>{x}; });
   }
 #endif
 
@@ -78,13 +78,21 @@ class static_vector {
     swap(_item_count, other._item_count);
   }
 
-  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator { return iterator(_data.data() _WITE_DEREF_ITER_DEBUG_ARG(this)); }
-  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator { return const_iterator(_data.data() _WITE_DEREF_ITER_DEBUG_ARG(this)); }
+  _WITE_NODISCARD constexpr auto begin() noexcept -> iterator {
+    return iterator(_data.data() _WITE_DEREF_ITER_DEBUG_ARG(this) _WITE_DEREF_ITER_DEBUG_ARG(_data.data())
+                        _WITE_DEREF_ITER_DEBUG_ARG(_data.data() + _item_count));
+  }
+  _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator {
+    return const_iterator(_data.data() _WITE_DEREF_ITER_DEBUG_ARG(this) _WITE_DEREF_ITER_DEBUG_ARG(_data.data())
+                              _WITE_DEREF_ITER_DEBUG_ARG(_data.data() + _item_count));
+  }
   _WITE_NODISCARD constexpr auto end() noexcept {
-    return iterator(std::next(_data.data(), _item_count) _WITE_DEREF_ITER_DEBUG_ARG(this));
+    return iterator(std::next(_data.data(), _item_count) _WITE_DEREF_ITER_DEBUG_ARG(this) _WITE_DEREF_ITER_DEBUG_ARG(_data.data())
+                        _WITE_DEREF_ITER_DEBUG_ARG(_data.data() + _item_count));
   }
   _WITE_NODISCARD constexpr auto end() const noexcept {
-    return const_iterator(std::next(_data.data(), _item_count) _WITE_DEREF_ITER_DEBUG_ARG(this));
+    return const_iterator(std::next(_data.data(), _item_count) _WITE_DEREF_ITER_DEBUG_ARG(this)
+                              _WITE_DEREF_ITER_DEBUG_ARG(_data.data()) _WITE_DEREF_ITER_DEBUG_ARG(_data.data() + _item_count));
   }
   _WITE_NODISCARD constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
@@ -139,13 +147,9 @@ class static_vector {
     _unsafe_resize(new_size, std::move(value));
   }
 
-  void push_back(const_reference x) {
-    resize(size() + 1, x);
-  }
+  void push_back(const_reference x) { resize(size() + 1, x); }
 
-  void push_back(value_type&& x) {
-    resize(size() + 1, std::forward<value_type>(x));
-  }
+  void push_back(value_type&& x) { resize(size() + 1, std::forward<value_type>(x)); }
 
 #endif
 
@@ -162,14 +166,13 @@ class static_vector {
   _WITE_NODISCARD constexpr bool operator!=(const static_vector& other) const noexcept { return !(*this == other); }
 
  private:
-
   constexpr void _alloc(size_type n, value_type v) noexcept(noexcept(value_type{v})) {
-    std::generate_n(std::next(_data.begin(), _item_count), n, [&v](){ return std::optional<value_type>{v};});
+    std::generate_n(std::next(_data.begin(), _item_count), n, [&v]() { return std::optional<value_type>{v}; });
   }
 
   void _destroy_last_n(size_type n) noexcept {
     const auto erase_start = std::reverse_iterator{std::next(_data.begin(), _item_count)};
-    std::for_each(erase_start, std::next(erase_start, n), [](auto&& val) { val.reset();});
+    std::for_each(erase_start, std::next(erase_start, n), [](auto&& val) { val.reset(); });
   }
 
   constexpr void _unsafe_resize(size_type n, value_type v = value_type{}) {

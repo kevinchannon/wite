@@ -54,10 +54,25 @@ class identifiable_item_collection {
   identifiable_item_collection& operator=(identifiable_item_collection&&) noexcept = default;
 
   _WITE_NODISCARD constexpr auto begin() noexcept -> iterator {
-    return iterator(const_cast<raw_value_type*>(_ordered_items.data()) _WITE_DEREF_ITER_DEBUG_ARG(this));
+    return iterator(const_cast<raw_value_type*>(_ordered_items.data()) _WITE_DEREF_ITER_DEBUG_ARG(this)
+                        _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
+                            _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
   }
   _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator {
-    return const_iterator(_ordered_items.data() _WITE_DEREF_ITER_DEBUG_ARG(this));
+    return const_iterator(_ordered_items.data() _WITE_DEREF_ITER_DEBUG_ARG(this)
+                              _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
+                                  _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
+  }
+  _WITE_NODISCARD constexpr auto end() const noexcept {
+    return const_iterator(std::next(const_cast<raw_value_type*>(_ordered_items.data()), _ordered_items.size())
+                              _WITE_DEREF_ITER_DEBUG_ARG(this)
+                                  _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
+                                      _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
+  }
+  _WITE_NODISCARD constexpr auto end() noexcept {
+    return iterator(std::next(_ordered_items.data(), _ordered_items.size()) _WITE_DEREF_ITER_DEBUG_ARG(this)
+                        _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
+                            _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
   }
 
   _WITE_NODISCARD constexpr size_type size() const noexcept { return _items.size(); }
