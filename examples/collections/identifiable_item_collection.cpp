@@ -124,16 +124,23 @@ int main() {
   //
   std::cout << "Have sensor with ID " << sensor.id() << std::endl;
   std::cout << "Have servo with ID " << servo.id() << std::endl;
+
   //
   // Loop over a collection.
   //
-  // COMING SOON! Iterators, so that you don't have to type this safe, but verbose, stuff :)
-  for (auto i = SensorCollection::index_type{0}; i < SensorCollection::index_type{sensors.size()}; ++i) {
-    const auto& s =
-        sensors.at(i);  // This is an overload of at() that takes an index value. Like the id values, the indices are typed to the
-                        // container that they index into, so you can't accidentally use an index intended for use in the servo
-                        // collection to get an object from the sensor collection; it won't compile.
+  for (const auto& s : sensors) {
     std::cout << "Sensor " << s.id() << ", value: " << s.value << std::endl;
+  }
+
+  //
+  // Use a collection with std range adapters
+  //
+  const auto id_strings = servos
+                          | std::views::reverse
+                          | std::views::transform([](auto&& s){ return s.id().value().str(); });
+
+  for (const auto& str : id_strings) {
+    std::cout << "servo " << str << std::endl;
   }
 
   //
