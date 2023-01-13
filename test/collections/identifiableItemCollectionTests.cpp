@@ -325,7 +325,6 @@ TEST_CASE("Identifiable item collection tests", "[collections]") {
 }
 
 TEST_CASE("Identifiable item collection iterator tests", "[collections]") {
-  using Index_t = identifiable_item_collection<TestItem>::index_type;
   auto items = identifiable_item_collection<TestItem>{TestItem{3}, TestItem{2}, TestItem{1}};
 
   SECTION("begin points to the first item that was added") {
@@ -333,34 +332,10 @@ TEST_CASE("Identifiable item collection iterator tests", "[collections]") {
     REQUIRE(3 == items.cbegin()->id().value());
   }
 
-  SECTION("mutating begin gives editable iterator") {
-    items.begin()->data = "some data";
-
-    REQUIRE("some data" == items.at(Index_t{0}).data);
-  }
-
-  SECTION("mutating rbegin gives editable iterator") {
-    items.rbegin()->data = "some data";
-
-    REQUIRE("some data" == items.at(Index_t{2}).data);
-  }
-
   SECTION("The distance between begin and end is equal to the size") {
     REQUIRE(items.size() == static_cast<size_t>(std::distance(items.begin(), items.end())));
     REQUIRE(items.size() == static_cast<size_t>(std::distance(items.cbegin(), items.cend())));
     REQUIRE(items.size() == static_cast<size_t>(std::distance(items.rbegin(), items.rend())));
     REQUIRE(items.size() == static_cast<size_t>(std::distance(items.crbegin(), items.crend())));
-  }
-
-  SECTION("mutating end gives editable iterator") {
-    std::prev(items.end())->data = "some data";
-
-    REQUIRE("some data" == items.at(Index_t{2}).data);
-  }
-
-  SECTION("mutating rend gives editable iterator") {
-    std::prev(items.rend())->data = "some data";
-
-    REQUIRE("some data" == items.at(Index_t{0}).data);
   }
 }
