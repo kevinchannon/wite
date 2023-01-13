@@ -338,4 +338,29 @@ TEST_CASE("Identifiable item collection iterator tests", "[collections]") {
     REQUIRE(items.size() == static_cast<size_t>(std::distance(items.rbegin(), items.rend())));
     REQUIRE(items.size() == static_cast<size_t>(std::distance(items.crbegin(), items.crend())));
   }
+
+  SECTION("check std algorithms")
+  {
+    SECTION("legacy") {
+      SECTION("find_if") {
+        const auto it = std::find_if(items.begin(), items.end(), [](auto&& item) { return item.id().value() == 2; });
+        REQUIRE(2 == it->id().value());
+      }
+    }
+
+    SECTION("range-based"){
+      SECTION("find_if"){
+        const auto it = std::ranges::find_if(items, [](auto&& item) { return item.id().value() == 2; });
+        REQUIRE(2 == it->id().value());
+      }
+    }
+  }
+
+  SECTION("check range-based for"){
+    const auto ids = {1u, 2u, 3u};
+    auto id = ids.begin();
+    for (const auto& item : items | std::views::reverse) {
+      REQUIRE(*id++ == item.id().value());
+    }
+  }
 }
