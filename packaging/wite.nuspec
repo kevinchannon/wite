@@ -2,7 +2,7 @@
 <package >
     <metadata>
         <id>wite</id>
-        <version>0.15.0</version>
+        <version>$version$</version>
         <authors>Kevin J Channon</authors>
         <description>Why Isn't This Easy (Wite) C++ convenience functions</description>
         <repository url="https://github.com/kevinchannon/wite.git" type="git"/>
@@ -11,7 +11,7 @@
         <readme>README.md</readme>
         <tags>Native, native, buffers, strings, utilities, utility, geometry</tags>
         <releaseNotes>
-        Identifiable Item Collection now has an (const) iterable interface
+        Test release
         </releaseNotes>
     </metadata>
      
@@ -19,6 +19,6 @@
         <file src="..\wite\**\*.*"   target="build\native\include\wite" />
         <file src="wite.props"   target="build\native" />
         <file src="wite.targets"   target="build\native" />
-        <file src="..\README.md" target="" />
+        <file src="README.md" target="" />
     </files>
 </package>
