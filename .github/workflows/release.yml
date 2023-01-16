@@ -18,7 +18,7 @@ jobs:
 
       - name: Create version number
         run: |
-          mkdir build/package
+          mkdir -p build/package
           echo ${{ github.event.inputs.version }} | sed 's/^v//' > build/package/version.txt
 
       - name: Configure CMake
