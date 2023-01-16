@@ -23,7 +23,7 @@ jobs:
         run: echo ${{ github.event.inputs.version }} | sed 's/^v//' > build/package/version.txt
 
       - name: Package source code
-        run: cmake --build build/package --target wite_package -DPROJECT_VERSION:STRING=0.15.1
+        run: cmake -DPROJECT_VERSION:STRING=0.15.1 --build build/package --target wite_package
 
       - name: Pack NuGet package
         run: |
