@@ -19,8 +19,11 @@ jobs:
       - name: Configure CMake
         run: cmake -B build/package
 
+      - name: Create version number
+        run: echo ${{ github.event.inputs.version }} | sed 's/^v//' > build/package/version.txt
+
       - name: Package source code
-        run: cmake --build build/package --target wite_package
+        run: cmake --build build/package --target wite_package -DVERSION=$(cat build/package/version.txt)
 
       - name: Pack NuGet package
         run: |
@@ -29,8 +32,8 @@ jobs:
           sed -i '/!\[Ubuntu \| GCC12 \| x64 \| Release\]/d' packaging/README.md
           sed -i '/!\[Windows \| MSCV++ \| x64 \| Debug\]/d' packaging/README.md
           sed -i '/!\[Windows \| MSCV++ \| x64 \| Release\]/d' packaging/README.md
-          echo ${{ github.event.inputs.version }} | sed 's/^v//' > packaging/version.txt
-          nuget pack packaging/wite.nuspec -Properties version=$(cat packaging/version.txt) -OutputDirectory build/package
+          
+          nuget pack packaging/wite.nuspec -Properties version=$(cat build/package/version.txt) -OutputDirectory build/package
 
       - name: Add packaged source code to release
         uses: svenstaro/upload-release-action@v2
