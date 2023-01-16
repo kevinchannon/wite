@@ -17,7 +17,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Create version number
-        run: echo ${{ github.event.inputs.version }} | sed 's/^v//' > build/package/version.txt
+        run: |
+          mkdir build/package
+          echo ${{ github.event.inputs.version }} | sed 's/^v//' > build/package/version.txt
 
       - name: Configure CMake
         run: cmake -B build/package -DPROJECT_VERSION:STRING=$(cat build/package/version.txt)
