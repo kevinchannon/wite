@@ -8,6 +8,8 @@ project ("wite")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 
+set(PROJECT_VERSION 0.15.1)
+
 # Do this check in case we're included in another project via FetchContent
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	# The GCC in MinGW requires this, for some reason.
@@ -23,7 +25,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	add_subdirectory("examples")
 
 	set(package_files wite/  CMakeLists.txt)
-	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-src.zip
+	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.${PROJECT_VERSION}.zip
 		COMMAND ${CMAKE_COMMAND} -E tar c ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.${PROJECT_VERSION}.zip --format=zip -- ${package_files}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS ${package_files})
