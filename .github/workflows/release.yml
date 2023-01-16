@@ -16,14 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure CMake
-        run: cmake -B build/package
-
       - name: Create version number
         run: echo ${{ github.event.inputs.version }} | sed 's/^v//' > build/package/version.txt
 
+      - name: Configure CMake
+        run: cmake -B build/package -DPROJECT_VERSION:STRING=$(cat build/package/version.txt)
+
       - name: Package source code
-        run: cmake -DPROJECT_VERSION:STRING=0.15.1 --build build/package --target wite_package
+        run: cmake --build build/package --target wite_package
 
       - name: Pack NuGet package
         run: |
