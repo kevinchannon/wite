@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #include <wite/geometry/point.hpp>
 
 #include <catch2/catch_test_macros.hpp>

@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #pragma once
 
 /// This macro implements the constructors "rule-of-five".

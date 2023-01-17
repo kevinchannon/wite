@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 // These are taken from https://en.cppreference.com/w/cpp/utility/variant/visit
 
 #pragma once

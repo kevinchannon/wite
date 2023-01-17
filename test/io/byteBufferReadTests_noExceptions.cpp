@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #define WITE_NO_EXCEPTIONS
 
 #include <wite/io/byte_buffer.hpp>

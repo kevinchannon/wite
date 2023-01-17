@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #include <wite/collections/dereferencing_iterator.hpp>
 #include <wite/collections/static_vector.hpp>
 

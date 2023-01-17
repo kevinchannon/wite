@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #include <wite/maths/value_range.hpp>
 #include <wite/maths/io.hpp>
 

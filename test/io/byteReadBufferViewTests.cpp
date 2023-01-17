@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #include <wite/io/byte_buffer.hpp>
 #include <wite/io/byte_stream.hpp>  // This is here to make sure that things build in the presence of each other.
 #include <wite/io/encoding.hpp>

@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #include <test/utils.hpp>
 #include <wite/collections/identifiable_item_collection.hpp>
 #include <wite/core/id.hpp>

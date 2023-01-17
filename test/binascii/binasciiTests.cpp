@@ -1,3 +1,10 @@
+/*
+* SPDX-License-Identifier: MIT
+*
+* Copyright (c) 2023 Kevin J Channon
+*
+*/
+
 #include <test/utils.hpp>
 #include <wite/binascii/hexlify.hpp>
 
