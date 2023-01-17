@@ -1,9 +1,9 @@
 /*
-* SPDX-License-Identifier: MIT
-*
-* Copyright (c) 2023 Kevin J Channon
-*
-*/
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2023 Kevin J Channon
+ *
+ */
 
 #pragma once
 
@@ -39,15 +39,15 @@ class identifiable_item_collection {
  public:
   using raw_value_type = Item_T*;
 
-  using size_type              = typename _associative_storage_type::size_type;
-  using value_type             = Item_T;
-  using difference_type        = std::ptrdiff_t;
-  using pointer                = value_type*;
-  using const_pointer          = const value_type*;
-  using reference              = value_type&;
-  using const_reference        = const value_type&;
-  using iterator               = dereferencing_iterator<_this_t>;
-  using const_iterator         = dereferencing_const_iterator<_this_t>;
+  using size_type       = typename _associative_storage_type::size_type;
+  using value_type      = Item_T;
+  using difference_type = std::ptrdiff_t;
+  using pointer         = value_type*;
+  using const_pointer   = const value_type*;
+  using reference       = value_type&;
+  using const_reference = const value_type&;
+  using iterator        = dereferencing_iterator<_this_t, std::random_access_iterator_tag, std::random_access_iterator_tag>;
+  using const_iterator  = dereferencing_const_iterator<_this_t, std::random_access_iterator_tag, std::random_access_iterator_tag>;
   using reverse_iterator       = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -61,15 +61,13 @@ class identifiable_item_collection {
   identifiable_item_collection& operator=(identifiable_item_collection&&) noexcept = default;
 
   _WITE_NODISCARD constexpr auto begin() const noexcept -> const_iterator {
-    return const_iterator(_ordered_items.data() _WITE_DEREF_ITER_DEBUG_ARG(this)
-                              _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
-                                  _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
+    return const_iterator(_ordered_items.data() _WITE_DEREF_ITER_DEBUG_ARG(this) _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
+                              _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
   }
   _WITE_NODISCARD constexpr auto end() const noexcept {
     return const_iterator(std::next(const_cast<raw_value_type*>(_ordered_items.data()), _ordered_items.size())
-                              _WITE_DEREF_ITER_DEBUG_ARG(this)
-                                  _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
-                                      _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
+                              _WITE_DEREF_ITER_DEBUG_ARG(this) _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data())
+                                  _WITE_DEREF_ITER_DEBUG_ARG(_ordered_items.data() + _ordered_items.size()));
   }
   _WITE_NODISCARD constexpr auto rbegin() const noexcept { return const_reverse_iterator(end()); }
   _WITE_NODISCARD constexpr auto rend() const noexcept { return const_reverse_iterator(begin()); }

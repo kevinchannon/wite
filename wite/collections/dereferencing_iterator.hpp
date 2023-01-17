@@ -160,9 +160,11 @@ class dereferencing_const_iterator {
 #endif
 };
 
-template <typename Container_T>
-class dereferencing_iterator : public dereferencing_const_iterator<Container_T> {
-  using _base_t = dereferencing_const_iterator<Container_T>;
+template <typename Container_T,
+          typename IterConcept_T  = std::contiguous_iterator_tag,
+          typename IterCategory_T = std::random_access_iterator_tag>
+class dereferencing_iterator : public dereferencing_const_iterator<Container_T, IterConcept_T, IterCategory_T> {
+  using _base_t = dereferencing_const_iterator<Container_T, IterConcept_T, IterCategory_T>;
   using _this_t = dereferencing_iterator;
 
  public:

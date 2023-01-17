@@ -1,9 +1,9 @@
 /*
-* SPDX-License-Identifier: MIT
-*
-* Copyright (c) 2023 Kevin J Channon
-*
-*/
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2023 Kevin J Channon
+ *
+ */
 
 #pragma once
 
@@ -51,15 +51,15 @@ class static_vector {
   using _this_t   = static_vector<Value_T, CAPACITY>;
 
  public:
-  using value_type             = Value_T;
-  using size_type              = typename data_type::size_type;
-  using difference_type        = typename data_type::difference_type;
-  using pointer                = value_type*;
-  using const_pointer          = const value_type*;
-  using reference              = value_type&;
-  using const_reference        = const value_type&;
-  using iterator               = dereferencing_iterator<_this_t>;
-  using const_iterator         = dereferencing_const_iterator<_this_t>;
+  using value_type      = Value_T;
+  using size_type       = typename data_type::size_type;
+  using difference_type = typename data_type::difference_type;
+  using pointer         = value_type*;
+  using const_pointer   = const value_type*;
+  using reference       = value_type&;
+  using const_reference = const value_type&;
+  using iterator        = dereferencing_iterator<_this_t, std::random_access_iterator_tag, std::random_access_iterator_tag>;
+  using const_iterator  = dereferencing_const_iterator<_this_t, std::random_access_iterator_tag, std::random_access_iterator_tag>;
   using reverse_iterator       = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
