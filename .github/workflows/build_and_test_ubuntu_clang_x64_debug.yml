@@ -1,0 +1,43 @@
+name: "Ubuntu | Clang | x64 | Debug "
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - wite/**
+      - test/**
+      - examples/**
+      - .github/workflows/build_and_test_ubuntu_clang_x64_debug.yml
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - wite/**
+      - test/**
+      - examples/**
+      - .github/workflows/build_and_test_ubuntu_clang_x64_debug.yml
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Clang
+        shell: bash
+        run:  |
+          sudo apt update
+          sudo apt install -y clang cmake
+
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build/clang/x64/debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build/clang/x64/debug --config Debug --target all
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build/clang/x64/debug/test
+        run: ./wite_test
