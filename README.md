@@ -23,6 +23,10 @@
     * [Bounded Value](https://github.com/kevinchannon/wite#bounded_value)
 * [Compiler Macros](https://github.com/kevinchannon/wite#Compiler-Macros)
 
+> **Note**
+>
+> Version 1.0.0 is now ready! If you try it and find any problems, please do make create and issue so that we can fix it for the next version and make Wite more useful on more platforms and environments! :)
+
 # Wite
 Wite stands for "**W**hy **i**sn't **t**his **e**asy!?". It's a collection of routines and classes that aims to make easy things that should be easy in C++ but are not, for one reason or another. The aim is to make a small library of things that can just be dropped into a project to make things a little easier. So, if you don't want the weight of introducing a dependency on Boost, or something, then maybe there's something here to help you. At the moment, Wite is header only, so good times! Just plop the files into your source tree and rock on.
 
